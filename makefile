@@ -20,6 +20,6 @@ remove_image:
 push:
 	docker push ${IMA_NAME}:latest
 
-Run:
+run:
 	${COMMAND_RUN} \
 		"cd /mnt/shared && bash"
