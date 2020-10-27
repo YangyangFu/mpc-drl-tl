@@ -6,6 +6,7 @@ A paper plan for comparing MPC and DRL/TL in building control
 - [Building System Model](#building-system-model)
 - [Progresses](#progresses)
   - [10/26/2020](#10262020)
+    - [Next Steps](#next-steps)
 - [Meetings](#meetings)
   - [10/28/2020](#10282020)
   
@@ -52,6 +53,12 @@ Here an integrated environment is configured and contained in a docker file. The
    - Opengym: Interface for using Modelica models as DRL environment.
 
 Detailed configuration is in `Dockerfile`.
+
+### Next Steps
+- [ ] test VAV.fmu compilation and simulation
+- [ ] configure DRL environment using VAV.fmu
+- [ ] develop MPC for VAV model
+
 
 
 # Meetings
