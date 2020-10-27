@@ -1,0 +1,8 @@
+compareVars :=
+  {
+    "timTabLin.y[1]",
+    "timTabLinCon.y[1]",
+    "timTabCon.y[1]",
+    "timTabLinHol.y[1]",
+    "timTabLinDer.y[1]"
+  };

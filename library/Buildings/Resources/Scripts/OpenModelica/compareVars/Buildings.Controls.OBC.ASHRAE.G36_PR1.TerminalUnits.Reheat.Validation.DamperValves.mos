@@ -1,0 +1,11 @@
+compareVars :=
+  {
+    "damVal.uHea",
+    "damVal.uCoo",
+    "damVal.VDisSet_flow",
+    "damVal.yDam",
+    "damVal.TDisHeaSet",
+    "damVal.yHeaVal",
+    "damVal.conVal.u_s",
+    "damVal.conVal.u_m"
+  };
