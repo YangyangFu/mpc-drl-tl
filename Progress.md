@@ -65,3 +65,8 @@ Detailed configuration is in `Dockerfile`.
 
 ## 10/28/2020
 
+NU discussed their conceptual design of fault-tolerant deep reinforcement learning control framework.
+
+They proposed an evloving virtual environment to learn system states based on historical virtual data. The predicted value in the virtual environment is compared with measured data from actual environment. If difference is small, have confidence over current measurement. If difference is large, use data from virtual environement.
+
+
