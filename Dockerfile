@@ -19,3 +19,9 @@ WORKDIR $HOME
 
 # intall customized gym environment into docker: install a building control environment
 ## to-be-updated
+
+
+
+# copy Modelica dependency to docker container and put them in ModelicaPath
+COPY ./library /usr/local/JModelica/ThirdParty/MSL
+WORKDIR $HOME
