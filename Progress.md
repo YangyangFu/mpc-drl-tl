@@ -7,8 +7,11 @@ A paper plan for comparing MPC and DRL/TL in building control
 - [Progresses](#progresses)
   - [10/26/2020](#10262020)
     - [Next Steps](#next-steps)
+  - [10/30/2020](#10302020)
+    - [BOPTEST Software Structure](#boptest-software-structure)
 - [Meetings](#meetings)
   - [10/28/2020](#10282020)
+  - [11/13/2020](#11132020)
   
 
 
@@ -59,7 +62,28 @@ Detailed configuration is in `Dockerfile`.
 - [ ] configure DRL environment using VAV.fmu
 - [ ] develop MPC for VAV model
 
+## 10/30/2020
 
+An intermediate idea is to use existing testcases developed from BOPTEST, which contains residential building with single zone and 8 zones, commercial buildings with single zone, 28-zone office, and 32-zone office.
+
+### BOPTEST Software Structure
+![1](resources/notes/1-boptest-structure.jpg)
+
+*Emulator Pool* - contains source files of the test cases and temporary files during simulation
+
+*Database*: 
+
+*Simulation Manager*: simulation environment, parses the source files of the emulators.
+
+*HTTP Rest API*: main point of interaction with the BOPTEST platform. Via the HTTP Rest API, the external controller as a client can submit requests for actions such as adding or selecting an emulator to test, extracting information about the emulator, setting simulation settings, starting a simulation, and reading/writing control signal and measurement data.
+
+![2](resources/notes/2-software.jpg)
+
+Emulation model is `wrapper.fmu`.
+
+Simulation manager is `testcase.py`.
+
+HTTP Request API is `restapi.py`.
 
 # Meetings
 
@@ -68,5 +92,18 @@ Detailed configuration is in `Dockerfile`.
 NU discussed their conceptual design of fault-tolerant deep reinforcement learning control framework.
 
 They proposed an evloving virtual environment to learn system states based on historical virtual data. The predicted value in the virtual environment is compared with measured data from actual environment. If difference is small, have confidence over current measurement. If difference is large, use data from virtual environement.
+
+## 11/13/2020
+
+NU mentioned their needs in the following quoted email:
+
+    Instead of making 5 models for EnergyPlus as we discussed in the morning, could you make one specific-coarse model pair first?
+
+Other information for the models:
+
+    1. control inputs: discrete VAV terminal mass flowrate; for example, 5 level between 0 and maximum flow. This requires revisions of current Modelica VAV terminal model.
+    2. control objectives: minimize energy use while maintain room temperature
+
+
 
 
