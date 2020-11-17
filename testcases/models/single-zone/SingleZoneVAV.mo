@@ -128,6 +128,18 @@ package SingleZoneVAV
 
     Modelica.Blocks.Interfaces.RealInput uFan "Fan control signal"
       annotation (Placement(transformation(extent={{-200,60},{-160,100}})));
+    Modelica.Blocks.Interfaces.RealOutput TRoo
+      "Connector of Real output signal"
+      annotation (Placement(transformation(extent={{160,-10},{180,10}})));
+    Modelica.Blocks.Interfaces.RealOutput CO2Roo
+      "Connector of Real output signal"
+      annotation (Placement(transformation(extent={{160,-40},{180,-20}})));
+    Modelica.Blocks.Interfaces.RealOutput powCoo
+      "Connector of Real output signal"
+      annotation (Placement(transformation(extent={{170,90},{190,110}})));
+    Modelica.Blocks.Interfaces.RealOutput powHea
+      "Connector of Real output signal"
+      annotation (Placement(transformation(extent={{170,110},{190,130}})));
   equation
     connect(weaDat.weaBus, weaBus) annotation (Line(
         points={{-140,130},{-108,130}},
@@ -217,6 +229,14 @@ package SingleZoneVAV
             {118,-30}}, color={0,0,127}));
     connect(hvac.uFan, uFan) annotation (Line(points={{-42,18},{-60,18},{-60,80},
             {-180,80}}, color={0,0,127}));
+    connect(TRooAir.y, TRoo)
+      annotation (Line(points={{141,0},{170,0}}, color={0,0,127}));
+    connect(CO2RooAir.y, CO2Roo)
+      annotation (Line(points={{141,-30},{170,-30}}, color={0,0,127}));
+    connect(PCoo.y, powCoo)
+      annotation (Line(points={{161,100},{180,100}}, color={0,0,127}));
+    connect(PHea.y, powHea)
+      annotation (Line(points={{141,120},{180,120}}, color={0,0,127}));
     annotation (
       experiment(
         StopTime=504800,
