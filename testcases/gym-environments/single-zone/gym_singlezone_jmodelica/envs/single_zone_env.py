@@ -92,6 +92,39 @@ class SingleZoneEnv(object):
 
         return reward [1,2]
 
+    def get_state(self, result):
+        """
+        Extracts the values of model outputs at the end of modeling time interval from simulation result 
+        and predicted weather data from future time step
+
+        :return: Values of model outputs as tuple in order specified in `model_outputs` attribute and 
+        predicted weather data from existing weather file
+            model_outputs: time, zone temperature(s), outdoor temperature, solar radiation
+            predictor_outputs: outdoor temperature in next 3 steps, solar radiation in next 3 steps
+
+        This module is used to override defaulted "get_state" function that 
+        only gets states from simulation results.
+        """
+        # 1. get states that could be measured
+        #   model_outputs
+        # 2. get states that should be predicted from external predictor
+        #   predictor_outputs
+
+        model_outputs = self.model_output_names
+        state_list = [result.final(k) for k in model_outputs]
+
+        predictor_list = self.predictor(3)
+
+        return tuple(state_list+predictor_list) 
+
+    def predictor(self,npre_step):
+        """
+        Predict weather conditions over a period
+
+        :return: Temperature and solar radiance for future n steps
+
+        """
+        return [25,25,25,1000,1000,1000]
 
     def render(self, mode='human', close=False):
         """
@@ -144,7 +177,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
 
         config = {
             'model_input_names': ['uFan'],
-            'model_output_names': ['TRoo', 'CO2Roo', 'powHea', 'powCoo'],
+            'model_output_names': ['time','TRoo'],
             'model_parameters': {},
             'time_step': time_step
         }
