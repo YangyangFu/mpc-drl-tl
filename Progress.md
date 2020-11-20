@@ -105,5 +105,15 @@ Other information for the models:
     2. control objectives: minimize energy use while maintain room temperature
 
 
+## 11/20/2020
+
+A short meeting with Shichao:
+
+1. They prefer multi-zones.
+
+2. reward is calculated based on power, and the power in their learning is a model based on outdoor temperatures?
+
+3. they want use future 4-step weather data
+
 
 

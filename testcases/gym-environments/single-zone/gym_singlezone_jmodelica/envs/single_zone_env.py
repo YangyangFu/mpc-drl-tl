@@ -3,9 +3,7 @@ from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division
 
 """
-Classic cart-pole example implemented with an FMU simulating a cart-pole system.
-Implementation inspired by OpenAI Gym examples:
-https://github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
+Some descriptions
 """
 
 import logging
@@ -34,15 +32,12 @@ class SingleZoneEnv(object):
     def _is_done(self):
         """
         Internal logic that is utilized by parent classes.
-        Checks if cart position or pole angle are inside required bounds, defined by thresholds:
-        x_threshold - 2.4
-        angle threshold - 12 degrees
+        Checks if current time is greater than episode_length:
 
         :return: boolean flag if current state of the environment indicates that experiment has ended.
-        True, if cart is not further than 2.4 from the starting point
-        and angle of pole deflection from vertical is less than 12 degrees
+
         """
-        if self.stop >= self.episode_length:
+        if self.time >= self.episode_length:
             done = True
         else:
             done = False
@@ -62,10 +57,15 @@ class SingleZoneEnv(object):
         """
         Internal logic that is utilized by parent classes.
         Returns observation space according to OpenAI Gym API requirements
-
+        
+        The designed observation space for each zone is [zone temperature, outdoor temperature, solar radiation]; if 4 zone, add 3 more zone temperatures.
+        A question is:
+            why power is not part of the observation?
+            
         :return: Box state space with specified lower and upper bounds for state variables.
         """
         high = np.array([self.x_threshold, np.inf, self.theta_threshold, np.inf])
+        low = np.array()
         return spaces.Box(-high, high)
 
     # OpenAI Gym API implementation
@@ -75,16 +75,22 @@ class SingleZoneEnv(object):
         in the current state perform given action to move to the next action.
         Applies force of the defined magnitude in one of two directions, depending on the action parameter sign.
 
-        :param action: alias of an action to be performed. If action > 0 - push to the right, else - push left.
+        :param action: alias of an action [0-4] to be performed. 
         :return: next (resulting) state
         """
+        # 0 - max flow: 
         mass_flow_nor = self.mass_flow_nor; # norminal flowrate 1 kg/s
         action = action + 1
-        action = mass_flow_nor*action/5.
+        action = mass_flow_nor*action/4.
         return super(SingleZoneEnv,self).step(action)
     
     def _reward_policy(self):
         pass
+        
+        # two parts: energy cost + temperature deviations
+        # minimization problem: negative
+
+        return reward [1,2]
 
 
     def render(self, mode='human', close=False):
