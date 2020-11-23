@@ -15,10 +15,6 @@ from modelicagym.environment import FMI2CSEnv, FMI1CSEnv
 
 logger = logging.getLogger(__name__)
 
-NINETY_DEGREES_IN_RAD = (90 / 180) * math.pi
-TWELVE_DEGREES_IN_RAD = (12 / 180) * math.pi
-
-
 class SingleZoneEnv(object):
     """
     Class extracting common logic for JModelica and Dymola environments for CartPole experiments.
@@ -32,15 +28,15 @@ class SingleZoneEnv(object):
     def _is_done(self):
         """
         Internal logic that is utilized by parent classes.
-        Checks if current time is greater than episode_length:
+        Checks if system states result in a failure
+
+        Note in this design, violations in the system states will not terminate the experiment.
+        The experiment should be terminated in the training process by exceeding maximum steps.
 
         :return: boolean flag if current state of the environment indicates that experiment has ended.
 
         """
-        if self.time >= self.episode_length:
-            done = True
-        else:
-            done = False
+        done = False
 
         return done
 
@@ -58,15 +54,20 @@ class SingleZoneEnv(object):
         Internal logic that is utilized by parent classes.
         Returns observation space according to OpenAI Gym API requirements
         
-        The designed observation space for each zone is [zone temperature, outdoor temperature, solar radiation]; if 4 zone, add 3 more zone temperatures.
-        A question is:
-            why power is not part of the observation?
+        The designed observation space for each zone is 
+        1. time in second
+        2. zone temperatures for single or multiple zones; in K
+        3. outdoor temperature; in K 
+        4. solar radiation
+        5. total power
+        6-8. outdoor temperature in future 3 steps; in C
+        9-11. solar radiation in future 3 steps
             
         :return: Box state space with specified lower and upper bounds for state variables.
         """
-        high = np.array([self.x_threshold, np.inf, self.theta_threshold, np.inf])
-        low = np.array()
-        return spaces.Box(-high, high)
+        high = np.array([np.inf, 273.15+35, 273.15+45,np.inf, np.inf,45,45,45,np.inf,np.inf,np.inf])
+        low = np.array([np.inf, 273.15-15, 273.15-45,0, 0, -45,-45,-45,0,0,0])
+        return spaces.Box(low, high)
 
     # OpenAI Gym API implementation
     def step(self, action):
@@ -79,18 +80,31 @@ class SingleZoneEnv(object):
         :return: next (resulting) state
         """
         # 0 - max flow: 
-        mass_flow_nor = self.mass_flow_nor; # norminal flowrate 1 kg/s
+        mass_flow_nor = self.mass_flow_nor; # norminal flowrate: kg/s 
         action = action + 1
         action = mass_flow_nor*action/4.
         return super(SingleZoneEnv,self).step(action)
     
     def _reward_policy(self):
-        pass
-        
+        """
+        Internal logic to calculate rewards based on current states.
+
+        :return:, list with 2 elements: energy costs and temperature violations
+        """
+
         # two parts: energy cost + temperature deviations
         # minimization problem: negative
+        states = self.state
 
-        return reward [1,2]
+        # this is a hard-coding. This has to be changed for multi-zones
+        power = states(4) 
+        time = states(0)
+        TZon = states(1)
+
+        # Here is how the reward should be calculated based on observations
+
+        return [-1,0]
+
 
     def get_state(self, result):
         """
@@ -100,7 +114,7 @@ class SingleZoneEnv(object):
         :return: Values of model outputs as tuple in order specified in `model_outputs` attribute and 
         predicted weather data from existing weather file
             model_outputs: time, zone temperature(s), outdoor temperature, solar radiation
-            predictor_outputs: outdoor temperature in next 3 steps, solar radiation in next 3 steps
+            predictor_outputs: outdoor temperature in next n steps, solar radiation in next n steps
 
         This module is used to override defaulted "get_state" function that 
         only gets states from simulation results.
@@ -113,18 +127,49 @@ class SingleZoneEnv(object):
         model_outputs = self.model_output_names
         state_list = [result.final(k) for k in model_outputs]
 
-        predictor_list = self.predictor(3)
+        predictor_list = self.predictor(self.npre_step)
 
         return tuple(state_list+predictor_list) 
 
-    def predictor(self,npre_step):
+    def predictor(self,n):
         """
         Predict weather conditions over a period
 
-        :return: Temperature and solar radiance for future n steps
+        Here we use an ideal weather predictor, which reads data from energyplus weather files
+
+        :param:
+            n: number of steps for predicted value
+
+        :return: list, temperature and solar radiance for future n steps
 
         """
-        return [25,25,25,1000,1000,1000]
+        # temperature and solar in a dataframe
+        tem_sol_step = self.read_temperature_solar()
+        
+        time = self.state[0]
+        # return future 3 steps
+        tem = list(tem_sol_step[time+self.time_step:time+n*self.time_step]['temp_air'])
+        sol = list(tem_sol_step[time+self.time_step:time+n*self.time_step]['ghi'])
+        return tem+sol
+
+    def read_temperature_solar(self):
+        """Read temperature and solar radiance from epw file. 
+            This module serves as an ideal weather predictor.
+
+        :return: a data frame at an interval of defined time_step
+        """
+        from pvlib.iotools import read_epw
+
+        dat = read_epw(self.weather_file)
+
+        tem_sol_h = dat[0][['temp_air','ghi']]
+        index_h = range(0,3600*len(tem_sol_h),3600)
+        tem_sol_h.index = index_h
+
+        # interpolate temperature into simulation steps
+        index_step = range(0,3600*len(tem_sol_h),self.time_step)
+
+        return interp(tem_sol_h,index_step)
 
     def render(self, mode='human', close=False):
         """
@@ -154,12 +199,13 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
     Attributes:
         mass_flow_nor (float): List, norminal mass flow rate of VAV terminals.
         time_step (float): time difference between simulation steps.
-        positive_reward (int): positive reward for RL agent.
-        negative_reward (int): negative reward for RL agent.
+
     """
 
     def __init__(self,
                  mass_flow_nor,
+                 weather_file,
+                 npre_step,
                  time_step,
                  log_level):
 
@@ -167,17 +213,19 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
 
         # system parameters
         self.mass_flow_nor = mass_flow_nor
-
+        self.weather_file = weather_file
+        self.npre_step = npre_step
         # state bounds if any
+        
+        # experiment parameters
 
         # others
         self.viewer = None
         self.display = None
 
-
         config = {
             'model_input_names': ['uFan'],
-            'model_output_names': ['time','TRoo'],
+            'model_output_names': ['time','TRoo','TOut','GHI','PTot'],
             'model_parameters': {},
             'time_step': time_step
         }
@@ -185,3 +233,14 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         super(JModelicaCSSingleZoneEnv,self).__init__("./SingleZoneVAV.fmu",
                          config, log_level)
        # location of fmu is set to current working directory
+
+def interp(df, new_index):
+    """Return a new DataFrame with all columns values interpolated
+    to the new_index values."""
+    df_out = pd.DataFrame(index=new_index)
+    df_out.index.name = df.index.name
+
+    for colname, col in df.iteritems():
+        df_out[colname] = np.interp(new_index, df.index, col)
+
+    return df_out
