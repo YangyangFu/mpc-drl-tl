@@ -27,7 +27,7 @@ package SingleZoneVAV
       TSupChi_nominal=TSupChi_nominal,
       TSetSupAir=286.15) "Controller"
       annotation (Placement(transformation(extent={{-100,-10},{-80,10}})));
-    BaseClasses.ChillerDXHeatingEconomizer                          hvac(
+    BaseClasses.ChillerDXHeatingEconomizer hvac(
       redeclare package MediumA = MediumA,
       redeclare package MediumW = MediumW,
       mAir_flow_nominal=0.75,
@@ -36,15 +36,15 @@ package SingleZoneVAV
       QCoo_flow_nominal=-7000,
       TSupChi_nominal=TSupChi_nominal)   "Single zone VAV system"
       annotation (Placement(transformation(extent={{-40,-20},{0,20}})));
-    BaseClasses.Room                                               zon(
+    BaseClasses.Room  zon(
       redeclare package MediumA = MediumA,
         mAir_flow_nominal=0.75,
         lat=weaDat.lat) "Thermal envelope of single zone"
       annotation (Placement(transformation(extent={{40,-20},{80,20}})));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
         computeWetBulbTemperature=false, filNam=
-          Modelica.Utilities.Files.loadResource(
-          "Resources/weatherdata/DRYCOLD.mos"))
+        Modelica.Utilities.Files.loadResource(
+            "Resources/weatherdata/USA_CA_Riverside.Muni.AP.722869_TMY3.mos"))
       annotation (Placement(transformation(extent={{-160,120},{-140,140}})));
     Modelica.Blocks.Continuous.Integrator EFan "Total fan energy"
       annotation (Placement(transformation(extent={{40,-50},{60,-30}})));
@@ -134,12 +134,10 @@ package SingleZoneVAV
     Modelica.Blocks.Interfaces.RealOutput CO2Roo
       "Connector of Real output signal"
       annotation (Placement(transformation(extent={{160,-40},{180,-20}})));
-    Modelica.Blocks.Interfaces.RealOutput powCoo
-      "Connector of Real output signal"
-      annotation (Placement(transformation(extent={{170,90},{190,110}})));
-    Modelica.Blocks.Interfaces.RealOutput powHea
-      "Connector of Real output signal"
-      annotation (Placement(transformation(extent={{170,110},{190,130}})));
+    Modelica.Blocks.Math.MultiSum PHVAC(nu=4)
+      annotation (Placement(transformation(extent={{126,34},{138,46}})));
+    Modelica.Blocks.Interfaces.RealOutput PTot
+      annotation (Placement(transformation(extent={{160,30},{180,50}})));
   equation
     connect(weaDat.weaBus, weaBus) annotation (Line(
         points={{-140,130},{-108,130}},
@@ -233,10 +231,16 @@ package SingleZoneVAV
       annotation (Line(points={{141,0},{170,0}}, color={0,0,127}));
     connect(CO2RooAir.y, CO2Roo)
       annotation (Line(points={{141,-30},{170,-30}}, color={0,0,127}));
-    connect(PCoo.y, powCoo)
-      annotation (Line(points={{161,100},{180,100}}, color={0,0,127}));
-    connect(PHea.y, powHea)
-      annotation (Line(points={{141,120},{180,120}}, color={0,0,127}));
+    connect(PFan.y, PHVAC.u[1]) annotation (Line(points={{161,140},{174,140},{
+            174,64},{94,64},{94,43.15},{126,43.15}}, color={0,0,127}));
+    connect(PHea.y, PHVAC.u[2]) annotation (Line(points={{141,120},{170,120},{
+            170,66},{92,66},{92,41.05},{126,41.05}}, color={0,0,127}));
+    connect(PCoo.y, PHVAC.u[3]) annotation (Line(points={{161,100},{168,100},{
+            168,68},{90,68},{90,38.95},{126,38.95}}, color={0,0,127}));
+    connect(PPum.y, PHVAC.u[4]) annotation (Line(points={{141,80},{160,80},{160,
+            68},{88,68},{88,36.85},{126,36.85}}, color={0,0,127}));
+    connect(PHVAC.y, PTot)
+      annotation (Line(points={{139.02,40},{170,40}}, color={0,0,127}));
     annotation (
       experiment(
         StopTime=504800,
