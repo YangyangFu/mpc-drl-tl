@@ -51,7 +51,7 @@ for i in range(2):
 
     res_step = fmu.simulate(input = input_object,start_time=ts, final_time=ts+dt, options=options)
     initialize = False
-    print res_step['time']
+    print res_step['TRoo']-273.15
 
 print 'Finish simulation'
 
