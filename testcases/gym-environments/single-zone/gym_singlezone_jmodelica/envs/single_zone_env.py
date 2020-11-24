@@ -9,6 +9,7 @@ Some descriptions
 import logging
 import math
 import numpy as np
+import pandas as pd
 from gym import spaces
 from modelicagym.environment import FMI2CSEnv, FMI1CSEnv
 
@@ -146,10 +147,12 @@ class SingleZoneEnv(object):
         # temperature and solar in a dataframe
         tem_sol_step = self.read_temperature_solar()
         
-        time = self.state[0]
+        #time = self.state[0]
+        time = self.start
         # return future 3 steps
-        tem = list(tem_sol_step[time+self.time_step:time+n*self.time_step]['temp_air'])
-        sol = list(tem_sol_step[time+self.time_step:time+n*self.time_step]['ghi'])
+        tem = list(tem_sol_step[time+self.tau:time+n*self.tau]['temp_air'])
+        sol = list(tem_sol_step[time+self.tau:time+n*self.tau]['ghi'])
+
         return tem+sol
 
     def read_temperature_solar(self):
@@ -163,11 +166,11 @@ class SingleZoneEnv(object):
         dat = read_epw(self.weather_file)
 
         tem_sol_h = dat[0][['temp_air','ghi']]
-        index_h = range(0,3600*len(tem_sol_h),3600)
+        index_h = np.arange(0,3600.*len(tem_sol_h),3600.)
         tem_sol_h.index = index_h
 
         # interpolate temperature into simulation steps
-        index_step = range(0,3600*len(tem_sol_h),self.time_step)
+        index_step = np.arange(0,3600.*len(tem_sol_h),self.tau)
 
         return interp(tem_sol_h,index_step)
 
@@ -206,6 +209,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
                  mass_flow_nor,
                  weather_file,
                  npre_step,
+                 simulation_start_time,
                  time_step,
                  log_level):
 
@@ -218,7 +222,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         # state bounds if any
         
         # experiment parameters
-
+ 
         # others
         self.viewer = None
         self.display = None
@@ -231,7 +235,8 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         }
 
         super(JModelicaCSSingleZoneEnv,self).__init__("./SingleZoneVAV.fmu",
-                         config, log_level)
+                         config, log_level=log_level,
+                         simulation_start_time=simulation_start_time)
        # location of fmu is set to current working directory
 
 def interp(df, new_index):
