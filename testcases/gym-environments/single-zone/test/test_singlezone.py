@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''This example is from https://github.com/ucuapps/modelicagym, and modified for python 2 and for docker implementation.
+'''This example is 
 '''
 from __future__ import print_function
 from __future__ import absolute_import, division
@@ -11,10 +11,10 @@ import numpy as np
 import math
 import time
 
-def cart_pole_train_qlearning(cart_pole_env, max_number_of_steps=500, n_episodes=4, visualize=True):
+def cart_pole_train_qlearning(singlezone_env, max_number_of_steps=500, n_episodes=4, visualize=False):
     """
     Runs one experiment of Q-learning training on cart pole environment
-    :param cart_pole_env: environment RL agent will learn on.
+    :param singlezone_env: environment RL agent will learn on.
     :param max_number_of_steps: maximum episode length.
     :param n_episodes: number of episodes to perform.
     :param visualize: flag if experiments should be rendered.
@@ -22,7 +22,7 @@ def cart_pole_train_qlearning(cart_pole_env, max_number_of_steps=500, n_episodes
     """
 
     start = time.time()
-    n_outputs = cart_pole_env.observation_space.shape[0]
+    n_outputs = singlezone_env.observation_space.shape[0]
 
     episode_lengths = np.array([])
 
@@ -33,14 +33,14 @@ def cart_pole_train_qlearning(cart_pole_env, max_number_of_steps=500, n_episodes
     phi_dot_bins = _get_bins(-2, 2, 10)
 
     learner = QLearner(n_states=10 ** n_outputs,
-                       n_actions=cart_pole_env.action_space.n,
+                       n_actions=singlezone_env.action_space.n,
                        learning_rate=0.2,
                        discount_factor=1,
                        exploration_rate=0.5,
                        exploration_decay_rate=0.99)
 
     for episode in range(n_episodes):
-        x, x_dot, phi, phi_dot = cart_pole_env.reset()
+        x, x_dot, phi, phi_dot = singlezone_env.reset()
 
         state = _get_state_index([_to_bin(x, x_bins),
                                   _to_bin(phi, phi_bins),
@@ -51,9 +51,9 @@ def cart_pole_train_qlearning(cart_pole_env, max_number_of_steps=500, n_episodes
 
         for step in range(max_number_of_steps):
             if visualize:
-                cart_pole_env.render()
+                singlezone_env.render()
 
-            observation, reward, done, _ = cart_pole_env.step(action)
+            observation, reward, done, _ = singlezone_env.step(action)
 
             x, x_dot, phi, phi_dot = observation
             state_prime = _get_state_index([_to_bin(x, x_bins),
