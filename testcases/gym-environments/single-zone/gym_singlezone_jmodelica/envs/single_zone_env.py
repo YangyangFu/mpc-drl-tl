@@ -114,8 +114,14 @@ class SingleZoneEnv(object):
 
         :return: Values of model outputs as tuple in order specified in `model_outputs` attribute and 
         predicted weather data from existing weather file
-            model_outputs: time, zone temperature(s), outdoor temperature, solar radiation
-            predictor_outputs: outdoor temperature in next n steps, solar radiation in next n steps
+                    
+        1. time in second
+        2. zone temperatures for single or multiple zones; in K
+        3. outdoor temperature; in K 
+        4. solar radiation
+        5. total power
+        6-8. outdoor temperature in future 3 steps; in C
+        9-11. solar radiation in future 3 steps
 
         This module is used to override defaulted "get_state" function that 
         only gets states from simulation results.
