@@ -1,4 +1,4 @@
-Document
+Design Requirements and Guide
 =============================
 
 Sphinx is needed to compile the documentation, with the following extensions:

@@ -113,3 +113,11 @@ copydoctowww:
 	ssh thierry@gundog.lbl.gov "sudo chmod -R g+w /usr/local/www/simulationresearch/fmu/EnergyPlus/export/"
 	rsync -av --exclude '*.svn' www/* thierry@gundog.lbl.gov:/usr/local/www/simulationresearch/fmu/EnergyPlus/export/
 	#scp -r release/* thierry@gundog.lbl.gov:/usr/local/www/simulationresearch/fmu/EnergyPlus/export/
+
+
+# for docker
+IMG_NAME=sphinx
+
+build:
+	docker build --network host --no-cache --rm -t ${IMG_NAME} .
+ 
