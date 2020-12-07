@@ -30,12 +30,12 @@ def train_qlearning(singlezone_env, max_number_of_steps=500, n_episodes=4, visua
     ts = singlezone_env.simulation_start_time
     te = ts + max_number_of_steps*singlezone_env.tau
 
-    TZon_bins = _get_bins(273.15+10, 273.15+26, 10)
-    TOut_bins = _get_bins(273.15+0, 273.15+40, 10)
-    solar_bins = _get_bins(0, 2000, 10)
-    power_bins = _get_bins(0, 10000, 10)
+    TZon_bins = _get_bins(273.15+10, 273.15+26, 4)
+    TOut_bins = _get_bins(273.15+0, 273.15+40, 4)
+    solar_bins = _get_bins(0, 2000, 4)
+    power_bins = _get_bins(0, 10000, 4)
     
-    learner = QLearner(n_states=10** n_outputs,
+    learner = QLearner(n_states=4**n_outputs,
                        n_actions=singlezone_env.action_space.n,
                        learning_rate=0.2,
                        discount_factor=1,
@@ -89,9 +89,8 @@ def train_qlearning(singlezone_env, max_number_of_steps=500, n_episodes=4, visua
                                     _to_bin(solRad_pred2, solar_bins),   
                                     _to_bin(solRad_pred3, solar_bins)])
 
-            reward = reward[0]+reward[1]
-
-            action = learner.learn_observation(state_prime, reward)
+            rew = reward[0][0]+reward[1][0]
+            action = learner.learn_observation(state_prime, rew)
 
             if done or step == max_number_of_steps - 1:
                 episode_lengths = np.append(episode_lengths, int(step + 1))
@@ -140,9 +139,12 @@ def _get_state_index(state_bins):
     :return: integer value corresponding to the environment state
     """
 
-    state = int("".join(map(lambda state_bin: str(state_bin), state_bins)))
-    return state
+    #state = int("".join(map(lambda state_bin: str(state_bin), state_bins)))
+    state = 0
 
+    for i, state_bin in zip(range(len(state_bins)),state_bins):
+        state += state_bin*4**i
+    return state
 
 def run_ql_experiments(n_experiments=1,
                        n_episodes=10,
