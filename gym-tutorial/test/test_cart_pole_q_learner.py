@@ -297,8 +297,12 @@ def reward_ratio_experiment(rws):
 
 if __name__ == "__main__":
     import time
+    import os
+    
     start = time.time()
     folder = "experiments_results"
+    if not os.path.exists(folder):
+        os.mkdir(folder)
     # following experiments rake significant amount of time, so it is advised to run only one of them at once
     reward_ratio_experiment([[1, -100], [1, -50], [1, -200],])
     end = time.time()
