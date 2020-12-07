@@ -34,11 +34,7 @@ Next step is to test if the docker image can be used for development by running 
 
             cd gym-tutorial/test
 
-2. creat a new folder to store experimental results
-
-            mkdir experiments_results
-
-3. run example script. This is a classic reinforcement control for a cart-pole system. The cart-pole system is built in Modelica and compiled into a jModelica FMU `ModelicaGym_CartPole.fmu`. The learning algorithm `q_learning` is written in `q_learning.py`
+2. run example script. This is a classic reinforcement control for a cart-pole system. The cart-pole system is built in Modelica and compiled into a jModelica FMU `ModelicaGym_CartPole.fmu`. The learning algorithm `q_learning` is written in `q_learning.py`
 
    For Linux or MacOS, type
 
