@@ -56,6 +56,7 @@ class SingleZoneEnv(object):
         Returns observation space according to OpenAI Gym API requirements
         
         The designed observation space for each zone is 
+        0. current time stamp
         1. zone temperatures for single or multiple zones; in K
         2. outdoor temperature; in K 
         3. solar radiation
@@ -65,6 +66,8 @@ class SingleZoneEnv(object):
             
         :return: Box state space with specified lower and upper bounds for state variables.
         """
+        # open gym requires an observation space during initialization
+
         high = np.array([273.15+26, 273.15+40,2000, 10000,273.15+40,273.15+40,273.15+40,2000,2000,2000])
         low = np.array([273.15+16, 273.15+0,0, 0, 273.15+0,273.15+0,273.15+0,0,0,0])
         return spaces.Box(low, high)
@@ -97,9 +100,9 @@ class SingleZoneEnv(object):
         states = self.state
 
         # this is a hard-coding. This has to be changed for multi-zones
-        power = states[3] 
-        time = self.start
-        TZon = states[0] - 273.15 # orginal units from Modelica are SI units
+        power = states[4] 
+        time = states[0]
+        TZon = states[1] - 273.15 # orginal units from Modelica are SI units
         
         # Here is how the reward should be calculated based on observations
         
@@ -150,7 +153,7 @@ class SingleZoneEnv(object):
 
         :return: Values of model outputs as tuple in order specified in `model_outputs` attribute and 
         predicted weather data from existing weather file
-                    
+        0. current time stamp                
         1. zone temperatures for single or multiple zones; in K
         2. outdoor temperature; in K 
         3. solar radiation
@@ -272,7 +275,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
 
         config = {
             'model_input_names': ['uFan'],
-            'model_output_names': ['TRoo','TOut','GHI','PTot'],
+            'model_output_names': ['time','TRoo','TOut','GHI','PTot'],
             'model_parameters': {},
             'time_step': time_step
         }
