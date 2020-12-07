@@ -101,10 +101,47 @@ class SingleZoneEnv(object):
         power = states(4) 
         time = states(0)
         TZon = states(1)
-
+        
         # Here is how the reward should be calculated based on observations
-
-        return [-1,0]
+        
+        num_zone = 1
+        ZTemperature = [TZone] #temperature for each zone
+        ZPower = [power]
+        # and here we assume even for multizone building, power is given as individual power consumption for each zone, which is an array for multizone model.
+        
+        
+        # temperture upper and lower bound
+        T_upper = [24.0 for i in range(24)]
+        T_lower = [19.0 for i in range(24)]
+        
+        # control period
+        delCtrl = 15.0/60.0 #may be better to set a variable in initial
+        
+        #grid price
+        p_g = [0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.1391, 0.1391, 0.1391, 0.1391, 0.3548, 0.3548, 0.3548, 0.3548, 0.3548, 0.3548, 0.1391, 0.1391, 0.1391, 0.1391, 0.1391, 0.0640]
+        
+        t = int(time)
+        t = (t%86400)/3600 # hour index 0~23
+        
+        #calculate penalty for each zone
+        overshoot = []
+        undershoot = []
+        penalty = [] #temperature violation penalty for each zone
+        cost = [] # erengy cost for each zone
+        alpha_up = 200.0
+        alpha_low = 200.0
+        for k in range(num_zone):
+            overshoot.append(max(ZTemperature[k+1] - T_upper[t] , 0.0))
+            undershoot.append(max(T_lower[t] - ZTemperature[k+1] , 0.0))
+            penalty.append(- alpha_up * overshoot[k] - alpha_low * undershoot[k])
+        
+        t_pre = int(time-15*60) if time>15*60 else (time+24*60*60-15*60)
+        t_pre = (t_pre%86400)/3600 # hour index 0~23
+        
+        for k in range(num_zone):
+            cost.append(- ZPower[k] * delCtrl * p_g[t_pre])
+        
+        return [cost, penalty]
 
 
     def get_state(self, result):
