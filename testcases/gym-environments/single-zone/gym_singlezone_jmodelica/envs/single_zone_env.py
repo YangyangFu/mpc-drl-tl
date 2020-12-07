@@ -81,9 +81,9 @@ class SingleZoneEnv(object):
         :return: next (resulting) state
         """
         # 0 - max flow: 
-        mass_flow_nor = self.mass_flow_nor; # norminal flowrate: kg/s 
+        mass_flow_nor = self.mass_flow_nor # norminal flowrate: kg/s 
         action = action + 1
-        action = mass_flow_nor*action/4.
+        action = [mass_flow*action/4. for mass_flow in mass_flow_nor]
         return super(SingleZoneEnv,self).step(action)
     
     def _reward_policy(self):
@@ -105,7 +105,7 @@ class SingleZoneEnv(object):
         # Here is how the reward should be calculated based on observations
         
         num_zone = 1
-        ZTemperature = [TZone] #temperature for each zone
+        ZTemperature = [TZon] #temperature for each zone
         ZPower = [power]
         # and here we assume even for multizone building, power is given as individual power consumption for each zone, which is an array for multizone model.
         
@@ -114,8 +114,8 @@ class SingleZoneEnv(object):
         T_upper = [24.0 for i in range(24)]
         T_lower = [19.0 for i in range(24)]
         
-        # control period
-        delCtrl = 15.0/60.0 #may be better to set a variable in initial
+        # control period:
+        delCtrl = self.tau/3600.0 #may be better to set a variable in initial
         
         #grid price
         p_g = [0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.1391, 0.1391, 0.1391, 0.1391, 0.3548, 0.3548, 0.3548, 0.3548, 0.3548, 0.3548, 0.1391, 0.1391, 0.1391, 0.1391, 0.1391, 0.0640]
@@ -244,6 +244,8 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
 
     Attributes:
         mass_flow_nor (float): List, norminal mass flow rate of VAV terminals.
+        weather_file (str): Energyplus epw weather file name 
+        npre_step (int): number of future prediction steps
         time_step (float): time difference between simulation steps.
 
     """
@@ -259,9 +261,9 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         logger.setLevel(log_level)
 
         # system parameters
-        self.mass_flow_nor = mass_flow_nor
-        self.weather_file = weather_file
-        self.npre_step = npre_step
+        self.mass_flow_nor = mass_flow_nor 
+        self.weather_file = weather_file 
+        self.npre_step = npre_step 
         # state bounds if any
         
         # experiment parameters
