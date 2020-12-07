@@ -56,18 +56,17 @@ class SingleZoneEnv(object):
         Returns observation space according to OpenAI Gym API requirements
         
         The designed observation space for each zone is 
-        1. time in second
-        2. zone temperatures for single or multiple zones; in K
-        3. outdoor temperature; in K 
-        4. solar radiation
-        5. total power
-        6-8. outdoor temperature in future 3 steps; in C
-        9-11. solar radiation in future 3 steps
+        1. zone temperatures for single or multiple zones; in K
+        2. outdoor temperature; in K 
+        3. solar radiation
+        4. total power
+        5-7. outdoor temperature in future 3 steps; in K
+        8-10. solar radiation in future 3 steps
             
         :return: Box state space with specified lower and upper bounds for state variables.
         """
-        high = np.array([np.inf, 273.15+35, 273.15+45,np.inf, np.inf,45,45,45,np.inf,np.inf,np.inf])
-        low = np.array([np.inf, 273.15-15, 273.15-45,0, 0, -45,-45,-45,0,0,0])
+        high = np.array([273.15+26, 273.15+40,2000, 10000,273.15+40,273.15+40,273.15+40,2000,2000,2000])
+        low = np.array([273.15+16, 273.15+0,0, 0, 273.15+0,273.15+0,273.15+0,0,0,0])
         return spaces.Box(low, high)
 
     # OpenAI Gym API implementation
@@ -82,7 +81,7 @@ class SingleZoneEnv(object):
         """
         # 0 - max flow: 
         mass_flow_nor = self.mass_flow_nor # norminal flowrate: kg/s 
-        action = action + 1
+        action = np.array(action) + 1
         action = [mass_flow*action/4. for mass_flow in mass_flow_nor]
         return super(SingleZoneEnv,self).step(action)
     
@@ -99,14 +98,14 @@ class SingleZoneEnv(object):
 
         # this is a hard-coding. This has to be changed for multi-zones
         power = states(4) 
-        time = states(0)
-        TZon = states(1)
+        time = self.start
+        TZon = states(1) - 273.15 # orginal units from Modelica are SI units
         
         # Here is how the reward should be calculated based on observations
         
         num_zone = 1
-        ZTemperature = [TZon] #temperature for each zone
-        ZPower = [power]
+        ZTemperature = [TZon] #temperature in C for each zone
+        ZPower = [power] # power in W
         # and here we assume even for multizone building, power is given as individual power consumption for each zone, which is an array for multizone model.
         
         
@@ -135,7 +134,7 @@ class SingleZoneEnv(object):
             undershoot.append(max(T_lower[t] - ZTemperature[k+1] , 0.0))
             penalty.append(- alpha_up * overshoot[k] - alpha_low * undershoot[k])
         
-        t_pre = int(time-15*60) if time>15*60 else (time+24*60*60-15*60)
+        t_pre = int(time-self.tau*60.) if time>self.tau*60 else (time+24*60*60.-self.tau*60.)
         t_pre = (t_pre%86400)/3600 # hour index 0~23
         
         for k in range(num_zone):
@@ -152,13 +151,12 @@ class SingleZoneEnv(object):
         :return: Values of model outputs as tuple in order specified in `model_outputs` attribute and 
         predicted weather data from existing weather file
                     
-        1. time in second
-        2. zone temperatures for single or multiple zones; in K
-        3. outdoor temperature; in K 
-        4. solar radiation
-        5. total power
-        6-8. outdoor temperature in future 3 steps; in C
-        9-11. solar radiation in future 3 steps
+        1. zone temperatures for single or multiple zones; in K
+        2. outdoor temperature; in K 
+        3. solar radiation
+        4. total power
+        5-7. outdoor temperature in future 3 steps; in K
+        8-10. solar radiation in future 3 steps
 
         This module is used to override defaulted "get_state" function that 
         only gets states from simulation results.
@@ -193,7 +191,7 @@ class SingleZoneEnv(object):
         #time = self.state[0]
         time = self.start
         # return future 3 steps
-        tem = list(tem_sol_step[time+self.tau:time+n*self.tau]['temp_air'])
+        tem = list(tem_sol_step[time+self.tau:time+n*self.tau]['temp_air']+273.15)
         sol = list(tem_sol_step[time+self.tau:time+n*self.tau]['ghi'])
 
         return tem+sol
@@ -274,7 +272,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
 
         config = {
             'model_input_names': ['uFan'],
-            'model_output_names': ['time','TRoo','TOut','GHI','PTot'],
+            'model_output_names': ['TRoo','TOut','GHI','PTot'],
             'model_parameters': {},
             'time_step': time_step
         }
