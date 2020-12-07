@@ -97,9 +97,9 @@ class SingleZoneEnv(object):
         states = self.state
 
         # this is a hard-coding. This has to be changed for multi-zones
-        power = states(4) 
+        power = states[3] 
         time = self.start
-        TZon = states(1) - 273.15 # orginal units from Modelica are SI units
+        TZon = states[0] - 273.15 # orginal units from Modelica are SI units
         
         # Here is how the reward should be calculated based on observations
         
@@ -120,8 +120,8 @@ class SingleZoneEnv(object):
         p_g = [0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.1391, 0.1391, 0.1391, 0.1391, 0.3548, 0.3548, 0.3548, 0.3548, 0.3548, 0.3548, 0.1391, 0.1391, 0.1391, 0.1391, 0.1391, 0.0640]
         
         t = int(time)
-        t = (t%86400)/3600 # hour index 0~23
-        
+        t = int((t%86400)/3600) # hour index 0~23
+
         #calculate penalty for each zone
         overshoot = []
         undershoot = []
@@ -130,12 +130,12 @@ class SingleZoneEnv(object):
         alpha_up = 200.0
         alpha_low = 200.0
         for k in range(num_zone):
-            overshoot.append(max(ZTemperature[k+1] - T_upper[t] , 0.0))
-            undershoot.append(max(T_lower[t] - ZTemperature[k+1] , 0.0))
+            overshoot.append(max(ZTemperature[k] - T_upper[t] , 0.0))
+            undershoot.append(max(T_lower[t] - ZTemperature[k] , 0.0))
             penalty.append(- alpha_up * overshoot[k] - alpha_low * undershoot[k])
         
-        t_pre = int(time-self.tau*60.) if time>self.tau*60 else (time+24*60*60.-self.tau*60.)
-        t_pre = (t_pre%86400)/3600 # hour index 0~23
+        t_pre = int(time-self.tau) if time>self.tau else (time+24*60*60.-self.tau)
+        t_pre = int((t_pre%86400)/3600) # hour index 0~23
         
         for k in range(num_zone):
             cost.append(- ZPower[k] * delCtrl * p_g[t_pre])
