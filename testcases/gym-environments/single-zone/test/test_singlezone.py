@@ -45,7 +45,7 @@ def train_qlearning(singlezone_env, max_number_of_steps=500, n_episodes=4, visua
     for episode in range(n_episodes):
         observes = singlezone_env.reset()
         print(observes)
-        TZon, TOut, solRad, powTot, TOut_pred1, TOut_pred2, TOut_pred3, solRad_pred1, solRad_pred2, solRad_pred3 = observes
+        t,TZon, TOut, solRad, powTot, TOut_pred1, TOut_pred2, TOut_pred3, solRad_pred1, solRad_pred2, solRad_pred3 = observes
         state = _get_state_index([_to_bin(TZon, TZon_bins),
                                     _to_bin(TOut, TOut_bins),
                                     _to_bin(solRad, solar_bins),
@@ -77,7 +77,7 @@ def train_qlearning(singlezone_env, max_number_of_steps=500, n_episodes=4, visua
 
             observation, reward, done, _ = singlezone_env.step(action)
 
-            TZon, TOut, solRad, powTot, TOut_pred1, TOut_pred2, TOut_pred3, solRad_pred1, solRad_pred2, solRad_pred3 = observation
+            t,TZon, TOut, solRad, powTot, TOut_pred1, TOut_pred2, TOut_pred3, solRad_pred1, solRad_pred2, solRad_pred3 = observation
             state_prime = _get_state_index([_to_bin(TZon, TZon_bins),
                                     _to_bin(TOut, TOut_bins),
                                     _to_bin(solRad, solar_bins),
