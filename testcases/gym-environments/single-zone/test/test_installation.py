@@ -9,4 +9,7 @@ env = gym.make("JModelicaCSSingleZoneEnv-v0",
                 time_step=15*60.,
                 log_level=7)
 states = env.reset()
+n_outputs = env.observation_space.shape[0]
 print(states)
+print(env.tau, env.simulation_start_time)
+print(n_outputs)
