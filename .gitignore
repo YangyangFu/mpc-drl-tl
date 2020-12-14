@@ -66,3 +66,6 @@ Buildings/Resources/src/fluid/heatpumps/calibration/doc/build/doctrees
 ########################
 dsmodel_fmuconf.h
 fmiModelIdentifier.h
+
+#
+*.txt

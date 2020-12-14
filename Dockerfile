@@ -1,7 +1,10 @@
 FROM yangyangfu/jmodelica_py2_gym_pytorch_cpu
 
-# install modelicagym from source
 USER root
+# install git
+RUN apt-get -y update && apt-get install -y git
+
+# install modelicagym from source
 WORKDIR $HOME
 RUN echo $HOME
 RUN mkdir github && cd github && git clone https://github.com/YangyangFu/modelicagym.git && \
@@ -29,7 +32,15 @@ WORKDIR $HOME
 
 # copy Modelica dependency to docker container and put them in ModelicaPath
 COPY ./library /usr/local/JModelica/ThirdParty/MSL
-WORKDIR $HOME
 
 # Install python package to read epw file
-RUN pip install pvlib
+RUN pip install pvlib 
+RUN pip install matplotlib
+
+USER developer
+
+# Avoid warning that Matplotlib is building the font cache using fc-list. This may take a moment.
+# This needs to be towards the end of the script as the command writes data to
+# /home/developer/.cache
+RUN python -c "import matplotlib.pyplot"
+
