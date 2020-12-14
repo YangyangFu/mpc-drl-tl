@@ -1,4 +1,4 @@
-FROM yangyangfu/gym_torch_jmodelica_py2
+FROM yangyangfu/jmodelica_py2_gym_pytorch_cpu
 
 # install modelicagym from source
 USER root
