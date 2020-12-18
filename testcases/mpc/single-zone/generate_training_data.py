@@ -3,12 +3,12 @@
 this script is to test the simulation of compiled fmu
 """
 # import numerical package
-from pymodelica import compile_fmu
+#from pymodelica import compile_fmu
 from pyfmi import load_fmu
-import matplotlib.pyplot as plt
-import numpy as np
 import matplotlib
 matplotlib.use('agg')
+import matplotlib.pyplot as plt
+import numpy as np
 # import fmu package
 
 
