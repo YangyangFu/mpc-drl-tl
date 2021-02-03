@@ -28,4 +28,3 @@ def zone_temperature(alpha, beta, gamma, l, Tz_his, mz, Ts, Toa):
     Tz = (sum(alpha*Tz_his) + beta*mz*Ts + gamma*Toa)/(1+beta*mz)
     return Tz
 
-
