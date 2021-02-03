@@ -1,1 +1,0 @@
-Opengym environment for a 5-VAV zone reinforcement learning test using Modelica models as virtual buildings.
