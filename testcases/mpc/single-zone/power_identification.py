@@ -100,8 +100,8 @@ plt.savefig('PTotal.pdf')
 
 # export model parameter
 popt_zone = {'alpha':list(popt[:4]),
-            'beta':popt[4],
-            'gamma':popt[5]}
+            'beta':list(popt[4:6]),
+            'gamma':list(popt[6:9])}
 
 with open('PTotal.json', 'w') as fp:
     json.dump(popt_zone, fp)
