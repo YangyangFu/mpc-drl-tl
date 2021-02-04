@@ -64,7 +64,7 @@ def func_TZone(x,alpha1,alpha2,alpha3,alpha4,beta,gamma):
     alpha = np.array([alpha1,alpha2,alpha3,alpha4])
     Tz_his = x[:,:l]
     mz = x[:,l]
-    Ts = 13
+    Ts = 13+273.15
     Toa = x[:,l+1]
     y = zone_temperature(alpha, beta, gamma, l, Tz_his, mz, Ts, Toa)
 
