@@ -6,24 +6,33 @@ import numpy as np
 class mpc_case():
     def __init__(self,PH,CH,time,dt,parameters_zone, parameters_power,measurement,states,predictor):
 
-        self.PH=PH
-        self.CH=CH
-        self.dt = dt
-        self.time = time
+        self.PH=PH # prediction horizon
+        self.CH=CH # control horizon
+        self.dt = dt # time step
+        self.time = time # current time index
 
-        self.parameters_zone = parameters_zone
-        self.parameters_power = parameters_power
-        self.measurement = measurement
+        self.parameters_zone = parameters_zone # parameters for zone dynamic mpc model
+        self.parameters_power = parameters_power # parameters for system power dynamic mpc model
+        self.measurement = measurement # measurement at current time step
         self.predictor = predictor # price and outdoor air temperature for the future horizons
 
         self.states = states # dictionary
         self.P_his_t = []
         self.Tz_his_t = []
 
+        self.number_zone = 1
+        self.occ_start = 6 # occupancy starts
+        self.occ_end = 19 # occupancy ends
+
     def optimize(self):
-        pass
+        """
+        MPC optimizer: call external optimizer to solve a minimization problem
+        
+        """
+
     
-    def cost(self,u_ph):
+    def cost(self,u_ph, time):
+        # MPC model predictor settings
         alpha_power = np.array(self.parameters_power['alpha'])
         beta_power = np.array(self.parameters_power['beta'])
         gamma_power = np.array(self.parameters_power['gamma'])
@@ -32,6 +41,16 @@ class mpc_case():
         beta_zone = np.array(self.parameters_zone['beta'])
         gamma_zone = np.array(self.parameters_zone['gamma'])  
         l = 4
+
+        # zone temperature bounds - need check with the high-fidelty model
+        T_upper = np.array([30.0 for i in range(24)])
+        T_upper[6:19] = 25.0
+        T_lower = np.array([18.0 for i in range(24)])
+        T_lower[6:19] = 23.0
+
+        overshoot = []
+        undershoot = []
+
         # loop over the prediction horizon
         i = 0
         P_pred_ph = []
@@ -40,6 +59,11 @@ class mpc_case():
         # get current measurement 
         P_his = np.array(self.states['P_his_t']) # current state of historical power [P(t-1) to P(t-l)]   
         Tz_his = np.array(self.states['Tz_his_t']) # current zone temperatur states for zone temperture prediction model  
+
+        # initialize the cost function
+        penalty = []  # temperature violation penalty for each zone
+        alpha_up = 200.0
+        alpha_low = 200.0
 
         while i < self.PH:
 
@@ -69,29 +93,36 @@ class mpc_case():
             # reverse the historical data to enable FILO
             Tz_his = self.FILO(Tz_his,Tz_pred)
 
-            # time step
+            # save step-wise temperature
             Tz_pred_ph.append(Tz_pred) # save all step-wise power for cost calculation
 
+            # get overshoot and undershoot for each step
+            # current time step
+            t = int(time+i*self.dt)
+            t = int((t % 86400)/3600)  # hour index 0~23
+
+            # this is to be revised for multi-zone 
+            for k in range(self.number_zone):
+                overshoot.append(max((Tz_pred -273.15) - T_upper[t], 0.0))
+                undershoot.append(max(T_lower[t] - (Tz_pred-273.15), 0.0))
+            
             ### ===========================================================
             ###      Update for next step
             ### ==========================================================
             # update clock
             i+=1
 
-        # calculate total cost
+        # calculate total cost based on predicted energy prices
         price_ph = self.predictor['price']
 
-        # calculate temperature deviations - maybe need specify occupied and unoccupied periods.
-        overshoot=[]
-        undershoot=[]
-        alpha_up = 200
-        alpha_down = 200
+        # zone temperature bounds penalty
+        penalty.append(alpha_up *
+                       sum(overshoot) + alpha_low * sum(undershoot))
 
-        Tz_low = 273.15+(24-0.5)*np.ones(self.PH)
-        Tz_high = 273.15 +(24+0.5)*np.ones(self.PH)
-        Tz_pred_dev =  np.abs(Tz_pred_ph - (273.15+24))
+        ener_cost = np.sum(np.array(price_ph)*np.array(P_pred_ph))
 
-        return np.sum(np.array(price_ph)*np.array(P_pred_ph))
+        # for a minimization problem
+        return ener_cost + sum(penalty)
 
 
     def FILO(self,array_1d,x):
