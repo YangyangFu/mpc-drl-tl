@@ -50,11 +50,11 @@ P_his=P_his.drop(columns=['P_total'])
 # remove NANs
 data=pd.concat([data,P_his],axis=1)
 data.dropna(inplace=True)
-data.to_csv('prepared_data.csv')
+data.to_csv('prepared_data_power.csv')
 
 print data
 # split training and testing
-data_train = data.iloc[:1*24*4,:]
+data_train = data.iloc[:20*24*4,:]
 print data_train
 data_test = data.iloc[20*24*4:-1,:]
 
@@ -83,16 +83,21 @@ y_test = data_test['P_total'].values
 ypred_test = func_P(x_test,*popt)
 
 plt.figure()
-plt.subplot(211)
+plt.subplot(311)
 plt.plot(y_train,'b-',label='Target in Testing')
 plt.plot(ypred_train,'r--',lw=0.5,markevery=0.05,marker='o',markersize=2,label='Prediction in Training')
 plt.ylabel('Power (W)')
 plt.legend()
 
-plt.subplot(212)
+plt.subplot(312)
 plt.plot(y_test,'b-',label='Target in Testing')
 plt.plot(ypred_test,'r--',lw=0.5,markevery=0.05,marker='o',markersize=2,label='Prediction in Training')
 plt.ylabel('Power (W)')
+plt.legend()
+
+plt.subplot(313)
+plt.plot(ypred_test-y_test, 'b-', label='Prediction Errors in Testing')
+plt.ylabel('Error (W)')
 plt.legend()
 
 plt.savefig('PTotal.pdf')

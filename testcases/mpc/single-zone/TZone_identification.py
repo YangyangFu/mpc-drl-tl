@@ -50,11 +50,11 @@ Tz_his=Tz_his.drop(columns=['T_roo'])
 # remove NANs
 data=pd.concat([data,Tz_his],axis=1)
 data.dropna(inplace=True)
-data.to_csv('prepared_data.csv')
+data.to_csv('prepared_data_tzone.csv')
 
 print data
 # split training and testing
-data_train = data.iloc[:int(0.5*24*4),:]
+data_train = data.iloc[:20*24*4,:]
 print data_train
 data_test = data.iloc[20*24*4:-1,:]
 
@@ -82,16 +82,21 @@ y_test = data_test['T_roo'].values
 ypred_test = func_TZone(x_test,*popt)
 
 plt.figure()
-plt.subplot(211)
+plt.subplot(311)
 plt.plot(y_train-273.15,'b-',label='Target in Testing')
 plt.plot(ypred_train-273.15,'r--',lw=0.5,markevery=0.05,marker='o',markersize=2,label='Prediction in Training')
 plt.ylabel('Temperature (C)')
 plt.legend()
 
-plt.subplot(212)
+plt.subplot(312)
 plt.plot(y_test-273.15,'b-',label='Target in Testing')
-plt.plot(ypred_test-273.15,'r--',lw=0.5,markevery=0.05,marker='o',markersize=2,label='Prediction in Training')
+plt.plot(ypred_test-273.15,'r--',lw=0.5,markevery=0.05,marker='o',markersize=2,label='Prediction in Testing')
 plt.ylabel('Temperature (C)')
+plt.legend()
+
+plt.subplot(313)
+plt.plot(ypred_test-y_test, 'b-', label='Prediction Errors in Testing')
+plt.ylabel('Error (C)')
 plt.legend()
 
 plt.savefig('TZone.pdf')
