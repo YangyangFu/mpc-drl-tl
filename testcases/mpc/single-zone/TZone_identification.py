@@ -54,7 +54,7 @@ data.to_csv('prepared_data.csv')
 
 print data
 # split training and testing
-data_train = data.iloc[:20*24*4,:]
+data_train = data.iloc[:int(0.5*24*4),:]
 print data_train
 data_test = data.iloc[20*24*4:-1,:]
 
