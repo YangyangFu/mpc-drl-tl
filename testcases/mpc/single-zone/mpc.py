@@ -29,7 +29,7 @@ class mpc_case():
         MPC optimizer: call external optimizer to solve a minimization problem
         
         """
-
+        
     
     def cost(self,u_ph, time):
         # MPC model predictor settings
