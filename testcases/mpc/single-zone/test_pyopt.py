@@ -64,9 +64,17 @@ print opt_prob
 psqp = PSQP()
 psqp.setOption('IPRINT',0)
 psqp(opt_prob,sens_type='FD')
-print opt_prob.solution(0)
+#print opt_prob.solution(0)
 
-# Instantiate Optimizer (SLSQP) & Solve Problem
+a = opt_prob.solution(0)
+print a
+print dir(a)
+print a._objectives[0].optimum
+print a._variables[0].value
+print a._variables[1].value
+print a._variables[2].value
+
+""" # Instantiate Optimizer (SLSQP) & Solve Problem
 slsqp = SLSQP()
 slsqp.setOption('IPRINT',-1)
 slsqp(opt_prob,sens_type='FD')
@@ -113,3 +121,4 @@ filtersd = FILTERSD()
 filtersd.setOption('iprint',0)
 filtersd(opt_prob)
 print opt_prob.solution(8)
+ """
