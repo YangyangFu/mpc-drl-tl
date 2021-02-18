@@ -2,6 +2,8 @@
 
 '''
 import numpy as np
+# optimization package
+import pyOpt 
 
 class mpc_case():
     def __init__(self,PH,CH,time,dt,parameters_zone, parameters_power,measurement,states,predictor):
@@ -24,14 +26,44 @@ class mpc_case():
         self.occ_start = 6 # occupancy starts
         self.occ_end = 19 # occupancy ends
 
+        # initialize optimiztion
+        self.optimum={}
+
     def optimize(self):
         """
         MPC optimizer: call external optimizer to solve a minimization problem
         
         """
+        opt_prob = pyOpt.Optimization('MPC for time'+str(int(self.time)),self.obj)
+        opt_prob.addObj('f')
+
+        # Assign design variables
+        lb = 0.
+        up = 1.
+        value = 0.0
+        opt_prob.addVarGroup('name', self.PH, type='c', value=value, lower=lb, upper=up)
+
+        # Assign constraints - unconstrained
+
+        # Solve the optimization problem
+        # initialize
+        self.optimum={}
+        u_ph_opt = []
+        # call optimizer
+        psqp = pyOpt.PSQP()
+        psqp.setOption('IPRINT',0)
+        psqp(opt_prob,sens_type='FD')
+        solution = opt_prob.solution(0)
+        obj_opt = solution._objectives[0].optimum
+        for var in solution._variables.keys():
+            u_ph_opt.append(solution._variables[var].value)
+
+        self.optimum['objective'] = obj_opt
+        self.optimum['variable'] = u_ph_opt
         
-    
-    def cost(self,u_ph, time):
+        return self.optimum
+        
+    def obj(self,u_ph):
         # MPC model predictor settings
         alpha_power = np.array(self.parameters_power['alpha'])
         beta_power = np.array(self.parameters_power['beta'])
@@ -44,9 +76,9 @@ class mpc_case():
 
         # zone temperature bounds - need check with the high-fidelty model
         T_upper = np.array([30.0 for i in range(24)])
-        T_upper[6:19] = 25.0
+        T_upper[self.occ_start:self.occ_end] = 25.0
         T_lower = np.array([18.0 for i in range(24)])
-        T_lower[6:19] = 23.0
+        T_lower[self.occ_start:self.occ_end] = 23.0
 
         overshoot = []
         undershoot = []
@@ -64,6 +96,7 @@ class mpc_case():
         penalty = []  # temperature violation penalty for each zone
         alpha_up = 200.0
         alpha_low = 200.0
+        time = self.time
 
         while i < self.PH:
 
@@ -121,9 +154,16 @@ class mpc_case():
 
         ener_cost = np.sum(np.array(price_ph)*np.array(P_pred_ph))
 
-        # for a minimization problem
-        return ener_cost + sum(penalty)
+        # objective for a minimization problem
+        f = ener_cost + sum(penalty)
 
+        # constraints - unconstrained
+        g = []
+
+        # simulation status
+        fail = 0
+        
+        return f, g, fail
 
     def FILO(self,array_1d,x):
         array_list=list(array_1d)
