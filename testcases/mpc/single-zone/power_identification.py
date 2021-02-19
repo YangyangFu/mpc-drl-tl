@@ -54,7 +54,7 @@ data.to_csv('prepared_data_power.csv')
 
 print data
 # split training and testing
-data_train = data.iloc[:20*24*4,:]
+data_train = data.iloc[:int(20*24*4),:]
 print data_train
 data_test = data.iloc[20*24*4:-1,:]
 
@@ -84,13 +84,13 @@ ypred_test = func_P(x_test,*popt)
 
 plt.figure()
 plt.subplot(311)
-plt.plot(y_train,'b-',label='Target in Testing')
+plt.plot(y_train,'b-',lw=0.5,label='Target in Testing')
 plt.plot(ypred_train,'r--',lw=0.5,markevery=0.05,marker='o',markersize=2,label='Prediction in Training')
 plt.ylabel('Power (W)')
 plt.legend()
 
 plt.subplot(312)
-plt.plot(y_test,'b-',label='Target in Testing')
+plt.plot(y_test,'b-',lw=0.5,label='Target in Testing')
 plt.plot(ypred_test,'r--',lw=0.5,markevery=0.05,marker='o',markersize=2,label='Prediction in Training')
 plt.ylabel('Power (W)')
 plt.legend()
