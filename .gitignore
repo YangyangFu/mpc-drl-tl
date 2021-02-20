@@ -75,3 +75,6 @@ build
 
 #ignore vscode
 .vscode
+
+# ignore out file
+*.out
