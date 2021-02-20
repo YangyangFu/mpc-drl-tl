@@ -4,6 +4,7 @@
 import numpy as np
 # optimization package
 import pyOpt 
+# import ipopt
 
 class mpc_case():
     def __init__(self,PH,CH,time,dt,parameters_zone, parameters_power,measurement,states,predictor):
@@ -13,9 +14,9 @@ class mpc_case():
         self.dt = dt # time step
         self.time = time # current time index
 
-        self.parameters_zone = parameters_zone # parameters for zone dynamic mpc model
-        self.parameters_power = parameters_power # parameters for system power dynamic mpc model
-        self.measurement = measurement # measurement at current time step
+        self.parameters_zone = parameters_zone # parameters for zone dynamic mpc model, dictionary
+        self.parameters_power = parameters_power # parameters for system power dynamic mpc model, dictionary
+        self.measurement = measurement # measurement at current time step, dictionary
         self.predictor = predictor # price and outdoor air temperature for the future horizons
 
         self.states = states # dictionary
@@ -88,8 +89,8 @@ class mpc_case():
         P_pred_ph = []
         Tz_pred_ph = [] 
 
-        # get current measurement 
-        P_his = np.array(self.states['P_his_t']) # current state of historical power [P(t-1) to P(t-l)]   
+        # get current state
+        P_his = np.array(self.states['P_his_t']) # current state of historical power [P(t) to P(t-l)]   
         Tz_his = np.array(self.states['Tz_his_t']) # current zone temperatur states for zone temperture prediction model  
 
         # initialize the cost function
@@ -100,7 +101,7 @@ class mpc_case():
 
         while i < self.PH:
 
-            mz = u_ph[i] # control inputs
+            mz = u_ph[i]*0.75 # control inputs
             Toa = self.predictor['Toa'][i] # predicted outdoor air temperature
 
             ### ====================================================================
@@ -110,7 +111,7 @@ class mpc_case():
             P_pred = self.total_power(alpha_power, beta_power, gamma_power, l, P_his, mz, Toa) 
 
             # update historical power measurement for next prediction
-            # reverst the historical data to enable LIFO
+            # reverst the historical data to enable FILO: [t, t-1, ...,t-l]
             P_his = self.FILO(P_his,P_pred)
 
             # Save step-wise power
@@ -232,3 +233,45 @@ class mpc_case():
 
         P = (np.sum(alpha*P_his,axis=1) + beta[0]*mz+beta[1]*mz**2 + gamma[0]+ gamma[1]*Toa+gamma[2]*Toa**2)
         return P
+
+    def set_time(self, time):
+        
+        self.time = time
+
+    
+    def set_mpc_model_parameters(self):
+        pass
+
+    def set_measurement(self,measurement):
+        """Set measurement at time t
+
+        :param measurement: system measurement at time t
+        :type measurement: pandas DataFrame
+        """
+        self.measurement = measurement
+    
+    def set_states(self,states):
+        """Set states for current time step t
+
+        :param states: values of states at t
+        :type states: dict
+
+            for example:
+
+            states = {'Tz_his_t':[24,23,24,23]}
+
+        """
+        self.states = states
+    
+    def set_predictor(self, predictor):
+        """Set predictor values for current time step t
+
+        :param predictor: values of predictors from t to t+PH
+        :type predictor: dict
+
+            for example:
+
+            predictor = {'energy_price':[1,3,4,5,6,7,8]}
+
+        """
+        self.predictor = predictor
