@@ -112,7 +112,7 @@ te_warm = ts + 4*3600
 
 ### 2- Initialize MPC case 
 dt = 15*60.
-PH = 2
+PH = 4*24
 CH = 1
 with open('TZone.json') as f:
   parameters_zone = json.load(f)
@@ -168,7 +168,7 @@ while ts<end:
         case.set_time(ts)
         case.set_measurement(measurement)
         case.set_states(states) 
-        print "state 1 \n"
+        print "\nstate 1"
         print case.states   
         case.set_predictor(predictor)
         # call optimizer
@@ -199,12 +199,12 @@ while ts<end:
     measurement = get_measurement(res,measurement_names)
     print measurement
     # update MPC model inputs
-    print "state 2 \n"
+    print "\nstate 2"
     print case.states
-    print "state 3 \n"    
+    print "\nstate 3"    
     print states
     states = get_states(states,measurement)
-    print "state 4 \n"
+    print "\nstate 4"
     print states
     # online MPC model calibration if applied - NOT IMPLEMENTED
     # update parameter_zones and parameters_power - NOT IMPLEMENTED

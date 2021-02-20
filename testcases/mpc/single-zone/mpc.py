@@ -44,7 +44,7 @@ class mpc_case():
         value = [0.1]*self.PH
 
         opt_prob.addVarGroup('u', self.PH, type='c', value=value, lower=lb, upper=up)
-
+        print opt_prob
         # Assign constraints - unconstrained
 
         # Solve the optimization problem
@@ -52,9 +52,16 @@ class mpc_case():
         self.optimum={}
         
         # call optimizer
-        psqp = pyOpt.PSQP()
-        psqp.setOption('IPRINT',1)
-        [fstr,xstr,info]=psqp(opt_prob,sens_type='FD')
+        #psqp = pyOpt.PSQP()
+        #psqp.setOption('IPRINT',2)
+        #[fstr,xstr,info]=psqp(opt_prob,sens_type='FD')
+        #nsga2 = pyOpt.NSGA2()
+        #nsga2.setOption('PrintOut',0)
+        #[fstr,xstr,info]=nsga2(opt_prob)
+        solvopt = pyOpt.SOLVOPT()
+        solvopt.setOption('iprint',2)
+        [fstr,xstr,info]=solvopt(opt_prob,sens_type='FD')
+
         print fstr, xstr, info
         print opt_prob.solution(0)
         #obj_opt = solution._objectives[0].optimum
@@ -91,9 +98,9 @@ class mpc_case():
         P_pred_ph = []
         Tz_pred_ph = [] 
 
-        # get current state
-        P_his = self.states['P_his_t'] # current state of historical power [P(t) to P(t-l)]   
-        Tz_his = self.states['Tz_his_t'] # current zone temperatur states for zone temperture prediction model  
+        # get current state - has to copy original states due to mutable object list and dictionary
+        P_his = self.states['P_his_t'][:] # current state of historical power [P(t) to P(t-l)]   
+        Tz_his = self.states['Tz_his_t'][:] # current zone temperatur states for zone temperture prediction model  
         
         # initialize the cost function
         penalty = []  # temperature violation penalty for each zone
@@ -242,7 +249,9 @@ class mpc_case():
 
         #perform prediction     
         P = (np.sum(alpha*P_his,axis=1) + beta[0]*mz+beta[1]*mz**2 + gamma[0]+ gamma[1]*Toa+gamma[2]*Toa**2)
-        P = max(P,0)
+        # need improve this part when power is negative, cannot assign it to 0 because for optimization problem this would lead to minimum cost 0
+        # cannot assign a big number either because the historical value will be used for next step prediction
+        P = abs(P) 
 
         return float(P)
 
