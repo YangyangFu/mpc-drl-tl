@@ -16,7 +16,7 @@ def get_measurement(fmu_result,names):
         dic[name] = fmu_result[name][-1]
 
     # return a pandas data frame
-    return pd.DataFrame(dic,index=dic['time'])
+    return pd.DataFrame(dic,index=[dic['time']])
     
 def interpolate_dataframe(df,new_index):
     """Interpolate a dataframe along its index based on a new index
@@ -28,28 +28,31 @@ def interpolate_dataframe(df,new_index):
         df_out[col_name] = np.interp(new_index, df.index, col)    
     return df_out
 
-def FILO(array_1d,x):
-    """First in last out
+def FILO(a_list,x):
+    """First in last out: 
+    x: scalor
     """
-    array_list=list(array_1d)
-    array_list.pop() # remove the last element
-    array_list.reverse()
-    array_list.append(x)
-    array_list.reverse()
-    array=np.array(array_list)
+    a_list.pop() # remove the last element
+    a_list.reverse()
+    a_list.append(x)
+    a_list.reverse()
 
-    return array
+    return a_list
 
 def get_states(states,measurement):
+    # read list
     Tz_his = states['Tz_his_t']
     P_his = states['P_his_t']
 
-    Tz = measurement['TRoo']
-    P = measurement['PTot']
+    # read scalor
+    Tz = measurement['TRoo'].values[0]
+    P = measurement['PTot'].values[0]
 
+    # new list
     new_Tz_his = FILO(Tz_his,Tz)
     new_P_his = FILO(P_his,P)
     
+    # new dic
     states['Tz_his_t'] = new_Tz_his
     states['P_his_t']= new_P_his
 
@@ -101,6 +104,7 @@ hvac = load_fmu('SingleZoneVAV.fmu')
 ## fmu settings
 options = hvac.simulate_options()
 options['ncp'] = 500.
+options['initialize'] = True
 
 # Warm up FMU simulation settings
 ts = start
@@ -108,7 +112,7 @@ te_warm = ts + 4*3600
 
 ### 2- Initialize MPC case 
 dt = 15*60.
-PH = 4*24
+PH = 2
 CH = 1
 with open('TZone.json') as f:
   parameters_zone = json.load(f)
@@ -124,8 +128,8 @@ lag_Tz = 4 # 4-step lag - should be identified for MPC model
 lag_PTot = 4 # 4-step lag - should be idetified for mpc model
 Tz_ini = 273.15+20
 P_ini = 0.0
-states_ini = {'Tz_his_t':np.array([Tz_ini]*lag_Tz),
-            'P_his_t':np.array([P_ini]*lag_PTot)} # initial states used for MPC models
+states_ini = {'Tz_his_t':[Tz_ini]*lag_Tz,
+            'P_his_t':[P_ini]*lag_PTot} # initial states used for MPC models
 
 ## predictors
 predictor = {}
@@ -156,12 +160,16 @@ case = mpc_case(PH=PH,
 
 while ts<end:
     
+    te = ts+dt*CH
+
     ### generate control action from MPC
     if ts>=te_warm: # activate mpc after warmup
         # update mpc case
         case.set_time(ts)
         case.set_measurement(measurement)
-        case.set_states(states)
+        case.set_states(states) 
+        print "state 1 \n"
+        print case.states   
         case.set_predictor(predictor)
         # call optimizer
         optimum = case.optimize()
@@ -177,24 +185,33 @@ while ts<end:
         uFan = u_opt_ch
 
     ### advance building simulation by one step
-    u_traj = np.transpose(np.vstack(([ts,ts+dt],[uFan,uFan])))
+    u_traj = np.transpose(np.vstack(([ts,te],[uFan,uFan])))
     input_object = ("uFan",u_traj)
     res = hvac.simulate(start_time = ts,
-                        final_time = ts+dt, 
+                        final_time = te, 
                         options = options,
                         input = input_object)
+
+    # update clock
+    ts = te
+
     # get measurement
     measurement = get_measurement(res,measurement_names)
-
+    print measurement
     # update MPC model inputs
+    print "state 2 \n"
+    print case.states
+    print "state 3 \n"    
+    print states
     states = get_states(states,measurement)
-
+    print "state 4 \n"
+    print states
     # online MPC model calibration if applied - NOT IMPLEMENTED
     # update parameter_zones and parameters_power - NOT IMPLEMENTED
     
-    # update clock
-    ts += dt
-
     # update predictor
     predictor['price'] = get_price(ts,dt,PH)
     predictor['Toa'] = get_Toa(ts,dt,PH,Toa_year)
+
+    # update fmu settings
+    options['initialize'] = False

@@ -39,28 +39,30 @@ class mpc_case():
         opt_prob.addObj('f')
 
         # Assign design variables
-        lb = 0.
-        up = 1.
-        value = 0.0
-        opt_prob.addVarGroup('name', self.PH, type='c', value=value, lower=lb, upper=up)
+        lb = [0.1]*self.PH
+        up = [1.]*self.PH
+        value = [0.1]*self.PH
+
+        opt_prob.addVarGroup('u', self.PH, type='c', value=value, lower=lb, upper=up)
 
         # Assign constraints - unconstrained
 
         # Solve the optimization problem
         # initialize
         self.optimum={}
-        u_ph_opt = []
+        
         # call optimizer
         psqp = pyOpt.PSQP()
-        psqp.setOption('IPRINT',0)
-        psqp(opt_prob,sens_type='FD')
-        solution = opt_prob.solution(0)
-        obj_opt = solution._objectives[0].optimum
-        for var in solution._variables.keys():
-            u_ph_opt.append(solution._variables[var].value)
+        psqp.setOption('IPRINT',1)
+        [fstr,xstr,info]=psqp(opt_prob,sens_type='FD')
+        print fstr, xstr, info
+        print opt_prob.solution(0)
+        #obj_opt = solution._objectives[0].optimum
+        #for var in solution._variables.keys():
+        #    u_ph_opt.append(solution._variables[var].value)
 
-        self.optimum['objective'] = obj_opt
-        self.optimum['variable'] = u_ph_opt
+        self.optimum['objective'] = fstr
+        self.optimum['variable'] = xstr
         
         return self.optimum
         
@@ -90,9 +92,9 @@ class mpc_case():
         Tz_pred_ph = [] 
 
         # get current state
-        P_his = np.array(self.states['P_his_t']) # current state of historical power [P(t) to P(t-l)]   
-        Tz_his = np.array(self.states['Tz_his_t']) # current zone temperatur states for zone temperture prediction model  
-
+        P_his = self.states['P_his_t'] # current state of historical power [P(t) to P(t-l)]   
+        Tz_his = self.states['Tz_his_t'] # current zone temperatur states for zone temperture prediction model  
+        
         # initialize the cost function
         penalty = []  # temperature violation penalty for each zone
         alpha_up = 200.0
@@ -137,50 +139,50 @@ class mpc_case():
 
             # this is to be revised for multi-zone 
             for k in range(self.number_zone):
-                overshoot.append(max((Tz_pred -273.15) - T_upper[t], 0.0))
-                undershoot.append(max(T_lower[t] - (Tz_pred-273.15), 0.0))
+                overshoot.append(max(float((Tz_pred -273.15) - T_upper[t]), 0.0))
+                undershoot.append(max(float(T_lower[t] - (Tz_pred-273.15)), 0.0))
             
             ### ===========================================================
             ###      Update for next step
             ### ==========================================================
             # update clock
+
             i+=1
 
         # calculate total cost based on predicted energy prices
         price_ph = self.predictor['price']
 
         # zone temperature bounds penalty
-        penalty.append(alpha_up *
-                       sum(overshoot) + alpha_low * sum(undershoot))
+        penalty = alpha_up*sum(np.array(overshoot)) + alpha_low*sum(np.array(undershoot))
 
-        ener_cost = np.sum(np.array(price_ph)*np.array(P_pred_ph))
+        ener_cost = float(np.sum(np.array(price_ph)*np.array(P_pred_ph)))
+
+        #print u_ph,P_pred_ph,penalty
 
         # objective for a minimization problem
-        f = ener_cost + sum(penalty)
+        f = ener_cost + penalty
 
         # constraints - unconstrained
         g = []
 
         # simulation status
         fail = 0
-        
+        #print f, g
         return f, g, fail
 
-    def FILO(self,array_1d,x):
-        array_list=list(array_1d)
-        array_list.pop() # remove the last element
-        array_list.reverse()
-        array_list.append(x)
-        array_list.reverse()
-        array=np.array(array_list)
+    def FILO(self,lis,x):
+        lis.pop() # remove the last element
+        lis.reverse()
+        lis.append(x)
+        lis.reverse()
 
-        return array
+        return lis
 
     def zone_temperature(self,alpha, beta, gamma, l, Tz_his, mz, Ts, Toa):
         """Predicte zone temperature at next step
 
         :param alpha: coefficients from curve-fitting
-        :type alpha: np array (l,)
+        :type alpha: list
         :param beta: coefficient from curve-fitting
         :type beta: scalor
         :param gamma: coefficient from curve-fitting
@@ -188,7 +190,7 @@ class mpc_case():
         :param l: historical step
         :type l: scalor
         :param Tz_his: historical zone temperature array
-        :type Tz_his: np array (l,)
+        :type Tz_his: list
         :param mz: zone air mass flowrate at time t
         :type mz: scalor
         :param Ts: discharge air temperaure at time t
@@ -202,23 +204,25 @@ class mpc_case():
         # check dimensions
         if int(l) != len(alpha) or int(l) != len(Tz_his):
             raise ValueError("'l' is not equal to the size of historical zone temperature or the coefficients.")
-
-        Tz = (sum(alpha*Tz_his) + beta*mz*Ts + gamma*Toa)/(1+beta*mz)
-        return Tz
+        # conver to numpy array
+        Tz_his = np.array(Tz_his).reshape(1,-1)
+        alpha = np.array(alpha).reshape(-1)
+        Tz = (np.sum(alpha*Tz_his,axis=1) + beta*mz*Ts + gamma*Toa)/(1+beta*mz)
+        return float(Tz)
 
     def total_power(self,alpha, beta, gamma, l, P_his, mz, Toa):
         """Predicte zone temperature at next step
 
         :param alpha: coefficients from curve-fitting
-        :type alpha: np array (l,)
+        :type alpha: list
         :param beta: coefficient from curve-fitting
-        :type beta: np array (2,)
+        :type beta: list
         :param gamma: coefficient from curve-fitting
-        :type gamma: np array (3,)
+        :type gamma: list
         :param l: historical step
         :type l: scalor
         :param P_his: historical zone temperature array
-        :type P_his: np array (l,)
+        :type P_his: list
         :param mz: zone air mass flowrate at time t
         :type mz: scalor
         :param Toa: outdoor air dry bulb temperature at time t
@@ -228,11 +232,19 @@ class mpc_case():
         :rtype: scalor
         """
         # check dimensions
-        if int(l) != len(alpha) or int(l) != P_his.shape[1]:
+        if int(l) != len(alpha) or int(l) != len(P_his):
             raise ValueError("'l' is not equal to the size of historical zone temperature or the coefficients.")
+        # conver to numpy array
+        P_his = np.array(P_his).reshape(1,-1)
+        alpha = np.array(alpha).reshape(-1)   
+        beta = np.array(beta).reshape(-1) 
+        gamma = np.array(gamma).reshape(-1)      
 
+        #perform prediction     
         P = (np.sum(alpha*P_his,axis=1) + beta[0]*mz+beta[1]*mz**2 + gamma[0]+ gamma[1]*Toa+gamma[2]*Toa**2)
-        return P
+        P = max(P,0)
+
+        return float(P)
 
     def set_time(self, time):
         
