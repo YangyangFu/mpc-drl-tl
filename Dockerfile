@@ -19,17 +19,12 @@ COPY ./library /usr/local/JModelica/ThirdParty/MSL
 RUN pip install pvlib 
 RUN pip install matplotlib
 
-# Add an optimization package ipopt - won't work for python 3 
-#ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:$IPOPT_HOME
-#RUN cd github && git clone https://github.com/mechmotum/cyipopt.git
-#RUN cd $HOME/github/cyipopt && ls -l && python setup.py install
-
-# Add optimziation package pyopt
-#RUN pip install mpi4py
-RUN curl http://www.pyopt.org/_downloads/pyOpt-1.2.0.tar.gz | tar -xz && \
-    cd pyOpt-1.2.0 && \
-    ls -l &&\
-    python setup.py install
+# Add an optimization package ipopt
+# specify link file location in linux
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:$IPOPT_HOME:$IPOPT_HOME/lib
+# install ipopt python wrapper
+RUN cd $HOME/github && git clone https://github.com/YangyangFu/pyipopt.git && ls -l
+RUN cd $HOME/github/pyipopt && python setup.py build && python setup.py install
 
 # Finish installation
 USER developer
@@ -37,4 +32,3 @@ USER developer
 # This needs to be towards the end of the script as the command writes data to
 # /home/developer/.cache
 RUN python -c "import matplotlib.pyplot"
-
