@@ -5,6 +5,7 @@ import numpy as np
 # optimization package
 import pyOpt 
 # import ipopt
+from pyjmi.optimization import dfo
 
 class mpc_case():
     def __init__(self,PH,CH,time,dt,parameters_zone, parameters_power,measurement,states,predictor):
@@ -35,44 +36,21 @@ class mpc_case():
         MPC optimizer: call external optimizer to solve a minimization problem
         
         """
-        opt_prob = pyOpt.Optimization('MPC for time'+str(int(self.time)),self.obj)
-        opt_prob.addObj('f')
-
-        # Assign design variables
-        lb = [0.1]*self.PH
-        up = [1.]*self.PH
-        value = [0.1]*self.PH
-
-        opt_prob.addVarGroup('u', self.PH, type='c', value=value, lower=lb, upper=up)
-        print opt_prob
-        # Assign constraints - unconstrained
-
-        # Solve the optimization problem
-        # initialize
+       
         self.optimum={}
-        
+        lb = [0.1]*self.PH
+        ub = [1.0]*self.PH
+        x0 = [0.2]*self.PH
+
+        obj = lambda x: self.obj(x)
         # call optimizer
-        #psqp = pyOpt.PSQP()
-        #psqp.setOption('IPRINT',2)
-        #[fstr,xstr,info]=psqp(opt_prob,sens_type='FD')
-        #nsga2 = pyOpt.NSGA2()
-        #nsga2.setOption('PrintOut',0)
-        #[fstr,xstr,info]=nsga2(opt_prob)
-        solvopt = pyOpt.SOLVOPT()
-        solvopt.setOption('iprint',2)
-        [fstr,xstr,info]=solvopt(opt_prob,sens_type='FD')
+        x_opt,f_opt,nbr_iters,nbr_fevals,solve_time = dfo.fmin(obj, xstart=x0,lb=lb,ub=ub,alg=2,nbr_cores=3,x_tol=1e-3,f_tol=1e-2)
 
-        print fstr, xstr, info
-        print opt_prob.solution(0)
-        #obj_opt = solution._objectives[0].optimum
-        #for var in solution._variables.keys():
-        #    u_ph_opt.append(solution._variables[var].value)
-
-        self.optimum['objective'] = fstr
-        self.optimum['variable'] = xstr
+        self.optimum['objective'] = f_opt
+        self.optimum['variable'] = x_opt
         
         return self.optimum
-        
+
     def obj(self,u_ph):
         # MPC model predictor settings
         alpha_power = np.array(self.parameters_power['alpha'])
@@ -170,12 +148,15 @@ class mpc_case():
         f = ener_cost + penalty
 
         # constraints - unconstrained
-        g = []
+        #g=[0.0]*self.PH
+        #for i in range(self.PH):
+        #    g[i] = 0.1 - u_ph[i]
+
 
         # simulation status
-        fail = 0
+        #fail = 0
         #print f, g
-        return f, g, fail
+        return f
 
     def FILO(self,lis,x):
         lis.pop() # remove the last element
