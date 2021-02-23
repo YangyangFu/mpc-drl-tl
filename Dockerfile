@@ -25,6 +25,8 @@ ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:$IPOPT_HOME:$IPOPT_HOME/lib
 # install ipopt python wrapper
 RUN cd $HOME/github && git clone https://github.com/YangyangFu/pyipopt.git && ls -l
 RUN cd $HOME/github/pyipopt && python setup.py build && python setup.py install
+# install algopy for Algorithmic Differentiation 
+RUN pip install algopy
 
 # Finish installation
 USER developer
