@@ -2,10 +2,14 @@
 
 '''
 import numpy as np
-# optimization package
-import pyOpt 
-# import ipopt
+# ipopt
+#from pyomo.environ import *
+
 from pyjmi.optimization import dfo
+from FuncDesigner import *
+from openopt import NSP
+from openopt import NLP
+from openopt import GLP 
 
 class mpc_case():
     def __init__(self,PH,CH,time,dt,parameters_zone, parameters_power,measurement,states,predictor):
@@ -29,29 +33,12 @@ class mpc_case():
         self.occ_end = 19 # occupancy ends
 
         # initialize optimiztion
+        #self.optimization_model=self.get_optimization_model() # pyomo object
         self.optimum={}
 
-    def optimize(self):
-        """
-        MPC optimizer: call external optimizer to solve a minimization problem
-        
-        """
-       
-        self.optimum={}
-        lb = [0.1]*self.PH
-        ub = [1.0]*self.PH
-        x0 = [0.2]*self.PH
-
-        obj = lambda x: self.obj(x)
-        # call optimizer
-        x_opt,f_opt,nbr_iters,nbr_fevals,solve_time = dfo.fmin(obj, xstart=x0,lb=lb,ub=ub,alg=2,nbr_cores=3,x_tol=1e-3,f_tol=1e-2)
-
-        self.optimum['objective'] = f_opt
-        self.optimum['variable'] = x_opt
-        
-        return self.optimum
 
     def obj(self,u_ph):
+        #u_ph = u_ph.inputs
         # MPC model predictor settings
         alpha_power = np.array(self.parameters_power['alpha'])
         beta_power = np.array(self.parameters_power['beta'])
@@ -124,8 +111,8 @@ class mpc_case():
 
             # this is to be revised for multi-zone 
             for k in range(self.number_zone):
-                overshoot.append(max(float((Tz_pred -273.15) - T_upper[t]), 0.0))
-                undershoot.append(max(float(T_lower[t] - (Tz_pred-273.15)), 0.0))
+                overshoot.append(np.array([float((Tz_pred -273.15) - T_upper[t]), 0.0]).max())
+                undershoot.append(np.array([float(T_lower[t] - (Tz_pred-273.15)), 0.0]).max())
             
             ### ===========================================================
             ###      Update for next step
@@ -157,6 +144,70 @@ class mpc_case():
         #fail = 0
         #print f, g
         return f
+
+    def optimize(self):
+        """
+        MPC optimizer: call optimizer to solve a minimization problem
+        
+        """
+       
+        self.optimum={}
+
+        # get optimization model
+        model = self.get_optimization_model()
+
+        # solve optimization
+        # call optimizer
+        #x0=[0.1]*self.PH
+        #lb=[0.1]*self.PH
+        #ub=[1.0]*self.PH
+        #x_opt,f_opt,nbr_iters,nbr_fevals,solve_time = \
+        #    dfo.fmin(obj, xstart=x0,lb=lb,ub=ub,alg=3,nbr_cores=3,x_tol=1e-3,f_tol=1e-6)
+        xtol=1e-3
+        ftol=1e-3
+        solver='de'
+        r = model.solve(solver,xtol=xtol,ftol=ftol)
+        x_opt, f_opt = r.xf, r.ff
+        d1 = r.evals
+        d2 = r.elapsed
+        nbr_iters = d1['iter']
+        nbr_fevals = d1['f']
+        solve_time = d2['solver_time']
+        
+
+        self.optimum['objective'] = f_opt
+        self.optimum['variable'] = x_opt
+
+        disp = True
+        if disp:
+            print ' '
+            print 'Solver: OpenOpt solver ' + solver
+            print ' '
+            print 'Number of iterations: ' + str(nbr_iters)
+            print 'Number of function evaluations: ' + str(nbr_fevals)
+            print ' '
+            print 'Execution time: ' + str(solve_time)
+            print ' '
+
+        return self.optimum
+
+    def openopt_model_glp(self):
+        """This is to formulate a global optimization problem
+        """
+        # create oovar of size PH
+        #u = oovar(size=self.PH)
+        # might not work becasue u is a oovar object, not list
+        objective = lambda u: self.obj([u[i] for i in range(self.PH)])
+        #startPoint = 0.5*np.array(self.PH)
+
+        # bounds
+        lb = [0.1]*self.PH
+        ub = [1.0]*self.PH
+
+        return GLP(objective, lb=lb, ub=ub, maxIter = 1e5)
+
+    def get_optimization_model(self):
+        return self.openopt_model_glp()
 
     def FILO(self,lis,x):
         lis.pop() # remove the last element
@@ -196,6 +247,7 @@ class mpc_case():
         Tz_his = np.array(Tz_his).reshape(1,-1)
         alpha = np.array(alpha).reshape(-1)
         Tz = (np.sum(alpha*Tz_his,axis=1) + beta*mz*Ts + gamma*Toa)/(1+beta*mz)
+
         return float(Tz)
 
     def total_power(self,alpha, beta, gamma, l, P_his, mz, Toa):
@@ -227,20 +279,17 @@ class mpc_case():
         alpha = np.array(alpha).reshape(-1)   
         beta = np.array(beta).reshape(-1) 
         gamma = np.array(gamma).reshape(-1)      
-
         #perform prediction     
         P = (np.sum(alpha*P_his,axis=1) + beta[0]*mz+beta[1]*mz**2 + gamma[0]+ gamma[1]*Toa+gamma[2]*Toa**2)
         # need improve this part when power is negative, cannot assign it to 0 because for optimization problem this would lead to minimum cost 0
         # cannot assign a big number either because the historical value will be used for next step prediction
         P = abs(P) 
-
         return float(P)
 
     def set_time(self, time):
         
         self.time = time
 
-    
     def set_mpc_model_parameters(self):
         pass
 
