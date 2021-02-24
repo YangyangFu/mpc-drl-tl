@@ -157,10 +157,14 @@ case = mpc_case(PH=PH,
                 measurement = measurement,
                 states = states,
                 predictor = predictor)
+# initialize all results
+u_opt=[]
+t_opt=[]
 
 while ts<end:
     
     te = ts+dt*CH
+    t_opt.append(ts)
 
     ### generate control action from MPC
     if ts>=te_warm: # activate mpc after warmup
@@ -215,3 +219,12 @@ while ts<end:
 
     # update fmu settings
     options['initialize'] = False
+
+    # Save all the optimal results for future simulation
+    u_opt.append(uFan)
+
+final = {'u_opt':u_opt,
+        't_opt':t_opt}
+
+with open('u_opt.json', 'w') as outfile:
+    json.dump(final, outfile)
