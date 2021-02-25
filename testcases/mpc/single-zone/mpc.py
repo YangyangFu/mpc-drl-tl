@@ -206,8 +206,43 @@ class mpc_case():
 
         return GLP(objective, lb=lb, ub=ub, maxIter = 1e5)
 
+    def openopt_model_nlp(self):
+        """This is to formulate a nolinear programming problem in openopt: minimization
+        """
+        objective = lambda u: self.obj([u[i] for i in range(self.PH)])
+        # objective gradient - optional
+        df = None
+        # start point
+        start = 0.5*np.ones(self.PH)
+        # constraints if any
+        c = None # nonlinear inequality
+        dc = None # derivative of c
+        h = None # nonlinear equality
+        dh = None # derivative of h
+        A = None # linear inequality
+        Aeq = None # linear equality
+        beq = None # linear equality
+
+        # bounds
+        lb = [0.1]*self.PH
+        ub = [1.0]*self.PH
+
+        # tolerance control
+        # required constraints tolerance, default for NLP is 1e-6
+        contol = 1e-6
+
+        # If you use solver algencan, NB! - it ignores xtol and ftol; using maxTime, maxCPUTime, maxIter, maxFunEvals, fEnough is recommended.
+        # Note that in algencan gtol means norm of projected gradient of  the Augmented Lagrangian
+        # so it should be something like 1e-3...1e-5
+        gtol = 1e-7 # (default gtol = 1e-6)
+
+        # see https://github.com/troyshu/openopt/blob/d15e81999ef09d3c9c8cb2fbb83388e9d3f97a98/openopt/oo.py#L390.
+        return NLP(objective, start, df=df,  c=c,  dc=dc, h=h,  dh=dh,  A=A,  b=b,  Aeq=Aeq,  beq=beq,  
+        lb=lb, ub=ub, gtol=gtol, contol=contol, maxIter = 10000, maxFunEvals = 1e7, name = 'NLP for: '+str(self.time))
+
     def get_optimization_model(self):
-        return self.openopt_model_glp()
+        #return self.openopt_model_glp()
+        return self.openopt_model_nlp()
 
     def FILO(self,lis,x):
         lis.pop() # remove the last element
