@@ -53,6 +53,11 @@ RUN pip install openopt
 RUN pip install FuncDesigner
 RUN pip install DerApproximator
 
+# connect ipopt with openopt
+# install ipopt python wrapper
+RUN cd $HOME/github && git clone https://github.com/YangyangFu/pyipopt.git && ls -l
+RUN cd $HOME/github/pyipopt && python setup.py build && python setup.py install
+
 ### Finish installation
 # add plotting library
 RUN pip install matplotlib
