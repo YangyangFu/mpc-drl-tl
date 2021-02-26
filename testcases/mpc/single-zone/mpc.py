@@ -163,9 +163,10 @@ class mpc_case():
         #ub=[1.0]*self.PH
         #x_opt,f_opt,nbr_iters,nbr_fevals,solve_time = \
         #    dfo.fmin(obj, xstart=x0,lb=lb,ub=ub,alg=3,nbr_cores=3,x_tol=1e-3,f_tol=1e-6)
-        xtol=1e-3
-        ftol=1e-3
-        solver='de'
+        xtol=1e-6
+        ftol=1e-6
+        #solver='de' # GLP
+        solver='ralg'
         r = model.solve(solver,xtol=xtol,ftol=ftol)
         x_opt, f_opt = r.xf, r.ff
         d1 = r.evals
@@ -220,6 +221,7 @@ class mpc_case():
         h = None # nonlinear equality
         dh = None # derivative of h
         A = None # linear inequality
+        b = None
         Aeq = None # linear equality
         beq = None # linear equality
 
