@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import json
 # load testbed
 from pyfmi import load_fmu
+import os
 
 # simulation setup
 ts = 212*24*3600.
@@ -21,7 +22,7 @@ baseline = load_fmu('SingleZoneVAVBaseline.fmu')
 
 ## fmu settings
 options = baseline.simulate_options()
-options['ncp'] = 500.
+options['ncp'] = 5000.
 options['initialize'] = True
 
 ## construct optimal input for fmu
@@ -40,6 +41,17 @@ with open('u_opt.json') as f:
 t_opt = opt['t_opt']
 u_opt = opt['u_opt']
 
+# save for Modelica model
+outTable = 'u_opt.txt'
+if os.path.exists(outTable):
+	os.remove(outTable)
+
+f = open(outTable,'w')
+f.writelines('#1 \n')
+f.writelines('double tab('+str(len(u_opt))+',2)\n')
+for i in range(len(u_opt)):
+	f.writelines(str(t_opt[i])+' '+str(u_opt[i])+'\n')
+f.close()
 
 
 ### 1- Load virtual building model
@@ -47,7 +59,7 @@ mpc = load_fmu('SingleZoneVAV.fmu')
 
 ## fmu settings
 options = mpc.simulate_options()
-options['ncp'] = 500.
+options['ncp'] = 5000.
 options['initialize'] = True
 
 ## construct optimal input for fmu
