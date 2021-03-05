@@ -12,6 +12,8 @@ A paper plan for comparing MPC and DRL/TL in building control
 - [Meetings](#meetings)
   - [10/28/2020](#10282020)
   - [11/13/2020](#11132020)
+  - [11/20/2020](#11202020)
+  - [03/01/2021](#03012021)
   
 
 
@@ -116,4 +118,16 @@ A short meeting with Shichao:
 3. they want use future 4-step weather data
 
 
+## 03/01/2021
 
+The baseline case has a few limitations:
+
+1. the system total power is not very sensitive to fan air supply amount during off design condition. During a normal operation, the fan power is only about ~ 10% of system total power. This is related to system sizing in the Modelica model. 
+
+    *Design condition*: For fan, nominal flow rate is 0.75 kg/s, nominal DP is 500 Pa, then the nominal power is about $\dot m*dp/\rho/\eta=0.75*500/1.28/0.49 \approx 600 W$.
+    For Chiller, the design power is $7000/5.5 = 1273 W$.
+
+    *Off-design condition*: The fan runs at partial load, the power is usually $100-200 W$, and the chiller is usually $1200 W$.
+
+2. VAV local terminal control (airflow rate) is not a good enough control variable for optiming system level power. The airflow rate setpoint will influecnce the chilled water plant control. For instance, if the setpoint is too high, the zone could be over-cooled, and thus chiller might be turned off, which could save a lot of energy. The frequent on/off of chiller should be avoided in real applications. 
+   1. An alternative is to control zone temperature setpoint.
