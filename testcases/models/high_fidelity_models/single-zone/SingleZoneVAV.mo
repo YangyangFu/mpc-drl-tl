@@ -142,6 +142,8 @@ package SingleZoneVAV
       table=[0,TCooOff; 7*3600,TCooOff; 7*3600,TCooOn; 19*3600,TCooOn; 19*3600,
           TCooOff; 24*3600,TCooOff]) "Cooling setpoint for room temperature"
       annotation (Placement(transformation(extent={{-180,-20},{-160,0}})));
+    Buildings.Controls.OBC.CDL.Discrete.Sampler sam(samplePeriod=15*60)
+      annotation (Placement(transformation(extent={{-142,70},{-122,90}})));
   equation
     connect(weaDat.weaBus, weaBus) annotation (Line(
         points={{-140,130},{-108,130}},
@@ -223,8 +225,9 @@ package SingleZoneVAV
             -10},{-116,-10},{-116,-70},{-102,-70}}, color={0,0,127}));
     connect(oveTSetRooHea.y, senTSetRooHea.u) annotation (Line(points={{-119,30},
             {-116,30},{-116,50},{-102,50}}, color={0,0,127}));
-    connect(zon.CO2, CO2RooAir.u) annotation (Line(points={{81,-4},{100,-4},{100,-30},
-            {118,-30}}, color={0,0,127}));
+    connect(zon.CO2, CO2RooAir.u) annotation (Line(points={{81,-4},{100,-4},{
+            100,-30},{118,-30}},
+                        color={0,0,127}));
     connect(TRooAir.y, TRoo)
       annotation (Line(points={{141,0},{170,0}}, color={0,0,127}));
     connect(CO2RooAir.y, CO2Roo)
@@ -255,12 +258,14 @@ package SingleZoneVAV
         index=-1,
         extent={{-6,3},{-6,3}},
         horizontalAlignment=TextAlignment.Right));
-    connect(uFan, hvac.uFan) annotation (Line(points={{-180,80},{-60,80},{-60,
-            18},{-42,18}}, color={0,0,127}));
     connect(TSetRooHea.y[1], oveTSetRooHea.u)
       annotation (Line(points={{-159,30},{-142,30}}, color={0,0,127}));
     connect(TSetRooCoo.y[1], oveTSetRooCoo.u)
       annotation (Line(points={{-159,-10},{-142,-10}}, color={0,0,127}));
+    connect(uFan, sam.u)
+      annotation (Line(points={{-180,80},{-144,80}}, color={0,0,127}));
+    connect(sam.y, hvac.uFan) annotation (Line(points={{-120,80},{-60,80},{-60,
+            18},{-42,18}}, color={0,0,127}));
     annotation (
       experiment(
         StartTime=18316800,
