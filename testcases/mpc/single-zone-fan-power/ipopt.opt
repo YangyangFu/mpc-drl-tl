@@ -1,0 +1,7 @@
+# generated automatically by OpenOpt
+print_level 0
+tol 1e-06
+constr_viol_tol 8e-07
+max_iter 10000
+jac_d_constant yes
+jac_c_constant yes

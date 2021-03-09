@@ -69,3 +69,12 @@ fmiModelIdentifier.h
 
 #
 *.txt
+
+# ignore build
+build
+
+#ignore vscode
+.vscode
+
+# ignore out file
+*.out

@@ -1,0 +1,112 @@
+# -*- coding: utf-8 -*-
+"""
+this script is to test the simulation of compiled fmu
+"""
+# import numerical package
+#from pymodelica import compile_fmu
+from pyfmi import load_fmu
+import matplotlib
+matplotlib.use('agg')
+import matplotlib.pyplot as plt
+import numpy as np
+import numpy.random as random
+import pandas as pd
+# import fmu package
+
+
+# simulate setup - 181-212 for july; 212-243 for August
+time_stop = 30*24*3600.  
+ts = 212*24*3600.
+te = ts + time_stop
+
+## load fmu - cs
+fmu_name = "SingleZoneVAV.fmu"
+fmu = load_fmu(fmu_name)
+options = fmu.simulate_options()
+options['ncp'] = 500.
+
+# excite signal: - generator for exciting signals
+def uniform(a,b):
+    return (b-a)*random.random_sample()+a
+
+def excite_fan(time):
+    y = np.zeros(time.shape)
+    j = 0
+    for i in time:
+        h = int((i%86400)/3600)
+        if h<6:
+             y[j] = 0.1
+        elif h<19:
+            y[j] = uniform(0,1) 
+        else:
+            y[j] = 0.1         
+        j+=1
+    return y
+
+# generate signal for every dt
+dt = 15*60. 
+time_arr = np.arange(ts,te+1,dt)
+spe_sig = excite_fan(time_arr)
+
+
+# input
+input_names = fmu.get_model_variables(causality=2).keys()
+print input_names
+
+input_trac = np.transpose(np.vstack((time_arr.flatten(),spe_sig.flatten())))
+input_object = (input_names,input_trac)
+
+# simulate fmu
+res = fmu.simulate(start_time=ts,
+                    final_time=te, 
+                    options=options,
+                    input = input_object)
+
+# what data do we need??
+tim = res['time']
+spe = res['uFan']
+flo = res['hvac.fanSup.m_flow_in']
+Toa = res['TOut']
+TRoo = res['TRoo']
+PTot = res['PTot']
+
+# interpolate data
+train_data = pd.DataFrame({'speed':np.array(spe),
+                            'mass_flow':np.array(flo),
+                            'T_oa':np.array(Toa),
+                            'T_roo':np.array(TRoo),
+                            'P_total':np.array(PTot)}, index=tim)
+
+def interp(df, new_index):
+    """Return a new DataFrame with all columns values interpolated
+    to the new_index values."""
+    df_out = pd.DataFrame(index=new_index)
+    df_out.index.name = df.index.name
+
+    for colname, col in df.iteritems():
+        df_out[colname] = np.interp(new_index, df.index, col)
+
+    return df_out
+
+train_data = interp(train_data, time_arr)
+train_data.to_csv('train_data.csv')
+
+# clean folder after simulation
+def deleteFiles(fileList):
+    """ Deletes the output files of the simulator.
+
+    :param fileList: List of files to be deleted.
+
+    """
+    import os
+
+    for fil in fileList:
+        try:
+            if os.path.exists(fil):
+                os.remove(fil)
+        except OSError as e:
+            print ("Failed to delete '" + fil + "' : " + e.strerror)
+
+
+filelist = [fmu_name+'_result.mat', fmu_name+'_log.txt']
+deleteFiles(filelist)

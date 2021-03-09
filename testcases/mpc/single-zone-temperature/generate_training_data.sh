@@ -1,5 +1,5 @@
   exec docker run \
- 	  --name dc \
+ 	  --name test \
           --user=root \
 	  --detach=false \
 	  -e DISPLAY=${DISPLAY} \
@@ -8,5 +8,5 @@
 	  -v `pwd`:/mnt/shared \
 	  -i \
           -t \
-	  fr_dc /bin/bash -c "cd /mnt/shared && python /mnt/shared/simulate_fmu.py"
+	  fncs /bin/bash -c "cd /mnt/shared && python /mnt/shared/generate_training_data.py"
     exit $

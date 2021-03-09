@@ -12,3 +12,4 @@ Welcome to Modelica Threat Injection Library (MTI Library)'s documentation!
 
    introduction
    literature
+   coarse-model
