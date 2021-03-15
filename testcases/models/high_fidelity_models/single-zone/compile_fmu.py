@@ -11,7 +11,7 @@ from pymodelica import compile_fmu
 # DEFINE MODEL
 # ------------
 mopath = 'SingleZoneVAV.mo'
-modelpath = 'SingleZoneVAV.TestCaseSupervisory'
+modelpath = 'SingleZoneVAV.Airflow'
 # ------------
 
 # COMPILE FMU: set JVM maximum leap to 1G to avoid memory issues

@@ -20,7 +20,7 @@ dt = 60
 
 ## compile fmu - cs
 mopath = 'SingleZoneVAV.mo'
-modelpath = 'SingleZoneVAV.TestCaseSupervisory'
+modelpath = 'SingleZoneVAV.Airflow'
 fmu_name = "SingleZoneVAV"
 fmu = load_fmu(compile_fmu(modelpath,[mopath], target='cs',version='2.0',compile_to=fmu_name+'.fmu'))
 options = fmu.simulate_options()
