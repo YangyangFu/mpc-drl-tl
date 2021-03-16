@@ -32,9 +32,10 @@ def total_power(alpha, beta, gamma, l, P_his, mz, Toa):
     # check dimensions
     if int(l) != len(alpha) or int(l) != P_his.shape[1]:
         raise ValueError("'l' is not equal to the size of historical zone temperature or the coefficients.")
-
+    alpha=[0.0]*l
+    #gamma=[0.0]*3
     P = (np.sum(alpha*P_his,axis=1) + beta[0]*mz+beta[1]*mz**2 + gamma[0]+ gamma[1]*Toa+gamma[2]*Toa**2)
-    return P
+    return abs(P)
 
 data = pd.read_csv('train_data.csv',index_col=[0])
 

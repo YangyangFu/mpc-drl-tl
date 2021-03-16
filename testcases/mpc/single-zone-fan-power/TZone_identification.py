@@ -32,7 +32,7 @@ def zone_temperature(alpha, beta, gamma, l, Tz_his, mz, Ts, Toa):
     # check dimensions
     if int(l) != len(alpha) or int(l) != Tz_his.shape[1]:
         raise ValueError("'l' is not equal to the size of historical zone temperature or the coefficients.")
-
+    alpha = [alpha[0],0., 0., 0.]
     Tz = (np.sum(alpha*Tz_his,axis=1) + beta*mz*Ts + gamma*Toa)/(1+beta*mz)
     return Tz
 

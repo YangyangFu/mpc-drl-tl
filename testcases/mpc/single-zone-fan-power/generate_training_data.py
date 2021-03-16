@@ -68,7 +68,7 @@ spe = res['uFan']
 flo = res['hvac.fanSup.m_flow_in']
 Toa = res['TOut']
 TRoo = res['TRoo']
-PFan = res['PFan.y']
+PAHU = res['PFan.y']
 PTot = res['PTot']
 
 # interpolate data
@@ -76,7 +76,7 @@ train_data = pd.DataFrame({'speed':np.array(spe),
                             'mass_flow':np.array(flo),
                             'T_oa':np.array(Toa),
                             'T_roo':np.array(TRoo),
-                            'P_fan':np.array(PFan)}, index=tim)
+                            'P_fan':np.array(PAHU)}, index=tim)
 
 def interp(df, new_index):
     """Return a new DataFrame with all columns values interpolated
