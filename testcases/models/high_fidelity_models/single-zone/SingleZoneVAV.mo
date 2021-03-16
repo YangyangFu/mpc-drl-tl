@@ -148,6 +148,10 @@ package SingleZoneVAV
       annotation (Placement(transformation(extent={{-142,70},{-122,90}})));
     Buildings.Controls.SetPoints.OccupancySchedule occSch
       annotation (Placement(transformation(extent={{-160,-50},{-140,-30}})));
+    Modelica.Blocks.Math.MultiSum PFanPHea(nu=2)
+      annotation (Placement(transformation(extent={{128,14},{140,26}})));
+    Modelica.Blocks.Interfaces.RealOutput PAHU "Power of AHU"
+      annotation (Placement(transformation(extent={{160,10},{180,30}})));
   equation
     connect(weaDat.weaBus, weaBus) annotation (Line(
         points={{-140,130},{-108,130}},
@@ -270,6 +274,12 @@ package SingleZoneVAV
             18},{-42,18}}, color={0,0,127}));
     connect(occSch.occupied, hvac.chiOn) annotation (Line(points={{-139,-46},{
             -60,-46},{-60,-10},{-42,-10}}, color={255,0,255}));
+    connect(PFan.y, PFanPHea.u[1]) annotation (Line(points={{161,140},{174,140},
+            {174,64},{94,64},{94,22.1},{128,22.1}}, color={0,0,127}));
+    connect(PHea.y, PFanPHea.u[2]) annotation (Line(points={{141,120},{170,120},
+            {170,66},{92,66},{92,17.9},{128,17.9}}, color={0,0,127}));
+    connect(PFanPHea.y, PAHU)
+      annotation (Line(points={{141.02,20},{170,20}}, color={0,0,127}));
     annotation (
       experiment(
         StartTime=18316800,
@@ -630,7 +640,7 @@ First implementation.
                   points={{-52,50},{48,-10},{-52,-70},{-52,50}})}));
   end ZoneTemperatureSetpoint;
 
-  model TestCaseSupervisoryBaseline
+  model Baseline
     "Based on Buildings.Air.Systems.SingleZone.VAV.Examples.ChillerDXHeatingEconomizer."
 
     package MediumA = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Buildings library air media package";
@@ -770,6 +780,10 @@ First implementation.
       annotation (Placement(transformation(extent={{160,-70},{180,-50}})));
     Modelica.Blocks.Interfaces.RealOutput GHI
       annotation (Placement(transformation(extent={{160,-90},{180,-70}})));
+    Modelica.Blocks.Interfaces.RealOutput PAHU "Power of AHU"
+      annotation (Placement(transformation(extent={{160,10},{180,30}})));
+    Modelica.Blocks.Math.MultiSum PFanPHea(nu=2)
+      annotation (Placement(transformation(extent={{128,14},{140,26}})));
   equation
     connect(weaDat.weaBus, weaBus) annotation (Line(
         points={{-140,130},{-108,130}},
@@ -889,6 +903,12 @@ First implementation.
             18},{-42,18}}, color={0,0,127}));
     connect(con.chiOn, hvac.chiOn) annotation (Line(points={{-79,-4},{-54,-4},{
             -54,-10},{-42,-10}}, color={255,0,255}));
+    connect(PFan.y, PFanPHea.u[1]) annotation (Line(points={{161,140},{174,140},
+            {174,64},{94,64},{94,22.1},{128,22.1}}, color={0,0,127}));
+    connect(PHea.y, PFanPHea.u[2]) annotation (Line(points={{141,120},{170,120},
+            {170,66},{92,66},{92,17.9},{128,17.9}}, color={0,0,127}));
+    connect(PFanPHea.y, PAHU)
+      annotation (Line(points={{141.02,20},{170,20}}, color={0,0,127}));
     annotation (
       experiment(
         StartTime=18316800,
@@ -933,7 +953,7 @@ First implementation.
                   pattern = LinePattern.None,
                   fillPattern = FillPattern.Solid,
                   points={{-52,50},{48,-10},{-52,-70},{-52,50}})}));
-  end TestCaseSupervisoryBaseline;
+  end Baseline;
 
   package BaseClasses "Base classes for test case"
     extends Modelica.Icons.BasesPackage;
