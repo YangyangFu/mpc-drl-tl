@@ -166,9 +166,9 @@ class mpc_case():
         # solve optimization
         xtol=1e-6
         ftol=1e-6
-        #solver='de' # GLP
+        solver='de' # GLP
         #solver = "interalg" # GLP
-        solver='ralg' # NLP
+        #solver='ralg' # NLP
         #solver='ipopt'# NLP
         r = model.solve(solver,xtol=xtol,ftol=ftol)
         x_opt, f_opt = r.xf, r.ff
@@ -246,8 +246,8 @@ class mpc_case():
         lb=lb, ub=ub, gtol=gtol, contol=contol, maxIter = 10000, maxFunEvals = 1e7, name = 'NLP for: '+str(self.time))
 
     def get_optimization_model(self):
-        #return self.openopt_model_glp()
-        return self.openopt_model_nlp()
+        return self.openopt_model_glp()
+        #return self.openopt_model_nlp()
 
     def FILO(self,lis,x):
         lis.pop() # remove the last element
@@ -286,6 +286,7 @@ class mpc_case():
         # conver to numpy array
         Tz_his = np.array(Tz_his).reshape(1,-1)
         alpha = np.array(alpha).reshape(-1)
+        alpha = [alpha[0],0., 0., 0.]
         Tz = (np.sum(alpha*Tz_his,axis=1) + beta*mz*Ts + gamma*Toa)/(1+beta*mz)
 
         return float(Tz)
@@ -316,7 +317,7 @@ class mpc_case():
             raise ValueError("'l' is not equal to the size of historical zone temperature or the coefficients.")
         # conver to numpy array
         P_his = np.array(P_his).reshape(1,-1)
-        alpha = np.array(alpha).reshape(-1)   
+        alpha = [0.0]*l#np.array(alpha).reshape(-1)   
         beta = np.array(beta).reshape(-1) 
         gamma = np.array(gamma).reshape(-1)      
         #perform prediction     
