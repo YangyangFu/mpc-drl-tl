@@ -32,16 +32,16 @@ def zone_temperature(alpha, beta, gamma, l, Tz_his, mz, Ts, Toa):
     # check dimensions
     if int(l) != len(alpha) or int(l) != Tz_his.shape[1]:
         raise ValueError("'l' is not equal to the size of historical zone temperature or the coefficients.")
-    alpha = [alpha[0],0., 0., 0.]
+    #alpha = [alpha[0],0., 0., 0.]
     Tz = (np.sum(alpha*Tz_his,axis=1) + beta*mz*Ts + gamma*Toa)/(1+beta*mz)
     return Tz
 
 data = pd.read_csv('train_data.csv',index_col=[0])
 
 # prepare data for zone temperature prediction
-l = 4
+l = 8
 Tz_his = pd.DataFrame(data['T_roo'])
-for i in range(l):
+for i in range(8):
     Tz_his['T_roo_'+str(i+1)] = data['T_roo'].values
     shift = Tz_his['T_roo_'+str(i+1)].shift(periods=i+1)
     Tz_his['T_roo_'+str(i+1)]=shift.values

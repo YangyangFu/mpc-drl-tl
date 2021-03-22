@@ -17,7 +17,7 @@ dt = 15*60.
 ## =========================================
 # DEFINE MODEL
 # ------------
-baseline = load_fmu('SingleZoneVAVBaseline.fmu')
+baseline = load_fmu('SingleZoneDamperControlBaseline.fmu')
 
 ## fmu settings
 options = baseline.simulate_options()
@@ -44,7 +44,7 @@ print len(t_opt)
 print len(u_opt)
 
 ### 1- Load virtual building model
-mpc = load_fmu('SingleZoneVAV.fmu')
+mpc = load_fmu('SingleZoneDamperControl.fmu')
 
 ## fmu settings
 options = mpc.simulate_options()
@@ -65,7 +65,7 @@ res_mpc = mpc.simulate(start_time = ts,
 ## =============================================================
 
 # read measurements
-measurement_names = ['time','TRoo','TOut','PFan.y','hvac.uFan','hvac.fanSup.m_flow_in', 'senTSetRooCoo.y', 'CO2Roo']
+measurement_names = ['time','TRoo','TOut','PTot','hvac.uFan','hvac.fanSup.m_flow_in', 'senTSetRooCoo.y', 'CO2Roo']
 measurement_mpc = {}
 measurement_base = {}
 
@@ -78,9 +78,9 @@ occ_start = 7
 occ_end = 20
 tim = np.arange(ts,te,dt)
 T_upper = np.array([30.0 for i in tim])
-T_upper[occ_start*4:(occ_end-1)*4] = 25.0
+T_upper[occ_start*4:(occ_end-1)*4] = 26.0
 T_lower = np.array([18.0 for i in tim])
-T_lower[occ_start*4:(occ_end-1)*4] = 23.0
+T_lower[occ_start*4:(occ_end-1)*4] = 22.0
 
 
 xticks=np.arange(ts,te,4*3600)
@@ -107,8 +107,8 @@ plt.legend()
 plt.ylabel('Room Temperature [C]')
 
 plt.subplot(313)
-plt.plot(measurement_base['time'], measurement_base['PFan.y'],'b--',label='Baseline')
-plt.plot(measurement_mpc['time'], measurement_mpc['PFan.y'],'r-',label='MPC')
+plt.plot(measurement_base['time'], measurement_base['PTot'],'b--',label='Baseline')
+plt.plot(measurement_mpc['time'], measurement_mpc['PTot'],'r-',label='MPC')
 plt.grid(True)
 plt.xticks(xticks,xticks_label)
 plt.ylabel('Total [W]')

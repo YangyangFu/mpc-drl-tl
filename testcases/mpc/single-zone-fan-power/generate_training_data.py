@@ -20,7 +20,7 @@ ts = 212*24*3600.
 te = ts + time_stop
 
 ## load fmu - cs
-fmu_name = "SingleZoneVAV.fmu"
+fmu_name = "SingleZoneDamperControl.fmu"
 fmu = load_fmu(fmu_name)
 options = fmu.simulate_options()
 options['ncp'] = 500.
@@ -68,7 +68,6 @@ spe = res['uFan']
 flo = res['hvac.fanSup.m_flow_in']
 Toa = res['TOut']
 TRoo = res['TRoo']
-PAHU = res['PFan.y']
 PTot = res['PTot']
 
 # interpolate data
@@ -76,7 +75,7 @@ train_data = pd.DataFrame({'speed':np.array(spe),
                             'mass_flow':np.array(flo),
                             'T_oa':np.array(Toa),
                             'T_roo':np.array(TRoo),
-                            'P_fan':np.array(PAHU)}, index=tim)
+                            'P_tot':np.array(PTot)}, index=tim)
 
 def interp(df, new_index):
     """Return a new DataFrame with all columns values interpolated

@@ -109,7 +109,7 @@ package SingleZoneVAV
     Modelica.Blocks.Interfaces.RealOutput CO2Roo
       "Connector of Real output signal"
       annotation (Placement(transformation(extent={{160,-40},{180,-20}})));
-    Modelica.Blocks.Math.MultiSum PHVAC(nu=2)
+    Modelica.Blocks.Math.MultiSum PHVAC(nu=1)
       annotation (Placement(transformation(extent={{126,34},{138,46}})));
     Modelica.Blocks.Interfaces.RealOutput PTot
       annotation (Placement(transformation(extent={{160,30},{180,50}})));
@@ -204,11 +204,7 @@ package SingleZoneVAV
     connect(CO2RooAir.y, CO2Roo)
       annotation (Line(points={{141,-30},{170,-30}}, color={0,0,127}));
     connect(PFan.y, PHVAC.u[1]) annotation (Line(points={{161,140},{174,140},{
-            174,64},{94,64},{94,42.1},{126,42.1}},
-                                                 color={0,0,127}));
-    connect(PHea.y, PHVAC.u[2]) annotation (Line(points={{141,120},{170,120},{
-            170,66},{92,66},{92,37.9},{126,37.9}},
-                                                 color={0,0,127}));
+            174,64},{94,64},{94,40},{126,40}},   color={0,0,127}));
     connect(PHVAC.y, PTot)
       annotation (Line(points={{139.02,40},{170,40}}, color={0,0,127}));
     connect(weaBus.TDryBul, TOut) annotation (Line(

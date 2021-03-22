@@ -61,6 +61,9 @@ RUN cd $HOME/github/pyipopt && python setup.py build && python setup.py install
 ### Finish installation
 # add plotting library
 RUN pip install matplotlib
+# Install scikit learn
+RUN pip install -U scikit-learn
+
 # change user
 USER developer
 # Avoid warning that Matplotlib is building the font cache using fc-list. This may take a moment.

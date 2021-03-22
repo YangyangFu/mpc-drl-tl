@@ -46,7 +46,7 @@ def get_states(states,measurement):
 
     # read scalor
     Tz = measurement['TRoo'].values[0]
-    P = measurement['PFan.y'].values[0]
+    P = measurement['PTot'].values[0]
 
     # new list
     new_Tz_his = FILO(Tz_his,Tz)
@@ -99,7 +99,7 @@ start = 212*24*3600.+13*24*3600
 end = start + 24*3600.
 
 ### 1- Load virtual building model
-hvac = load_fmu('SingleZoneVAV.fmu')
+hvac = load_fmu('SingleZoneDamperControl.fmu')
 
 ## fmu settings
 options = hvac.simulate_options()
@@ -121,7 +121,7 @@ with open('Power.json') as f:
   parameters_power = json.load(f)
 
 # measurement at current time
-measurement_names=['TRoo','TOut','PFan.y','uFan','hvac.fanSup.m_flow_in']
+measurement_names=['TRoo','TOut','PTot','uFan','hvac.fanSup.m_flow_in']
 measurement_ini = {}
 # states at current time for MPC model - this should be customized based on mpc design
 lag_Tz = 4 # 4-step lag - should be identified for MPC model
