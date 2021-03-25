@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 # define the path
 
 
-data = pd.read_csv('train_data.csv',index_col=[0])
+data = pd.read_csv('train_data_instant.csv',index_col=[0])
 
 # prepare data for zone temperature prediction
 l = 4
@@ -98,7 +98,7 @@ plt.ylabel('Temperature [C]')
 plt.xlim([12,37])
 plt.ylim([12,37])
 plt.legend()
-plt.savefig('plot1.pdf')
+plt.savefig('TZone_scatter.pdf')
 # Visualize training and prediction 
 plt.figure()
 plt.subplot(211)
