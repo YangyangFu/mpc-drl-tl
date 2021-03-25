@@ -38,7 +38,7 @@ def zone_temperature(alpha, beta, gamma, l, Tz_his, mz, Ts, Toa):
 data = pd.read_csv('train_data_instant.csv',index_col=[0])
 
 # prepare data for zone temperature prediction
-l = 1
+l = 4
 Tz_his = pd.DataFrame(data['T_roo'])
 for i in range(l):
     Tz_his['T_roo_'+str(i+1)] = data['T_roo'].values
@@ -58,9 +58,9 @@ print data_train
 data_test = data.iloc[20*24*4:-1,:]
 
 # fit a zone temperature model
-def func_TZone(x,alpha,beta,gamma):
-    l = 1
-    alpha= np.array([alpha])
+def func_TZone(x,alpha1,alpha2,alpha3,alpha4,beta,gamma):
+    l = 4
+    alpha= np.array([alpha1,alpha2,alpha3,alpha4])
     Tz_his = x[:,:l]
     mz = x[:,l]
     Ts = 13+273.15
@@ -69,14 +69,14 @@ def func_TZone(x,alpha,beta,gamma):
 
     return y
 
-x_train = data_train[['T_roo_1','mass_flow','T_oa']].values
+x_train = data_train[['T_roo_1','T_roo_2','T_roo_3','T_roo_4','mass_flow','T_oa']].values
 y_train = data_train['T_roo'].values
 
 popt,pcov = curve_fit(func_TZone,x_train,y_train)
 ypred_train = func_TZone(x_train,*popt)
 
 # test on testing data
-x_test = data_test[['T_roo_1','mass_flow','T_oa']].values
+x_test = data_test[['T_roo_1','T_roo_2','T_roo_3','T_roo_4','mass_flow','T_oa']].values
 y_test = data_test['T_roo'].values
 ypred_test = func_TZone(x_test,*popt)
 
