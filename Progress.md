@@ -14,6 +14,7 @@ A paper plan for comparing MPC and DRL/TL in building control
   - [11/13/2020](#11132020)
   - [11/20/2020](#11202020)
   - [03/01/2021](#03012021)
+  - [03/23/2021](#03232021)
   
 
 
@@ -131,3 +132,12 @@ The baseline case has a few limitations:
 
 2. VAV local terminal control (airflow rate) is not a good enough control variable for optiming system level power. The airflow rate setpoint will influecnce the chilled water plant control. For instance, if the setpoint is too high, the zone could be over-cooled, and thus chiller might be turned off, which could save a lot of energy. The frequent on/off of chiller should be avoided in real applications. 
    1. An alternative is to control zone temperature setpoint.
+
+## 03/23/2021
+Current issue is zone temperature predictor cannot predict the correct trends, i.e., the more air in the zone, the more temperature changes in the zone, although the prediction of the temperature is within a small error tolerance.
+
+Following attempts have been tried:
+1. train a ANN model instead of linear ARX model
+2. use average data within a sample interval instead of a value at the sampling timestamp
+
+MPC control performance are significantly increased.
