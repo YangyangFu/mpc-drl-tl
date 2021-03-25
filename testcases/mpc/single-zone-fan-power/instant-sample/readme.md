@@ -1,0 +1,4 @@
+1.1: case studies that use polunomial equation to predict zone temperature dynamics. The model use 1 historical temperature measurement as one of the inputs.
+1.2: case studies that use polunomial equation to predict zone temperature dynamics. The model use 4 historical temperature measurements as part of the inputs.
+2.1: case studies that use shallow ANN to predict zone temperature dynamics. The model use 1 historical temperature measurement as one of the inputs.
+2.2: case studies that use shallow ANN equation to predict zone temperature dynamics. The model use 4 historical temperature measurements as part of the inputs.
