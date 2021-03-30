@@ -1,0 +1,6 @@
+docker run^
+	-ti^
+	--runtime=nvidia^
+	-e NVIDIA_DRIVER_CAPABILITIES=compute,utility^ 
+	-e NVIDIA_VISIBLE_DEVICES=all^ 
+	mpcdrl_gpu /bin/bash -c "cd /mnt/shared && python /mnt/shared/test_singlezone.py"
