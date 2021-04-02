@@ -19,7 +19,7 @@ package SingleZoneVAV
     parameter Modelica.SIunits.Temperature TCooOff=303.15
       "Cooling setpoint during off";
 
-    Buildings.Air.Systems.SingleZone.VAV.ChillerDXHeatingEconomizerController con(
+    BaseClasses.Control.ChillerDXHeatingEconomizerController                  con(
       minAirFlo=0.1,
       minOAFra=0.15,
       kFan=4,
@@ -103,7 +103,8 @@ package SingleZoneVAV
 
     Modelica.Blocks.Interfaces.RealInput uFan "Fan control signal"
       annotation (Placement(transformation(extent={{-200,60},{-160,100}})));
-    Modelica.Blocks.Interfaces.RealOutput TRoo
+    Modelica.Blocks.Interfaces.RealOutput TRoo(
+      unit="K")
       "Connector of Real output signal"
       annotation (Placement(transformation(extent={{160,-10},{180,10}})));
     Modelica.Blocks.Interfaces.RealOutput CO2Roo
@@ -113,7 +114,8 @@ package SingleZoneVAV
       annotation (Placement(transformation(extent={{126,34},{138,46}})));
     Modelica.Blocks.Interfaces.RealOutput PTot
       annotation (Placement(transformation(extent={{160,30},{180,50}})));
-    Modelica.Blocks.Interfaces.RealOutput TOut
+    Modelica.Blocks.Interfaces.RealOutput TOut(
+      unit="K")
       annotation (Placement(transformation(extent={{160,-70},{180,-50}})));
     Modelica.Blocks.Interfaces.RealOutput GHI
       annotation (Placement(transformation(extent={{160,-90},{180,-70}})));
@@ -298,6 +300,7 @@ First implementation.
     BaseClasses.Control.ChillerDXHeatingEconomizerController con(
       minAirFlo=0.1,
       minOAFra=0.15,
+      kCoo=1,
       kFan=4,
       kEco=4,
       kHea=4,
@@ -389,20 +392,25 @@ First implementation.
       description="Room air CO2 concentration") "CO2 concentration of room air"
       annotation (Placement(transformation(extent={{120,-40},{140,-20}})));
 
-    Modelica.Blocks.Interfaces.RealOutput TRoo
+    Modelica.Blocks.Interfaces.RealOutput TRoo(
+      unit="K")
       "Connector of Real output signal"
       annotation (Placement(transformation(extent={{160,-10},{180,10}})));
     Modelica.Blocks.Interfaces.RealOutput CO2Roo
       "Connector of Real output signal"
       annotation (Placement(transformation(extent={{160,-40},{180,-20}})));
-    Modelica.Blocks.Math.MultiSum PHVAC(nu=1)
+    Modelica.Blocks.Math.MultiSum PHVAC(nu=2)
       annotation (Placement(transformation(extent={{126,34},{138,46}})));
     Modelica.Blocks.Interfaces.RealOutput PTot
       annotation (Placement(transformation(extent={{160,30},{180,50}})));
-    Modelica.Blocks.Interfaces.RealOutput TOut
+    Modelica.Blocks.Interfaces.RealOutput TOut(
+      unit="K")
       annotation (Placement(transformation(extent={{160,-70},{180,-50}})));
     Modelica.Blocks.Interfaces.RealOutput GHI
       annotation (Placement(transformation(extent={{160,-90},{180,-70}})));
+    Buildings.Controls.SetPoints.OccupancySchedule occSch
+      "Occupancy schedule"
+      annotation (Placement(transformation(extent={{-140,80},{-120,100}})));
   equation
     connect(weaDat.weaBus, weaBus) annotation (Line(
         points={{-140,130},{-108,130}},
@@ -412,13 +420,13 @@ First implementation.
         index=1,
         extent={{6,3},{6,3}}));
 
-    connect(con.yHea, hvac.uHea) annotation (Line(points={{-79,6},{-40,6},{-56,6},
-            {-56,12},{-42,12}},        color={0,0,127}));
+    connect(con.yHea, hvac.uHea) annotation (Line(points={{-79,6},{-56,6},{-56,12},
+            {-42,12}},                 color={0,0,127}));
     connect(con.yCooCoiVal, hvac.uCooVal) annotation (Line(points={{-79,0},{-54,0},
             {-54,5},{-42,5}},             color={0,0,127}));
     connect(con.yOutAirFra, hvac.uEco) annotation (Line(points={{-79,3},{-50,3},{
             -50,-2},{-42,-2}},             color={0,0,127}));
-    connect(con.TMix, hvac.TMix) annotation (Line(points={{-102,2},{-112,2},{
+    connect(con.TMix, hvac.TMix) annotation (Line(points={{-102,0},{-112,0},{
             -112,-40},{10,-40},{10,-4},{1,-4}},             color={0,0,127}));
 
     connect(hvac.supplyAir, zon.supplyAir) annotation (Line(points={{0,8},{10,8},
@@ -426,8 +434,8 @@ First implementation.
     connect(hvac.returnAir, zon.returnAir) annotation (Line(points={{0,0},{6,0},{
             6,-2},{10,-2},{40,-2}},  color={0,127,255}));
 
-    connect(con.TOut, weaBus.TDryBul) annotation (Line(points={{-102,-2},{-108,
-            -2},{-108,130}},              color={0,0,127}));
+    connect(con.TOut, weaBus.TDryBul) annotation (Line(points={{-102,-3},{-108,
+            -3},{-108,130}},              color={0,0,127}));
     connect(hvac.weaBus, weaBus) annotation (Line(
         points={{-36,17.8},{-36,130},{-108,130}},
         color={255,204,51},
@@ -457,11 +465,11 @@ First implementation.
     connect(TSetRooHea.y[1], oveTSetRooHea.u)
       annotation (Line(points={{-159,30},{-142,30}}, color={0,0,127}));
     connect(oveTSetRooHea.y, con.TSetRooHea) annotation (Line(points={{-119,30},
-            {-116,30},{-116,10},{-102,10}}, color={0,0,127}));
+            {-116,30},{-116,6},{-102,6}},   color={0,0,127}));
     connect(TSetRooCoo.y[1], oveTSetRooCoo.u)
       annotation (Line(points={{-159,-10},{-142,-10}}, color={0,0,127}));
     connect(oveTSetRooCoo.y, con.TSetRooCoo) annotation (Line(points={{-119,-10},
-            {-116,-10},{-116,6},{-102,6}}, color={0,0,127}));
+            {-116,-10},{-116,3},{-102,3}}, color={0,0,127}));
     connect(hvac.QHea_flow, PHea.u) annotation (Line(points={{1,16},{10,16},{10,
             120},{118,120}}, color={0,0,127}));
     connect(hvac.PFan, PFan.u) annotation (Line(points={{1,18},{6,18},{6,140},{
@@ -479,7 +487,8 @@ First implementation.
     connect(CO2RooAir.y, CO2Roo)
       annotation (Line(points={{141,-30},{170,-30}}, color={0,0,127}));
     connect(PFan.y, PHVAC.u[1]) annotation (Line(points={{161,140},{174,140},{
-            174,64},{94,64},{94,40},{126,40}},   color={0,0,127}));
+            174,66},{90,66},{90,42.1},{126,42.1}},
+                                                 color={0,0,127}));
     connect(PHVAC.y, PTot)
       annotation (Line(points={{139.02,40},{170,40}}, color={0,0,127}));
     connect(weaBus.TDryBul, TOut) annotation (Line(
@@ -500,11 +509,15 @@ First implementation.
         horizontalAlignment=TextAlignment.Right));
     connect(con.yFan, hvac.uFan) annotation (Line(points={{-79,9},{-70,9},{-70,
             18},{-42,18}}, color={0,0,127}));
+    connect(occSch.occupied, con.uOcc) annotation (Line(points={{-119,84},{-110,
+            84},{-110,9},{-102,9}}, color={255,0,255}));
+    connect(PHea.y, PHVAC.u[2]) annotation (Line(points={{141,120},{172,120},{
+            172,64},{94,64},{94,37.9},{126,37.9}}, color={0,0,127}));
     annotation (
       experiment(
         StartTime=18316800,
         StopTime=20995200,
-        Interval=3600.00288,
+        Interval=3600,
         Tolerance=1e-06,
         __Dymola_Algorithm="Cvode"),
         __Dymola_Commands(file="modelica://Buildings/Resources/Scripts/Dymola/Air/Systems/SingleZone/VAV/Examples/ChillerDXHeatingEconomizer.mos"
@@ -564,7 +577,7 @@ First implementation.
     parameter Modelica.SIunits.Temperature TCooOff=303.15
       "Cooling setpoint during off";
 
-    Buildings.Air.Systems.SingleZone.VAV.ChillerDXHeatingEconomizerController con(
+    BaseClasses.Control.ChillerDXHeatingEconomizerController                  con(
       minAirFlo=0.1,
       minOAFra=0.15,
       kFan=4,
@@ -879,7 +892,7 @@ First implementation.
     parameter Modelica.SIunits.Temperature TCooOff=303.15
       "Cooling setpoint during off";
 
-    Buildings.Air.Systems.SingleZone.VAV.ChillerDXHeatingEconomizerController con(
+    BaseClasses.Control.ChillerDXHeatingEconomizerController                  con(
       minAirFlo=0.1,
       minOAFra=0.15,
       kFan=4,
@@ -1187,7 +1200,7 @@ First implementation.
     parameter Modelica.SIunits.Temperature TCooOff=303.15
       "Cooling setpoint during off";
 
-    Buildings.Air.Systems.SingleZone.VAV.ChillerDXHeatingEconomizerController con(
+    BaseClasses.Control.ChillerDXHeatingEconomizerController                  con(
       minAirFlo=0.1,
       minOAFra=0.15,
       kFan=4,
@@ -1457,8 +1470,10 @@ First implementation.
   package BaseClasses "Base classes for test case"
     extends Modelica.Icons.BasesPackage;
     model Room "Room model for test case"
-      extends Buildings.Air.Systems.SingleZone.VAV.Examples.BaseClasses.Room(roo(
-            use_C_flow=true, nPorts=6), sinInf(use_C_in=true));
+      extends Buildings.Air.Systems.SingleZone.VAV.Examples.BaseClasses.Room(
+        roo(use_C_flow=true, nPorts=6),
+        sinInf(use_C_in=true),
+        TRooAir(unit="K"));
       Modelica.Blocks.Math.Gain gaiCO2Gen(k=2)
         "Number of people for CO2 generation"
         annotation (Placement(transformation(extent={{-80,20},{-60,40}})));
@@ -2768,20 +2783,20 @@ First implementation.
           "Zone cooling setpoint temperature" annotation (Placement(transformation(
               extent={{20,-20},{-20,20}},
               rotation=180,
-              origin={-120,60})));
+              origin={-120,30})));
         Modelica.Blocks.Interfaces.RealInput TSetRooHea(
           final unit="K",
           displayUnit="degC")
           "Zone heating setpoint temperature" annotation (Placement(transformation(
               extent={{20,-20},{-20,20}},
               rotation=180,
-              origin={-120,100})));
+              origin={-120,60})));
 
         Modelica.Blocks.Interfaces.RealInput TMix(
           final unit="K",
           displayUnit="degC")
           "Measured mixed air temperature"
-          annotation (Placement(transformation(extent={{-140,0},{-100,40}})));
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
 
         Modelica.Blocks.Interfaces.RealInput TSup(
           final unit="K",
@@ -2793,7 +2808,7 @@ First implementation.
           final unit="K",
           displayUnit="degC")
           "Measured outside air temperature"
-          annotation (Placement(transformation(extent={{-140,-40},{-100,0}})));
+          annotation (Placement(transformation(extent={{-140,-50},{-100,-10}})));
 
         Modelica.Blocks.Interfaces.RealOutput yHea(final unit="1") "Control signal for heating coil"
           annotation (Placement(transformation(extent={{100,50},{120,70}})));
@@ -2830,20 +2845,30 @@ First implementation.
 
         Buildings.Controls.OBC.CDL.Continuous.Hysteresis hysChiPla(uLow=-1,
             uHigh=0) "Hysteresis with delay to switch on cooling"
-          annotation (Placement(transformation(extent={{40,-50},{60,-30}})));
+          annotation (Placement(transformation(extent={{40,-60},{60,-40}})));
 
         Modelica.Blocks.Math.Feedback errTRooCoo
           "Control error on room temperature for cooling"
           annotation (Placement(transformation(extent={{-42,-70},{-22,-50}})));
         Buildings.Controls.Continuous.LimPID conCooVal(
           controllerType=Modelica.Blocks.Types.SimpleController.PI,
-          Ti=60,
+          Ti=240,
           final yMax=1,
           final yMin=0,
           final k=kCoo,
           final reverseAction=true) "Cooling coil valve controller"
-          annotation (Placement(transformation(extent={{0,-30},{20,-10}})));
+          annotation (Placement(transformation(extent={{0,-40},{20,-20}})));
 
+        BaseClasses.FanStatus fanSta
+          annotation (Placement(transformation(extent={{0,10},{20,30}})));
+        Buildings.Controls.OBC.CDL.Interfaces.BooleanInput uOcc
+          "Current occupancy period, true if it is in occupant period"
+          annotation (Placement(transformation(extent={{-140,70},{-100,110}}),
+              iconTransformation(extent={{-140,70},{-100,110}})));
+        Modelica.Blocks.Logical.Switch TSupAirSetSwi
+          annotation (Placement(transformation(extent={{-40,-30},{-20,-10}})));
+        Modelica.Blocks.Logical.Switch fanSpeSwi
+          annotation (Placement(transformation(extent={{68,80},{88,100}})));
       protected
         Modelica.Blocks.Sources.Constant TSetSupChiConst(
           final k=TSupChi_nominal)
@@ -2851,61 +2876,89 @@ First implementation.
           annotation (Placement(transformation(extent={{40,-90},{60,-70}})));
 
         Modelica.Blocks.Sources.Constant conMinOAFra(
-          final k=minOAFra)
-          "Minimum outside air fraction"
+          final k=minOAFra) "Minimum outside air fraction"
           annotation (Placement(transformation(extent={{-70,38},{-50,58}})));
 
-        Modelica.Blocks.Sources.Constant TSetSupAirConst(
-          final k=TSetSupAir)
+        Modelica.Blocks.Sources.Constant TSetSupAirOff(final k=TSetSupAir + 10)
           "Set point for supply air temperature"
-          annotation (Placement(transformation(extent={{-60,-30},{-40,-10}})));
+          annotation (Placement(transformation(extent={{40,-20},{60,0}})));
 
+        Modelica.Blocks.Sources.Constant TSetSupAirOn(final k=TSetSupAir)
+          "Set point for supply air temperature"
+          annotation (Placement(transformation(extent={{40,20},{60,40}})));
+        Modelica.Blocks.Sources.Constant zer(final k=0) "0"
+          annotation (Placement(transformation(extent={{32,66},{52,86}})));
       equation
         connect(conMinOAFra.y,conEco. minOAFra) annotation (Line(points={{-49,48},{
                 -26,48},{-1,48}},                 color={0,0,127}));
-        connect(TSetSupAirConst.y, conEco.TMixSet) annotation (Line(points={{-39,-20},
-                {-20,-20},{-20,58},{-1,58}}, color={0,0,127}));
-        connect(errTRooCoo.y, hysChiPla.u) annotation (Line(points={{-23,-60},{0,-60},
-                {0,-40},{38,-40}},                           color={0,0,127}));
-        connect(TSetRooCoo, errTRooCoo.u2) annotation (Line(points={{-120,60},{-80,60},
-                {-80,-80},{-32,-80},{-32,-68}}, color={0,0,127}));
+        connect(errTRooCoo.y, hysChiPla.u) annotation (Line(points={{-23,-60},{
+                0,-60},{0,-50},{38,-50}},                    color={0,0,127}));
+        connect(TSetRooCoo, errTRooCoo.u2) annotation (Line(points={{-120,30},{
+                -80,30},{-80,-80},{-32,-80},{-32,-68}},
+                                                color={0,0,127}));
         connect(errTRooCoo.u1, TRoo) annotation (Line(points={{-40,-60},{-74,-60},{
                 -120,-60}}, color={0,0,127}));
-        connect(TSetSupAirConst.y,conCooVal. u_s)
-          annotation (Line(points={{-39,-20},{-2,-20}},        color={0,0,127}));
-        connect(conSup.TSetRooHea, TSetRooHea) annotation (Line(points={{-41,86},{-88,
-                86},{-88,100},{-120,100}},
+        connect(conSup.TSetRooHea, TSetRooHea) annotation (Line(points={{-41,86},
+                {-88,86},{-88,60},{-120,60}},
                                          color={0,0,127}));
-        connect(conSup.TSetRooCoo, TSetRooCoo) annotation (Line(points={{-41,80},{-80,
-                80},{-80,60},{-120,60}}, color={0,0,127}));
+        connect(conSup.TSetRooCoo, TSetRooCoo) annotation (Line(points={{-41,80},
+                {-80,80},{-80,30},{-120,30}},
+                                         color={0,0,127}));
         connect(conSup.TRoo, TRoo) annotation (Line(points={{-41,74},{-74,74},{-74,
                 -60},{-120,-60}},
                              color={0,0,127}));
         connect(conSup.yHea, conEco.yHea) annotation (Line(points={{-19,76},{-10,76},
                 {-10,42},{-1,42}},color={0,0,127}));
-        connect(conEco.TMix, TMix) annotation (Line(points={{-1,55},{-40,55},{-40,20},
-                {-120,20}}, color={0,0,127}));
+        connect(conEco.TMix, TMix) annotation (Line(points={{-1,55},{-40,55},{
+                -40,0},{-120,0}},
+                            color={0,0,127}));
         connect(conEco.TRet, TRoo) annotation (Line(points={{-1,52},{-34,52},{-34,12},
                 {-88,12},{-88,-60},{-120,-60}},     color={0,0,127}));
-        connect(conEco.TOut, TOut) annotation (Line(points={{-1,45},{-30,45},{-30,8},
-                {-94,8},{-94,-20},{-120,-20}},   color={0,0,127}));
-        connect(conSup.yHea, yHea) annotation (Line(points={{-19,76},{40,76},{40,60},
-                {80,60},{110,60}},
-                          color={0,0,127}));
-        connect(conSup.yFan, yFan) annotation (Line(points={{-19,84},{40,84},{40,90},
-                {40,90},{40,90},{110,90},{110,90}},
+        connect(conEco.TOut, TOut) annotation (Line(points={{-1,45},{-30,45},{
+                -30,8},{-94,8},{-94,-30},{-120,-30}},
+                                                 color={0,0,127}));
+        connect(conSup.yHea, yHea) annotation (Line(points={{-19,76},{20,76},{
+                20,60},{110,60}},
                           color={0,0,127}));
         connect(conEco.yOutAirFra, yOutAirFra) annotation (Line(points={{21,50},{80,50},
                 {80,30},{110,30}}, color={0,0,127}));
         connect(conCooVal.y, yCooCoiVal)
-          annotation (Line(points={{21,-20},{76,-20},{76,0},{110,0}},
+          annotation (Line(points={{21,-30},{76,-30},{76,0},{110,0}},
                                                     color={0,0,127}));
         connect(TSetSupChiConst.y, TSetSupChi)
           annotation (Line(points={{61,-80},{110,-80}}, color={0,0,127}));
         connect(conCooVal.u_m, TSup)
-          annotation (Line(points={{10,-32},{10,-90},{-120,-90}}, color={0,0,127}));
-        connect(hysChiPla.y, chiOn) annotation (Line(points={{62,-40},{62,-40},
-                {110,-40}},      color={255,0,255}));
+          annotation (Line(points={{10,-42},{10,-90},{-120,-90}}, color={0,0,127}));
+        connect(hysChiPla.y, chiOn) annotation (Line(points={{62,-50},{80,-50},
+                {80,-40},{110,-40}},
+                                 color={255,0,255}));
+        connect(fanSta.uOcc, uOcc) annotation (Line(points={{-4,28},{-12,28},{
+                -12,100},{-80,100},{-80,90},{-120,90}}, color={255,0,255}));
+        connect(TSetRooHea, fanSta.TSetRooHea) annotation (Line(points={{-120,
+                60},{-88,60},{-88,23},{-2,23}}, color={0,0,127}));
+        connect(TSetRooCoo, fanSta.TSetRooCoo) annotation (Line(points={{-120,
+                30},{-80,30},{-80,17},{-2,17}}, color={0,0,127}));
+        connect(TRoo, fanSta.TRoo) annotation (Line(points={{-120,-60},{-68,-60},
+                {-68,12},{-2,12}}, color={0,0,127}));
+        connect(fanSta.fanOn, TSupAirSetSwi.u2) annotation (Line(points={{21,20},
+                {28,20},{28,0},{-54,0},{-54,-20},{-42,-20}}, color={255,0,255}));
+        connect(TSetSupAirOff.y, TSupAirSetSwi.u3) annotation (Line(points={{61,
+                -10},{72,-10},{72,6},{-58,6},{-58,-28},{-42,-28}}, color={0,0,
+                127}));
+        connect(TSetSupAirOn.y, TSupAirSetSwi.u1) annotation (Line(points={{61,
+                30},{72,30},{72,8},{-50,8},{-50,-12},{-42,-12}}, color={0,0,127}));
+        connect(TSupAirSetSwi.y, conEco.TMixSet) annotation (Line(points={{-19,
+                -20},{-14,-20},{-14,58},{-1,58}}, color={0,0,127}));
+        connect(TSupAirSetSwi.y, conCooVal.u_s) annotation (Line(points={{-19,
+                -20},{-14,-20},{-14,-30},{-2,-30}}, color={0,0,127}));
+        connect(fanSta.fanOn, fanSpeSwi.u2) annotation (Line(points={{21,20},{
+                28,20},{28,90},{66,90}}, color={255,0,255}));
+        connect(conSup.yFan, fanSpeSwi.u1) annotation (Line(points={{-19,84},{
+                20,84},{20,98},{66,98}}, color={0,0,127}));
+        connect(zer.y, fanSpeSwi.u3) annotation (Line(points={{53,76},{60,76},{
+                60,82},{66,82}}, color={0,0,127}));
+        connect(fanSpeSwi.y, yFan)
+          annotation (Line(points={{89,90},{110,90}}, color={0,0,127}));
         annotation (Icon(graphics={Line(points={{-100,-100},{0,2},{-100,100}}, color=
                     {0,0,0})}), Documentation(info="<html>
 <p>
@@ -3169,6 +3222,69 @@ First implementation.
 </ul>
 </html>"));
         end ControllerHeatingFan;
+
+        model FanStatus "Fan status"
+
+          Modelica.Blocks.Interfaces.RealInput TSetRooCoo(final unit="K", displayUnit="degC")
+            "Zone cooling setpoint"
+            annotation (Placement(transformation(extent={{-140,-50},{-100,-10}}),
+                iconTransformation(extent={{-140,-50},{-100,-10}})));
+          Modelica.Blocks.Interfaces.RealInput TRoo(final unit="K", displayUnit="degC")
+            "Zone temperature measurement"
+            annotation (Placement(transformation(extent={{-140,-100},{-100,-60}}),
+                iconTransformation(extent={{-140,-100},{-100,-60}})));
+          Modelica.Blocks.Interfaces.RealInput TSetRooHea(final unit="K", displayUnit="degC")
+                                "Zone heating setpoint"
+            annotation (Placement(transformation(extent={{-140,10},{-100,50}}),
+                iconTransformation(extent={{-140,10},{-100,50}})));
+          Buildings.Controls.OBC.CDL.Interfaces.BooleanInput uOcc
+            "Current occupancy period, true if it is in occupant period"
+            annotation (Placement(transformation(extent={{-140,60},{-100,100.5}}),
+              iconTransformation(extent={{-180,40},{-100,120}})));
+          Modelica.Blocks.MathBoolean.Or or1(nu=3)
+            annotation (Placement(transformation(extent={{60,-10},{80,10}})));
+          Modelica.Blocks.Interfaces.BooleanOutput fanOn "Fan on/off status"
+            annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+          Modelica.Blocks.Math.Add dTCoo(k1=1, k2=-1)
+            annotation (Placement(transformation(extent={{-60,20},{-40,40}})));
+          Modelica.Blocks.Logical.Hysteresis hys1(uLow=-0.5, uHigh=0.5)
+            annotation (Placement(transformation(extent={{-20,20},{0,40}})));
+          Modelica.Blocks.Logical.Hysteresis hys2(uLow=-0.5, uHigh=0.5)
+            annotation (Placement(transformation(extent={{-20,-50},{0,-30}})));
+          Modelica.Blocks.Math.Add dTHea(k1=1, k2=-1)
+            annotation (Placement(transformation(extent={{-60,-50},{-40,-30}})));
+        equation
+          connect(uOcc, or1.u[1]) annotation (Line(points={{-120,80.25},{40,
+                  80.25},{40,4.66667},{60,4.66667}},
+                                 color={255,0,255}));
+          connect(or1.y, fanOn)
+            annotation (Line(points={{81.5,0},{110,0}}, color={255,0,255}));
+          connect(TRoo, dTCoo.u1) annotation (Line(points={{-120,-80},{-80,-80},{-80,36},
+                  {-62,36}}, color={0,0,127}));
+          connect(TSetRooCoo, dTCoo.u2) annotation (Line(points={{-120,-30},{-76,-30},{-76,
+                  24},{-62,24}}, color={0,0,127}));
+          connect(dTCoo.y, hys1.u)
+            annotation (Line(points={{-39,30},{-22,30}}, color={0,0,127}));
+          connect(dTHea.y, hys2.u)
+            annotation (Line(points={{-39,-40},{-22,-40}}, color={0,0,127}));
+          connect(TSetRooHea, dTHea.u1) annotation (Line(points={{-120,30},{-84,30},{-84,
+                  -34},{-62,-34}}, color={0,0,127}));
+          connect(TRoo, dTHea.u2) annotation (Line(points={{-120,-80},{-80,-80},{-80,-46},
+                  {-62,-46}}, color={0,0,127}));
+          connect(hys1.y, or1.u[2]) annotation (Line(points={{1,30},{36,30},{36,
+                  0},{60,0}}, color={255,0,255}));
+          connect(hys2.y, or1.u[3]) annotation (Line(points={{1,-40},{36,-40},{
+                  36,-4.66667},{60,-4.66667}}, color={255,0,255}));
+          annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+                                        Rectangle(
+                extent={{-100,-100},{100,100}},
+                lineColor={0,0,127},
+                fillColor={255,255,255},
+                fillPattern=FillPattern.Solid), Text(
+                extent={{-150,150},{150,110}},
+                textString="%name",
+                lineColor={0,0,255})}), Diagram(coordinateSystem(preserveAspectRatio=false)));
+        end FanStatus;
       annotation (preferredView="info", Documentation(info="<html>
 <p>
 This package contains base classes that are used to construct the models in
