@@ -522,7 +522,6 @@ First implementation.
         StartTime=18316800,
         StopTime=20995200,
         Interval=3600,
-        Tolerance=1e-06,
         __Dymola_Algorithm="Cvode"),
         __Dymola_Commands(file="modelica://Buildings/Resources/Scripts/Dymola/Air/Systems/SingleZone/VAV/Examples/ChillerDXHeatingEconomizer.mos"
           "Simulate and plot"),
