@@ -17,10 +17,11 @@ The development environment is configured in a virtual Unbuntu OS contained in a
 ### Installation Steps
 After installing the required software, execute the following steps to build and test the docker environment on your local computer.
 
-1. go to folder `MPC-DRL-TL`, and open a terminal. Make sure `Dockerfile` and `makefile` are in current folder
-2. build a local docker image from the provided `Dockerfile` by typing in the terminal
+1. go to folder `MPC-DRL-TL`, and open a terminal. Make sure `Dockerfile_XXX` and `makefile` are in current folder
+2. build a local docker image from the provided `Dockerfile_XXX` by typing in the terminal
    
-            make build
+            make build_cpu           ------- for CPU version pytorch
+            make build_gpu           ------- for GPU version pytorch
 3. check if the docker image is successfully built on your local computer. Type
 
             docker image ls
