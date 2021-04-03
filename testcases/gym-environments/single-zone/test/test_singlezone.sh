@@ -1,5 +1,4 @@
 exec docker run \
- 	  --name c_mpcdrl \
       --user=root \
 	  --detach=false \
 	  -e DISPLAY=${DISPLAY} \
