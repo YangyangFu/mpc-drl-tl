@@ -241,8 +241,7 @@ package SingleZoneVAV
       experiment(
         StartTime=18316800,
         StopTime=20995200,
-        Interval=3600,
-        Tolerance=1e-06,
+        Interval=3600.00288,
         __Dymola_Algorithm="Cvode"),
         __Dymola_Commands(file="modelica://Buildings/Resources/Scripts/Dymola/Air/Systems/SingleZone/VAV/Examples/ChillerDXHeatingEconomizer.mos"
           "Simulate and plot"),
@@ -1621,25 +1620,25 @@ First implementation.
         annotation (Placement(transformation(extent={{128,30},{148,50}})));
       Buildings.Fluid.HeatExchangers.HeaterCooler_u heaCoi(
         m_flow_nominal=mAir_flow_nominal,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
         Q_flow_nominal=QHea_flow_nominal,
         u(start=0),
         dp_nominal=0,
         allowFlowReversal=false,
         tau=90,
         redeclare package Medium = MediumA,
-        energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
         show_T=true)
          "Air heating coil"
         annotation (Placement(transformation(extent={{52,30},{72,50}})));
 
       Buildings.Fluid.Movers.FlowControlled_m_flow fanSup(
+        energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
         m_flow_nominal=mAir_flow_nominal,
         nominalValuesDefineDefaultPressureCurve=true,
+        use_inputFilter=false,
         dp_nominal=875,
         per(use_powerCharacteristic=false),
-        energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
         allowFlowReversal=false,
-        use_inputFilter=false,
         redeclare package Medium = MediumA) "Supply fan"
         annotation (Placement(transformation(extent={{-30,30},{-10,50}})));
 
@@ -1674,7 +1673,6 @@ First implementation.
         allowFlowReversal1=false,
         allowFlowReversal2=false,
         m1_flow_nominal=mChiEva_flow_nominal,
-        show_T=true,
         UA_nominal=-2*QCoo_flow_nominal/
             Buildings.Fluid.HeatExchangers.BaseClasses.lmtd(
                 T_a1=27,
@@ -1706,7 +1704,7 @@ First implementation.
                 -110},{220,-90}}), iconTransformation(extent={{200,-110},{220,-90}})));
       Buildings.Fluid.Sources.MassFlowSource_T souCoo(
         redeclare package Medium = MediumW,
-        T=278.15,
+        T=279.15,
         nPorts=1,
         use_m_flow_in=true) "Source for cooling coil" annotation (Placement(
             transformation(
@@ -1719,7 +1717,7 @@ First implementation.
             extent={{-10,-10},{10,10}},
             rotation=90,
             origin={72,-92})));
-      Buildings.Controls.OBC.CDL.Continuous.Gain gaiCooCoi(k=3*
+      Buildings.Controls.OBC.CDL.Continuous.Gain gaiCooCoi(k=1.2*
             mChiEva_flow_nominal)
                       "Gain for cooling coil mass flow rate"
         annotation (Placement(transformation(extent={{-20,-130},{0,-110}})));
@@ -2872,6 +2870,8 @@ First implementation.
           annotation (Placement(transformation(extent={{-40,-30},{-20,-10}})));
         Modelica.Blocks.Logical.Switch fanSpeSwi
           annotation (Placement(transformation(extent={{68,80},{88,100}})));
+        Modelica.Blocks.Logical.Switch yHeaSwi
+          annotation (Placement(transformation(extent={{68,50},{88,70}})));
       protected
         Modelica.Blocks.Sources.Constant TSetSupChiConst(
           final k=TSupChi_nominal)
@@ -2888,7 +2888,7 @@ First implementation.
 
         Modelica.Blocks.Sources.Constant TSetSupAirOn(final k=TSetSupAir)
           "Set point for supply air temperature"
-          annotation (Placement(transformation(extent={{40,20},{60,40}})));
+          annotation (Placement(transformation(extent={{40,16},{60,36}})));
         Modelica.Blocks.Sources.Constant zer(final k=0) "0"
           annotation (Placement(transformation(extent={{32,66},{52,86}})));
       equation
@@ -2920,9 +2920,6 @@ First implementation.
         connect(conEco.TOut, TOut) annotation (Line(points={{-1,45},{-30,45},{
                 -30,8},{-94,8},{-94,-30},{-120,-30}},
                                                  color={0,0,127}));
-        connect(conSup.yHea, yHea) annotation (Line(points={{-19,76},{20,76},{
-                20,60},{110,60}},
-                          color={0,0,127}));
         connect(conEco.yOutAirFra, yOutAirFra) annotation (Line(points={{21,50},{80,50},
                 {80,30},{110,30}}, color={0,0,127}));
         connect(conCooVal.y, yCooCoiVal)
@@ -2948,8 +2945,8 @@ First implementation.
         connect(TSetSupAirOff.y, TSupAirSetSwi.u3) annotation (Line(points={{61,
                 -10},{72,-10},{72,6},{-58,6},{-58,-28},{-42,-28}}, color={0,0,
                 127}));
-        connect(TSetSupAirOn.y, TSupAirSetSwi.u1) annotation (Line(points={{61,
-                30},{72,30},{72,8},{-50,8},{-50,-12},{-42,-12}}, color={0,0,127}));
+        connect(TSetSupAirOn.y, TSupAirSetSwi.u1) annotation (Line(points={{61,26},
+                {72,26},{72,8},{-50,8},{-50,-12},{-42,-12}},     color={0,0,127}));
         connect(TSupAirSetSwi.y, conEco.TMixSet) annotation (Line(points={{-19,
                 -20},{-14,-20},{-14,58},{-1,58}}, color={0,0,127}));
         connect(TSupAirSetSwi.y, conCooVal.u_s) annotation (Line(points={{-19,
@@ -2962,6 +2959,14 @@ First implementation.
                 60,82},{66,82}}, color={0,0,127}));
         connect(fanSpeSwi.y, yFan)
           annotation (Line(points={{89,90},{110,90}}, color={0,0,127}));
+        connect(conSup.yHea, yHeaSwi.u1) annotation (Line(points={{-19,76},{20,
+                76},{20,68},{66,68}}, color={0,0,127}));
+        connect(fanSta.fanOn, yHeaSwi.u2) annotation (Line(points={{21,20},{28,
+                20},{28,60},{66,60}}, color={255,0,255}));
+        connect(zer.y, yHeaSwi.u3) annotation (Line(points={{53,76},{60,76},{60,
+                52},{66,52}}, color={0,0,127}));
+        connect(yHeaSwi.y, yHea)
+          annotation (Line(points={{89,60},{110,60}}, color={0,0,127}));
         annotation (Icon(graphics={Line(points={{-100,-100},{0,2},{-100,100}}, color=
                     {0,0,0})}), Documentation(info="<html>
 <p>
