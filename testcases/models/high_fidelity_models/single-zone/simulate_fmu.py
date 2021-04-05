@@ -26,7 +26,7 @@ mopath = 'SingleZoneVAV.mo'
 modelpath = 'SingleZoneVAV.Airflow'
 fmu_name = "SingleZoneDamperControl"
 compiler_options = {"cs_rel_tol":1.0E-04}
-#fmu = load_fmu(compile_fmu(modelpath,[mopath], target='cs',version='2.0',compile_to=fmu_name+'.fmu', compiler_options=compiler_options))
+fmu = load_fmu(compile_fmu(modelpath,[mopath], target='cs',version='2.0',compile_to=fmu_name+'.fmu', compiler_options=compiler_options))
 fmu = load_fmu(fmu_name+'.fmu')
 options = fmu.simulate_options()
 options['filter']=['uFan','TRoo','hvac.uFan']
