@@ -15,6 +15,7 @@ A paper plan for comparing MPC and DRL/TL in building control
   - [11/20/2020](#11202020)
   - [03/01/2021](#03012021)
   - [03/23/2021](#03232021)
+  - [04/05/2021](#04052021)
   
 
 
@@ -141,3 +142,11 @@ Following attempts have been tried:
 2. use average data within a sample interval instead of a value at the sampling timestamp
 
 MPC control performance are significantly increased.
+
+## 04/05/2021
+Previous single zone model has an issue that the fan is on at its minimum speed at night, which leads to the control of supply air temperature at 13C at night, thus the zone temperature is very close to 13C if the outdoor air temperature is low, which might trigger the heating unit when the temperature is lower than 12C.
+
+Some updates:
+- change previous P controller into PI controller
+- reset PI at the beginning of each day
+- remove hystersis controller for chiller to avoid time events to save time

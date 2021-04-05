@@ -218,7 +218,8 @@ class JModelicaCSCartPoleEnv(CartPoleEnv, FMI2CSEnv):
             'initial_state': (0, 0, 85 / 180 * math.pi, 0),
             'time_step': time_step,
             'positive_reward': positive_reward,
-            'negative_reward': negative_reward
+            'negative_reward': negative_reward,
+            'filter': True
         }
         super(JModelicaCSCartPoleEnv,self).__init__("./ModelicaGym_CartPole.fmu",
                          config, log_level)

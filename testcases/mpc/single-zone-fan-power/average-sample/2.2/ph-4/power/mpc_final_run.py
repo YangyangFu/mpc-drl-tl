@@ -8,8 +8,8 @@ import json
 from pyfmi import load_fmu
 
 # simulation setup
-ts = 212*24*3600.+13*24*3600
-te = ts + 1*24*3600.
+startTime = 212*24*3600.+13*24*3600.
+endTime = startTime + 1*24*3600.
 dt = 15*60.
 
 ##########################################
@@ -25,8 +25,8 @@ options['ncp'] = 5000.
 options['initialize'] = True
 
 ## construct optimal input for fmu
-res_base = baseline.simulate(start_time = ts,
-                    final_time = te, 
+res_base = baseline.simulate(start_time = startTime,
+                    final_time = endTime, 
                     options = options)
 
 ################################################
@@ -48,18 +48,23 @@ mpc = load_fmu('SingleZoneDamperControl.fmu')
 
 ## fmu settings
 options = mpc.simulate_options()
-options['ncp'] = 5000.
+options['ncp'] = 500.
 options['initialize'] = True
 
-## construct optimal input for fmu
-u_traj = np.transpose(np.vstack((t_opt,u_opt)))
-input_object = ("uFan",u_traj)
-print u_traj
-res_mpc = mpc.simulate(start_time = ts,
-                    final_time = te, 
-                    options = options,
-                    input = input_object)
+i = 0
+res_mpc=[]
+ts = startTime
+while ts < endTime:
+  te = ts + dt
+  mpc.set(list(["uFan"]),list([u_opt[i]]))
+  res = mpc.simulate(start_time = ts,
+                      final_time = te, 
+                      options = options)
+  res_mpc.append(res)
 
+  ts = te
+  i += 1
+  options['initialize'] = False
 ################################################################
 ##           Compare MPC with Baseline
 ## =============================================================
@@ -71,12 +76,16 @@ measurement_base = {}
 
 for name in measurement_names:
     measurement_base[name] = res_base[name]
-    measurement_mpc[name] = res_mpc[name]
+    values = []
+    for res in res_mpc:
+      value = list(res[name])
+      values += value
+      measurement_mpc[name] = values
 
 ## simulate baseline
 occ_start = 7
 occ_end = 20
-tim = np.arange(ts,te,dt)
+tim = np.arange(startTime,endTime,dt)
 T_upper = np.array([30.0 for i in tim])
 T_upper[occ_start*4:(occ_end-1)*4] = 26.0
 T_lower = np.array([18.0 for i in tim])
@@ -95,7 +104,7 @@ xticks_label = np.arange(0,24,4)
 
 plt.figure()
 plt.subplot(411)
-plt.step(np.arange(ts, te, 3600.),price_tou, where='post')
+plt.step(np.arange(startTime, endTime, 3600.),price_tou, where='post')
 plt.xticks(xticks,[])
 plt.ylabel('Price ($/kW)')
 
@@ -108,9 +117,9 @@ plt.legend()
 plt.ylabel('Fan Speed')
 
 plt.subplot(413)
-plt.plot(measurement_base['time'], measurement_base['TRoo']-273.15,'b--',label='Baseline')
-plt.plot(measurement_mpc['time'], measurement_mpc['TRoo']-273.15,'r-',label='MPC')
-plt.plot(measurement_base['time'], measurement_base['senTSetRooCoo.y']-273.15,'k:',label='Setpoint')
+plt.plot(measurement_base['time'], np.array(measurement_base['TRoo'])-273.15,'b--',label='Baseline')
+plt.plot(measurement_mpc['time'], np.array(measurement_mpc['TRoo'])-273.15,'r-',label='MPC')
+plt.plot(measurement_base['time'], np.array(measurement_base['senTSetRooCoo.y'])-273.15,'k:',label='Setpoint')
 plt.plot(tim,T_upper, 'g-.', lw=1,label='Bounds')
 plt.plot(tim,T_lower, 'g-.', lw=1)
 plt.grid(True)

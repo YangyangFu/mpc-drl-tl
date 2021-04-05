@@ -277,7 +277,8 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
             'model_input_names': ['uFan'],
             'model_output_names': ['time','TRoo','TOut','GHI','PTot'],
             'model_parameters': {},
-            'time_step': time_step
+            'time_step': time_step,
+            'filter': True
         }
 
         super(JModelicaCSSingleZoneEnv,self).__init__("./SingleZoneVAV.fmu",
