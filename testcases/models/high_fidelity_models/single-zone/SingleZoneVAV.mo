@@ -204,8 +204,9 @@ package SingleZoneVAV
             -10},{-116,-10},{-116,-70},{-102,-70}}, color={0,0,127}));
     connect(oveTSetRooHea.y, senTSetRooHea.u) annotation (Line(points={{-119,30},
             {-116,30},{-116,50},{-102,50}}, color={0,0,127}));
-    connect(zon.CO2, CO2RooAir.u) annotation (Line(points={{81,-4},{100,-4},{100,-30},
-            {118,-30}}, color={0,0,127}));
+    connect(zon.CO2, CO2RooAir.u) annotation (Line(points={{81,-4},{100,-4},{
+            100,-30},{118,-30}},
+                        color={0,0,127}));
     connect(TRooAir.y, TRoo)
       annotation (Line(points={{141,0},{170,0}}, color={0,0,127}));
     connect(CO2RooAir.y, CO2Roo)
@@ -231,7 +232,7 @@ package SingleZoneVAV
         extent={{-6,3},{-6,3}},
         horizontalAlignment=TextAlignment.Right));
     connect(occSch.occupied, con.uOcc) annotation (Line(points={{-119,84},{-110,
-            84},{-110,9},{-102,9}}, color={255,0,255}));
+            84},{-110,9},{-104,9}}, color={255,0,255}));
     connect(uFan, hvac.uFan) annotation (Line(points={{-180,110},{-60,110},{-60,
             18},{-42,18}}, color={0,0,127}));
     annotation (
@@ -571,16 +572,14 @@ First implementation.
     parameter Modelica.SIunits.Temperature TCooOff=303.15
       "Cooling setpoint during off";
 
-    BaseClasses.Control.ChillerDXHeatingEconomizerController                  con(
+    BaseClasses.Control.ChillerDXHeatingEconomizerController con(
       minAirFlo=0.1,
       minOAFra=0.15,
       kFan=4,
       kEco=4,
       kHea=4,
       TSupChi_nominal=TSupChi_nominal,
-      TSetSupAir=286.15,
-      hysChiPla(uLow=-2, uHigh=2))
-                         "Controller"
+      TSetSupAir=286.15) "Controller"
       annotation (Placement(transformation(extent={{-100,-10},{-80,10}})));
     BaseClasses.ZoneTemperature hvac(
       redeclare package MediumA = MediumA,
@@ -884,16 +883,14 @@ First implementation.
     parameter Modelica.SIunits.Temperature TCooOff=303.15
       "Cooling setpoint during off";
 
-    BaseClasses.Control.ChillerDXHeatingEconomizerController                  con(
+    BaseClasses.Control.ChillerDXHeatingEconomizerController con(
       minAirFlo=0.1,
       minOAFra=0.15,
       kFan=4,
       kEco=4,
       kHea=4,
       TSupChi_nominal=TSupChi_nominal,
-      TSetSupAir=286.15,
-      hysChiPla(uLow=-2, uHigh=2))
-                         "Controller"
+      TSetSupAir=286.15) "Controller"
       annotation (Placement(transformation(extent={{-100,-10},{-80,10}})));
     BaseClasses.ZoneTemperature hvac(
       redeclare package MediumA = MediumA,
@@ -1516,7 +1513,7 @@ First implementation.
 
     model Airflow "RTU model for test case"
       extends SingleZoneVAV.BaseClasses.AirflowBase(
-          out(use_C_in=true), fanSup(use_inputFilter=true));
+          out(use_C_in=true));
       Modelica.Blocks.Sources.Constant conCO2Out(k=400e-6*Modelica.Media.IdealGases.Common.SingleGasesData.CO2.MM
             /Modelica.Media.IdealGases.Common.SingleGasesData.Air.MM)
         "Outside air CO2 concentration"
@@ -2836,20 +2833,14 @@ First implementation.
           "Economizer control"
           annotation (Placement(transformation(extent={{0,40},{20,60}})));
 
-        Buildings.Controls.OBC.CDL.Continuous.Hysteresis hysChiPla(uLow=-1,
-            uHigh=0) "Hysteresis with delay to switch on cooling"
-          annotation (Placement(transformation(extent={{40,-60},{60,-40}})));
-
-        Modelica.Blocks.Math.Feedback errTRooCoo
-          "Control error on room temperature for cooling"
-          annotation (Placement(transformation(extent={{-42,-70},{-22,-50}})));
         Buildings.Controls.Continuous.LimPID conCooVal(
           controllerType=Modelica.Blocks.Types.SimpleController.PI,
           Ti=240,
           final yMax=1,
-          final yMin=0,
           final k=kCoo,
-          final reverseAction=true) "Cooling coil valve controller"
+          final reverseAction=true,
+          reset=Buildings.Types.Reset.Parameter)
+                                    "Cooling coil valve controller"
           annotation (Placement(transformation(extent={{0,-40},{20,-20}})));
 
         BaseClasses.FanStatus fanSta
@@ -2887,13 +2878,6 @@ First implementation.
       equation
         connect(conMinOAFra.y,conEco. minOAFra) annotation (Line(points={{-49,48},{
                 -26,48},{-1,48}},                 color={0,0,127}));
-        connect(errTRooCoo.y, hysChiPla.u) annotation (Line(points={{-23,-60},{
-                0,-60},{0,-50},{38,-50}},                    color={0,0,127}));
-        connect(TSetRooCoo, errTRooCoo.u2) annotation (Line(points={{-120,30},{
-                -80,30},{-80,-80},{-32,-80},{-32,-68}},
-                                                color={0,0,127}));
-        connect(errTRooCoo.u1, TRoo) annotation (Line(points={{-40,-60},{-74,-60},{
-                -120,-60}}, color={0,0,127}));
         connect(conSup.TSetRooHea, TSetRooHea) annotation (Line(points={{-42,83},
                 {-88,83},{-88,60},{-120,60}},
                                          color={0,0,127}));
@@ -2922,9 +2906,6 @@ First implementation.
           annotation (Line(points={{61,-80},{110,-80}}, color={0,0,127}));
         connect(conCooVal.u_m, TSup)
           annotation (Line(points={{10,-42},{10,-90},{-120,-90}}, color={0,0,127}));
-        connect(hysChiPla.y, chiOn) annotation (Line(points={{62,-50},{80,-50},
-                {80,-40},{110,-40}},
-                                 color={255,0,255}));
         connect(fanSta.uOcc, uOcc) annotation (Line(points={{-4,28},{-12,28},{-12,100},
                 {-80,100},{-80,90},{-120,90}},          color={255,0,255}));
         connect(TSetRooHea, fanSta.TSetRooHea) annotation (Line(points={{-120,
@@ -2962,6 +2943,11 @@ First implementation.
           annotation (Line(points={{89,60},{110,60}}, color={0,0,127}));
         connect(fanSta.fanOn, conSup.trigger) annotation (Line(points={{21,20},
                 {28,20},{28,94},{-50,94},{-50,88},{-42,88}}, color={255,0,255}));
+        connect(fanSta.fanOn, conCooVal.trigger) annotation (Line(points={{21,
+                20},{28,20},{28,-4},{-54,-4},{-54,-46},{2,-46},{2,-42}}, color=
+                {255,0,255}));
+        connect(fanSta.fanOn, chiOn) annotation (Line(points={{21,20},{28,20},{
+                28,-40},{110,-40}}, color={255,0,255}));
         annotation (Icon(graphics={Line(points={{-100,-100},{0,2},{-100,100}}, color=
                     {0,0,0})}), Documentation(info="<html>
 <p>
