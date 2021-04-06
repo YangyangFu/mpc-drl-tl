@@ -135,6 +135,8 @@ package SingleZoneVAV
       annotation (Placement(transformation(extent={{-140,80},{-120,100}})));
     Modelica.Blocks.Interfaces.RealInput uFan "Fan control signal"
       annotation (Placement(transformation(extent={{-200,90},{-160,130}})));
+    Modelica.Blocks.Sources.Constant uHea(k=0)
+      annotation (Placement(transformation(extent={{-60,-80},{-40,-60}})));
   equation
     connect(weaDat.weaBus, weaBus) annotation (Line(
         points={{-140,130},{-108,130}},
@@ -144,8 +146,6 @@ package SingleZoneVAV
         index=1,
         extent={{6,3},{6,3}}));
 
-    connect(con.yHea, hvac.uHea) annotation (Line(points={{-79,6},{-56,6},{-56,12},
-            {-42,12}},                 color={0,0,127}));
     connect(con.yCooCoiVal, hvac.uCooVal) annotation (Line(points={{-79,0},{-54,0},
             {-54,5},{-42,5}},             color={0,0,127}));
     connect(con.yOutAirFra, hvac.uEco) annotation (Line(points={{-79,3},{-50,3},{
@@ -235,6 +235,8 @@ package SingleZoneVAV
             84},{-110,9},{-104,9}}, color={255,0,255}));
     connect(uFan, hvac.uFan) annotation (Line(points={{-180,110},{-60,110},{-60,
             18},{-42,18}}, color={0,0,127}));
+    connect(uHea.y, hvac.uHea) annotation (Line(points={{-39,-70},{-22,-70},{
+            -22,-50},{-60,-50},{-60,12},{-42,12}}, color={0,0,127}));
     annotation (
       experiment(
         StartTime=18316800,
@@ -411,6 +413,8 @@ First implementation.
     Buildings.Controls.SetPoints.OccupancySchedule occSch
       "Occupancy schedule"
       annotation (Placement(transformation(extent={{-140,80},{-120,100}})));
+    Modelica.Blocks.Sources.Constant uHea(k=0)
+      annotation (Placement(transformation(extent={{-60,-80},{-40,-60}})));
   equation
     connect(weaDat.weaBus, weaBus) annotation (Line(
         points={{-140,130},{-108,130}},
@@ -420,8 +424,6 @@ First implementation.
         index=1,
         extent={{6,3},{6,3}}));
 
-    connect(con.yHea, hvac.uHea) annotation (Line(points={{-79,6},{-56,6},{-56,12},
-            {-42,12}},                 color={0,0,127}));
     connect(con.yCooCoiVal, hvac.uCooVal) annotation (Line(points={{-79,0},{-54,0},
             {-54,5},{-42,5}},             color={0,0,127}));
     connect(con.yOutAirFra, hvac.uEco) annotation (Line(points={{-79,3},{-50,3},{
@@ -510,6 +512,8 @@ First implementation.
             84},{-110,9},{-104,9}}, color={255,0,255}));
     connect(con.yFan, hvac.uFan) annotation (Line(points={{-79,9},{-60,9},{-60,
             18},{-42,18}}, color={0,0,127}));
+    connect(uHea.y, hvac.uHea) annotation (Line(points={{-39,-70},{-20,-70},{
+            -20,-46},{-60,-46},{-60,12},{-42,12}}, color={0,0,127}));
     annotation (
       experiment(
         StartTime=18316800,
