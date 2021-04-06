@@ -68,8 +68,8 @@ class SingleZoneEnv(object):
         """
         # open gym requires an observation space during initialization
 
-        high = np.array([273.15+26, 273.15+40,2000, 10000,273.15+40,273.15+40,273.15+40,2000,2000,2000])
-        low = np.array([273.15+16, 273.15+0,0, 0, 273.15+0,273.15+0,273.15+0,0,0,0])
+        high = np.array([273.15+30, 273.15+40,2000, 10000,273.15+40,273.15+40,273.15+40,2000,2000,2000])
+        low = np.array([273.15+12, 273.15+0,0, 0, 273.15+0,273.15+0,273.15+0,0,0,0])
         return spaces.Box(low, high)
 
     # OpenAI Gym API implementation
@@ -113,8 +113,10 @@ class SingleZoneEnv(object):
         
         
         # temperture upper and lower bound
-        T_upper = [24.0 for i in range(24)]
-        T_lower = [19.0 for i in range(24)]
+        T_upper = [30.0 for i in range(24)] # upper bound for unoccuppied: cooling
+        T_lower = [12.0 for i in range(24)] # lower bound for unoccuppied: heating 
+        T_upper[7:19] = [24.0]*12 # upper bound for occuppied: cooling 
+        T_lower[7:19] = [20.0]*12 # lower bound for occuppied: heating
         
         # control period:
         delCtrl = self.tau/3600.0 #may be better to set a variable in initial
