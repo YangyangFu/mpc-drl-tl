@@ -16,6 +16,7 @@ A paper plan for comparing MPC and DRL/TL in building control
   - [03/01/2021](#03012021)
   - [03/23/2021](#03232021)
   - [04/05/2021](#04052021)
+  - [04/06/2021](#04062021)
   
 
 
@@ -150,3 +151,6 @@ Some updates:
 - change previous P controller into PI controller
 - reset PI at the beginning of each day
 - remove hystersis controller for chiller to avoid time events to save time
+
+## 04/06/2021
+Overwriting fan speed signal from external sources will lead to the wrong fan status output from supervisory controller. For example, when fan is activated at night, the fan on/off controller that uses occupancy information still think the fan is off.
