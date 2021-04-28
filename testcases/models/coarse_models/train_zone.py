@@ -36,13 +36,14 @@ zone = Zone(L=l)
 def predict(zone,Tz_mea_his,mz, Toa,params):
     N = len(mz)
     i = zone.L
+    zone.params = params
     Tz_t_his_pred = Tz_mea_his[i,:]
     Tz_pred = list(Tz_t_his_pred)
     while i < N:
         Tz_t_his = Tz_mea_his[i,:]
         mz_t = mz[i]
         Toa_t = Toa[i]
-        Tz_t_pred = zone.predict(Tz_t_his, Tz_t_his_pred, mz_t, Toa_t, params)
+        Tz_t_pred = zone.predict(Tz_t_his, Tz_t_his_pred, mz_t, Toa_t)
 
         # update historical Tz prediction for next step
         Tz_t_his_pred =np.append(Tz_t_his_pred,Tz_t_pred)[1:]

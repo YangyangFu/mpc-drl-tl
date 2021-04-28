@@ -11,11 +11,12 @@ class Zone():
         self.L = L
         self.json_file = json_file # 
         if json_file:
-            self.params = json.load(json_file)
+            fjson = open(json_file)
+            self.params = json.load(fjson)
         else:
             self.params = {'alpha':[], 'beta':[], 'gamma':[]}
 
-    def model(self,Tz_his_meas, mz, Toa, params):
+    def model(self,Tz_his_meas, mz, Toa):
         """Zone temperature ARX model without auto-recorrection term as defined below:
 
         $$T_z^{t+1} = \sum_{j=0}^{l-1} \alpha_jT_z^{t-j} + \beta\dot m_z^{t=1}(T_s^{t=1}-T_z^{t+1}) + \gamma T_{oa}^{t+1}$$
@@ -26,15 +27,13 @@ class Zone():
         :type mz: scalor 
         :param Toa: outdoor air temperature at time step t+1 - [C]
         :type Toa: scalor
-        :param params: ARX model parameters for each input - need to be identified from training data
-        :type params: dict
-            e.g. {"alpha": [], "beta":[], "gamma": []}
-        
+    
         :return:
             predicted temperature for time step t+1
             
         """
         # check key parameters
+        params = self.params
         if 'alpha' not in params or 'beta' not in params or 'gamma' not in params:
             raise ValueError("zone temperature ARX model parameters 'alpha', 'beta' or 'gamma' are not specified by users!!")
         else:
@@ -69,7 +68,7 @@ class Zone():
         return float(correction)     
 
         
-    def predict(self,Tz_his_meas, Tz_his_pred, mz, Toa, params):
+    def predict(self,Tz_his_meas, Tz_his_pred, mz, Toa):
         """This is to provide a complete prediction with autocorrection term
 
         $$T_z^{t+1} = T_z^{t+1} + \dot q_z^{t+1}$$ 
@@ -82,14 +81,11 @@ class Zone():
         :type mz: scalor 
         :param Toa: outdoor air temperature at time step t+1 - [C]
         :type Toa: scalor
-        :param params: ARX model parameters for each input - need to be identified from training data
-        :type params: dict
-            e.g. {"alpha": [], "beta":[], "gamma": []}
-        
+    
         :return:
             predicted temperature for time step t+1
         """
-        Tz_pred_next = self.model(Tz_his_meas, mz, Toa, params)
+        Tz_pred_next = self.model(Tz_his_meas, mz, Toa)
         correction =self.autocorrection(Tz_his_meas, Tz_his_pred)
 
         Tz_pred_next += correction
