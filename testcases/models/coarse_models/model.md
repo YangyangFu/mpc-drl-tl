@@ -11,3 +11,10 @@ Superscripts $t+1$ and $t-j$ represent one step in the future and $j$ steps in t
 $$\hat T_z^{t+1} = \sum_{j=0}^{L-1} \alpha_jT_z^{t-j} + \beta\dot m_z^{t+1} + \gamma \hat T_{oa}^{t+1} + \dot q_z^{t+1} $$
 
 $$\dot q_z^{t+1} = \sum_{j=0}^{L-1} \frac{\hat T_z^{t-j}-T_z^{t-j}}{L}$$
+
+
+# How to use
+
+1. prepare time-series data as shown in `zone_data.csv`.
+2. run `train_zone.py` to identify $\alpha, \beta and \gamma$. The results are saved as `zone.json`.
+3. call the zone model in your programm following `call_zone.py`.
