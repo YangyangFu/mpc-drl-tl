@@ -7,40 +7,6 @@ from scipy.optimize import curve_fit
 import json
 from coarse_models import Zone
 
-"""
-def minimization_obj(self, x):
-    params['alpha'] = x[0:self.L] # coefficients for historical temperature measurement
-    params['beta'] = x[self.L] # coefficients for mass flow rate
-    params['gamma'] = x[self.L+1] # coefficients for outdoor air temperature
-
-    # predict based on current coefficients
-    Tz_mea_his = self.training_data[:,:l]
-    mz = self.training_data[:,l]
-    Toa = self.training_data[:,l+1]
-    y = self.training_data[:,-1]
-    y_pred = self.predict(Tz_mea_his,mz, Toa, self.L,params)
-
-    # calculate mse 
-    return self.mse(y, y_pred)
-    
-def calibrate(self):
-    bounds = [(-np.inf, np.inf)]*self.L + [(-np.inf, np.inf)] + [(-np.inf, np.inf)]
-
-    result = differential_evolution(self.minimization_obj,bounds=bounds,
-        args=(), 
-        strategy='best1bin', 
-        maxiter=10000, 
-        popsize=15, 
-        tol=0.001, 
-        mutation=0.5,
-        recombination=0.7, 
-        init='latinhypercube', 
-        atol=0, 
-        updating='immediate', 
-        workers=1, 
-        constraints=())        
-    return result.x, result.fun"""
-
 data = pd.read_csv('zone_data.csv',index_col=[0])
 
 # prepare data for zone temperature prediction
@@ -99,6 +65,7 @@ def func_TZone(x,alpha1,alpha2,alpha3,alpha4,beta,gamma):
     print y.shape
     return y
 
+# represent data in np.array
 x_train = data_train[['T_roo_4','T_roo_3','T_roo_2','T_roo_1','mass_flow','T_oa']].values
 y_train = data_train['T_roo'].values
 

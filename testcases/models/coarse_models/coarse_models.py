@@ -21,7 +21,7 @@ class Zone():
         $$T_z^{t+1} = \sum_{j=0}^{l-1} \alpha_jT_z^{t-j} + \beta\dot m_z^{t=1}(T_s^{t=1}-T_z^{t+1}) + \gamma T_{oa}^{t+1}$$
 
         :param Tz_his_meas: Historical zone temperature at time step t+1. The last element represents the latest measurement, e.g., [T(t-(L-1)),...,T(t-1),T(t)].
-        :type Tz_his_meas: np.array, (L,)
+        :type Tz_his_meas: list or np.array in (L,)
         :param mz: mass flow rate of zonal supply air at time step t+1 - [kg/s]
         :type mz: scalor 
         :param Toa: outdoor air temperature at time step t+1 - [C]
@@ -58,9 +58,9 @@ class Zone():
          $$\dot q_z^{t+1} = \sum_{j=0}^{l-1} \frac{T_z^{t-j}-\hat T_z^{t-j}}{l}$$
 
         :param Tz_his_meas: Historical zone temperature measurement at time step t+1. The last element represents the latest measurement, e.g., [T(t-(L-1)),...,T(t-1),T(t)]
-        :type Tz_his_meas: np.array, (L,)
+        :type Tz_his_meas: list or np.array in (L,)
         :param Tz_his_pred: historical zone temperature prediction at time stept t+1. The last element represents the latest prediction, e.g., [T(t-(L-1)),...,T(t-1),T(t)]
-        :type Tz_his_pred: np.array, (L,)
+        :type Tz_his_pred: list or np.array in (L,)
         """
 
         #Tz_pred = self.model(Tz_mea, mz, Toa, l, params)+ np.sum(np.array(Tz_mea)-np.array(Tz_pred),axis=1)/l
@@ -75,9 +75,9 @@ class Zone():
         $$T_z^{t+1} = T_z^{t+1} + \dot q_z^{t+1}$$ 
 
         :param Tz_his_meas: Historical zone temperature measurement at time step t+1, [Tz_mea(t-(L-1)), ..., Tz_mea(t-2), Tz_mea(t)] 
-        :type Tz_his_meas: np.array, (L,)
+        :type Tz_his_meas: list or np.array in (L,)
         :param Tz_his_pred: historical zone temperature prediction at time stept t+1, [Tz_pred(t-(L-1)), ..., Tz_pred(t-2), Tz_pred(t-1)] 
-        :type Tz_his_pred: np.array, (L,)
+        :type Tz_his_pred: list or np.array in (L,)
         :param mz: mass flow rate of zonal supply air at time step t+1 - [kg/s]
         :type mz: scalor 
         :param Toa: outdoor air temperature at time step t+1 - [C]
