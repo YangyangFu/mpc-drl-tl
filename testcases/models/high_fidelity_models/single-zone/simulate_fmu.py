@@ -11,12 +11,13 @@ import matplotlib.pyplot as plt
 from pyfmi import load_fmu
 from pymodelica import compile_fmu
 import numpy.random as random
+import time 
 
 def uniform(a,b):
     return (b-a)*random.random_sample()+a
 
 # simulate setup
-time_stop = 24*3600. # 120s
+time_stop = 24*3600. 
 startTime = 0
 endTime = startTime + time_stop
 dt = 60*15.
@@ -26,13 +27,13 @@ mopath = 'SingleZoneVAV.mo'
 modelpath = 'SingleZoneVAV.Airflow'
 fmu_name = "SingleZoneDamperControl"
 compiler_options = {"cs_rel_tol":1.0E-04}
-fmu = load_fmu(compile_fmu(modelpath,[mopath], target='cs',version='2.0',compile_to=fmu_name+'.fmu', compiler_options=compiler_options))
+#fmu = load_fmu(compile_fmu(modelpath,[mopath], target='cs',version='2.0',compile_to=fmu_name+'.fmu', compiler_options=compiler_options))
 fmu = load_fmu(fmu_name+'.fmu')
 options = fmu.simulate_options()
 options['filter']=['uFan','TRoo','hvac.uFan']
-options['result_handling']="file" #"memory"
+options['result_handling']="memory" #"memory"
 
-options['ncp'] = 500.
+options['ncp'] = 100.
 
 # initialize output
 y = []
@@ -48,6 +49,7 @@ print('Inputs: {0}'.format(input_names))
 initialize = True
 
 ts = startTime
+tic = time.clock()
 while ts < endTime:
     # settings
     te = ts + dt
@@ -67,8 +69,9 @@ while ts < endTime:
     # get results
     print res_step['hvac.uFan']
     print res_step['TRoo']-273.15
+toc = time.clock()
 
-print 'Finish simulation'
+print 'Finish simulation in:' + str(toc-tic)+" second(s)"
 
 # clean folder after simulation
 def deleteFiles(fileList):
