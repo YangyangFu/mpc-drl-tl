@@ -45,4 +45,4 @@ Next step is to test if the docker image can be used for development by running 
 
             run.bat
 
-    The above shell scripts call the docker environment to run the local reinforcement learning experiments as defined in `test_cart_pole_q_learner.py`. The whole run will last around 200 seconds.
+    The above shell scripts call the docker environment to run the local reinforcement learning experiments as defined in `test_cart_pole_q_learner.py`. The whole run will last around 60 seconds.
