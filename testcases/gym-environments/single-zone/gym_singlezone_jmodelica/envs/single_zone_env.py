@@ -259,7 +259,10 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
                  npre_step,
                  simulation_start_time,
                  time_step,
-                 log_level):
+                 log_level,
+                 fmu_result_handling='memory',
+                 fmu_result_ncp=100.,
+                 filter_flag=True):
 
         logger.setLevel(log_level)
 
@@ -280,7 +283,9 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
             'model_output_names': ['time','TRoo','TOut','GHI','PTot'],
             'model_parameters': {},
             'time_step': time_step,
-            'filter': True
+            'fmu_result_handling':fmu_result_handling,
+            'fmu_result_ncp':fmu_result_ncp,
+            'filter_flag':filter_flag 
         }
 
         super(JModelicaCSSingleZoneEnv,self).__init__("./SingleZoneVAV.fmu",
