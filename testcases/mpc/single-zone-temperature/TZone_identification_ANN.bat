@@ -1,4 +1,4 @@
-docker run --name fmuc1^
+docker run --name fmuc^
       --user=root^
 	  --detach=false^
 	  -e DISPLAY=${DISPLAY}^
@@ -7,5 +7,5 @@ docker run --name fmuc1^
 	  -v %CD%:/mnt/shared^
 	  -i^
       -t^
-	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/test_jmodelica_ipopt.py"
+	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/TZone_identification_ANN.py"
 

@@ -95,11 +95,11 @@ def get_Toa(time,dt,PH,Toa_year):
     return list(Toa.values.flatten())
 
 ### 0- Simulation setup
-start = 212*24*3600.
-end = start + 1*24*3600.
+start = 212*24*3600.+13*24*3600
+end = start + 24*3600.
 
 ### 1- Load virtual building model
-hvac = load_fmu('SingleZoneVAV.fmu')
+hvac = load_fmu('SingleZoneDamperControl.fmu')
 
 ## fmu settings
 options = hvac.simulate_options()
@@ -112,12 +112,12 @@ te_warm = ts + 4*3600
 
 ### 2- Initialize MPC case 
 dt = 15*60.
-PH = 4*24
+PH = 4
 CH = 1
 with open('TZone.json') as f:
   parameters_zone = json.load(f)
 
-with open('PTotal.json') as f:
+with open('Power.json') as f:
   parameters_power = json.load(f)
 
 # measurement at current time
@@ -188,6 +188,8 @@ while ts<end:
         # overwrite fan speed
         uFan = u_opt_ch
 
+        # update start points for optimizer using previous optimum value
+        case.set_u_start(u_opt_ph)
     ### advance building simulation by one step
     u_traj = np.transpose(np.vstack(([ts,te],[uFan,uFan])))
     input_object = ("uFan",u_traj)

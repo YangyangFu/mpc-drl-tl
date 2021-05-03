@@ -20,10 +20,10 @@ ts = 212*24*3600.
 te = ts + time_stop
 
 ## load fmu - cs
-fmu_name = "SingleZoneVAV.fmu"
+fmu_name = "SingleZoneDamperControl.fmu"
 fmu = load_fmu(fmu_name)
 options = fmu.simulate_options()
-options['ncp'] = 500.
+options['ncp'] = 10000.
 
 # excite signal: - generator for exciting signals
 def uniform(a,b):
@@ -75,7 +75,7 @@ train_data = pd.DataFrame({'speed':np.array(spe),
                             'mass_flow':np.array(flo),
                             'T_oa':np.array(Toa),
                             'T_roo':np.array(TRoo),
-                            'P_total':np.array(PTot)}, index=tim)
+                            'P_tot':np.array(PTot)}, index=tim)
 
 def interp(df, new_index):
     """Return a new DataFrame with all columns values interpolated
@@ -88,8 +88,12 @@ def interp(df, new_index):
 
     return df_out
 
-train_data = interp(train_data, time_arr)
-train_data.to_csv('train_data.csv')
+#interpolate one minute data
+train_data_tim = np.arange(ts,te+1,60) 
+train_data = interp(train_data, train_data_tim)
+#average every 15 minutes
+train_data_15 = train_data.groupby(train_data.index//900).mean()
+train_data_15.to_csv('train_data.csv')
 
 # clean folder after simulation
 def deleteFiles(fileList):

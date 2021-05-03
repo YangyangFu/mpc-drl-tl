@@ -7,5 +7,5 @@ docker run --name fmuc^
 	  -v %CD%:/mnt/shared^
 	  -i^
       -t^
-	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/test_mpc.py"
+	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/test_mpc.py >output.txt"
 
