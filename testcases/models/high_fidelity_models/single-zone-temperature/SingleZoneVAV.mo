@@ -300,6 +300,7 @@ First implementation.
     BaseClasses.Control.ChillerDXHeatingEconomizerController con(
       minAirFlo=0.1,
       minOAFra=0.15,
+      kCoo=0.5,
       kFan=4,
       kEco=4,
       kHea=4,
@@ -633,7 +634,7 @@ First implementation.
       replaceable package MediumW = Buildings.Media.Water "Medium model for water"
           annotation (choicesAllMatching = true);
 
-      parameter Modelica.SIunits.DimensionlessRatio COP_nominal = 5.5
+      parameter Modelica.SIunits.DimensionlessRatio COP_nominal = 4
         "Nominal COP of the chiller";
 
       parameter Modelica.SIunits.Temperature TSupChi_nominal
@@ -838,9 +839,9 @@ First implementation.
         m1_flow_nominal=mChiCon_flow_nominal,
         per(
           capFunT={1.0433811,0.0407077,0.0004506,-0.0041514,-8.86e-5,-0.0003467},
+          EIRFunT={9.946139E-01,-4.829399E-02,4.674277E-04,-1.158726E-03,5.762583E-04,2.148192E-04},
+          EIRFunPLR={1.202277E-01,1.396384E-01,7.394038E-01},
           PLRMax=1.2,
-          EIRFunT={0.5961915,-0.0099496,0.0007888,0.0004506,0.0004875,-0.0007623},
-          EIRFunPLR={1.6853121,-0.9993443,0.3140322},
           COP_nominal=COP_nominal,
           QEva_flow_nominal=QCoo_flow_nominal,
           mEva_flow_nominal=mChiEva_flow_nominal,
