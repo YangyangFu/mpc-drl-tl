@@ -692,17 +692,12 @@ First implementation.
       table=[0,THeaOff; 7*3600,THeaOff; 7*3600,THeaOn; 19*3600,THeaOn; 19*3600,
           THeaOff; 24*3600,THeaOff]) "Heating setpoint for room temperature"
       annotation (Placement(transformation(extent={{-180,20},{-160,40}})));
-    Modelica.Blocks.Sources.CombiTimeTable TSetRooCoo(
-      smoothness=Modelica.Blocks.Types.Smoothness.ConstantSegments,
-      extrapolation=Modelica.Blocks.Types.Extrapolation.Periodic,
-      table=[0,TCooOff; 7*3600,TCooOff; 7*3600,TCooOn; 19*3600,TCooOn; 19*3600,
-          TCooOff; 24*3600,TCooOff]) "Cooling setpoint for room temperature"
-      annotation (Placement(transformation(extent={{-180,-20},{-160,0}})));
     Modelica.Blocks.Interfaces.RealInput TSetCoo
       "Connector of Real input signal"
-      annotation (Placement(transformation(extent={{-200,-80},{-160,-40}})));
-    Buildings.Controls.OBC.CDL.Discrete.Sampler sam(samplePeriod=15*60)
-      annotation (Placement(transformation(extent={{-152,-70},{-132,-50}})));
+      annotation (Placement(transformation(extent={{-200,-60},{-160,-20}})));
+    Buildings.Controls.SetPoints.OccupancySchedule occSch
+      "Occupancy schedule"
+      annotation (Placement(transformation(extent={{-140,80},{-120,100}})));
   equation
     connect(weaDat.weaBus, weaBus) annotation (Line(
         points={{-140,130},{-108,130}},
@@ -821,10 +816,10 @@ First implementation.
             18},{-42,18}}, color={0,0,127}));
     connect(con.chiOn, hvac.chiOn) annotation (Line(points={{-79,-4},{-54,-4},{
             -54,-10},{-42,-10}}, color={255,0,255}));
-    connect(TSetCoo, sam.u)
-      annotation (Line(points={{-180,-60},{-154,-60}}, color={0,0,127}));
-    connect(sam.y, oveTSetRooCoo.u) annotation (Line(points={{-130,-60},{-124,
-            -60},{-124,-36},{-150,-36},{-150,-10},{-142,-10}}, color={0,0,127}));
+    connect(TSetCoo, oveTSetRooCoo.u) annotation (Line(points={{-180,-40},{-150,
+            -40},{-150,-10},{-142,-10}}, color={0,0,127}));
+    connect(occSch.occupied, con.uOcc) annotation (Line(points={{-119,84},{-106,
+            84},{-106,9},{-104,9}}, color={255,0,255}));
     annotation (
       experiment(
         StartTime=18316800,
