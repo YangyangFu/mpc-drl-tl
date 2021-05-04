@@ -1,6 +1,7 @@
 from __future__ import division
 import time
 import numpy as np
+import sklearn
 from sklearn.metrics import r2_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.neural_network import MLPRegressor
@@ -21,26 +22,36 @@ import json
 
 
 data = pd.read_csv('train_data.csv',index_col=[0])
+index= data.index.values.astype('int')
+h = [int(i*900%86400/3600) for i in index]
+data['h'] = h
 
 # prepare data for zone temperature prediction
+var_name = 'P_coo'
 l = 4
-Tz_his = pd.DataFrame(data['T_roo'])
+var_his = pd.DataFrame(data[var_name])
 for i in range(l):
-    Tz_his['T_roo_'+str(i+1)] = data['T_roo'].values
-    shift = Tz_his['T_roo_'+str(i+1)].shift(periods=i+1)
-    Tz_his['T_roo_'+str(i+1)]=shift.values
-Tz_his=Tz_his.drop(columns=['T_roo'])
+    var_his[var_name+'_'+str(i+1)] = data[var_name].values
+    shift = var_his[var_name+'_'+str(i+1)].shift(periods=i+1)
+    var_his[var_name+'_'+str(i+1)]=shift.values
+var_his=var_his.drop(columns=[var_name])
+
+var2_name = 'T_roo'
+var2_his = pd.DataFrame(data[var2_name])
+for i in range(l):
+    var2_his[var2_name+'_'+str(i+1)] = data[var2_name].values
+    shift = var2_his[var2_name+'_'+str(i+1)].shift(periods=i+1)
+    var2_his[var2_name+'_'+str(i+1)]=shift.values
+var2_his=var2_his.drop(columns=[var2_name])
 
 # remove NANs
-data=pd.concat([data,Tz_his],axis=1)
+data=pd.concat([data,var_his,var2_his],axis=1)
 data.dropna(inplace=True)
-data.to_csv('prepared_data_tzone.csv')
+data.to_csv('prepared_data_power.csv')
 
 print data
-#X= data[['T_roo_1','T_roo_2','T_roo_3','T_roo_4','T_roo_5','T_roo_6','T_roo_7','T_roo_8','mass_flow','T_oa']].values
-X= data[['T_roo_1','T_roo_2','T_roo_3','T_roo_4','T_set','T_oa']].values
-#X= data[['T_roo_1','mass_flow','T_oa']].values
-y= data['T_roo'].values
+X= data[[var_name+'_1',var_name+'_2',var_name+'_3',var_name+'_4',var2_name+'_1',var2_name+'_2',var2_name+'_3',var2_name+'_4','T_roo','T_set','T_oa','h']].values
+y= data['P_coo'].values
 
 # split traing and testing data
 X_train, X_test, y_train, y_test = train_test_split(
@@ -69,7 +80,7 @@ pipe = Pipeline(steps)
 estimator = GridSearchCV(pipe,
                    param_grid={'reg__alpha':[1e-4,1e-3,1e-2,1e-1,1],
                                'reg__activation':['identity','logistic','tanh','relu']},
-                   cv=5,scoring='neg_mean_absolute_error')
+                   cv=5,scoring='neg_mean_squared_error')
 
 # fit the model using grid searching validation
 t0 = time.time()
@@ -89,7 +100,6 @@ print("ANN prediction for %d inputs in %.3f s"
 
 # Look at the accuracy
 r2 = r2_score(y_test,y_ann)
-relErr = (y_test-y_ann)/y_test
 mse = mean_squared_error(y_test,y_ann)
 def nrmse(y,ypred):
       mse = mean_squared_error(y,ypred)
@@ -98,34 +108,34 @@ def nrmse(y,ypred):
 nr_mse = nrmse(y_test, y_ann)
 accuracy = {'r2':r2,'mse':mse, 'nrmse':nr_mse}
 
-with open('TZoneANN.json', 'w') as json_file:
+with open('powerANN.json', 'w') as json_file:
       json.dump(accuracy,json_file)
 
-plt.scatter(y_test-273.15, y_ann-273.15, c='b',label='Zone Temperature')
-plt.xlabel('Temperature [C]')
-plt.ylabel('Temperature [C]')
-plt.xlim([12,37])
-plt.ylim([12,37])
+plt.scatter(y_test, y_ann, c='b',label='Power')
+plt.xlabel('Measurement [W]')
+plt.ylabel('Prediction [W]')
+plt.xlim([0,10000])
+plt.ylim([0,10000])
 plt.legend()
-plt.savefig('TZone-scatter.pdf')
+plt.savefig('power-scatter.pdf')
 # Visualize training and prediction 
 plt.figure()
 plt.subplot(211)
-plt.plot(y_test-273.15,'b-',lw=0.5,label='Target')
-plt.plot(y_ann-273.15,'r--',lw=0.5,markevery=0.05,marker='o',markersize=2,label='ANN')
-plt.ylabel('Temperature (C)')
+plt.plot(y_test,'b-',lw=0.5,label='Target')
+plt.plot(y_ann,'r--',lw=0.5,markevery=0.05,marker='o',markersize=2,label='ANN')
+plt.ylabel('Power [W]')
 plt.legend()
 
 plt.subplot(212)
 plt.plot(y_ann-y_test, 'r-', lw=0.5, label='ANN')
-plt.ylabel('Error (C)')
+plt.ylabel('Error (W)')
 plt.legend()
 
-plt.savefig('TZone.pdf')
+plt.savefig('power.pdf')
 
 
 # save the model
-joblib.dump(estimator,'TZoneANN.pkl')
+joblib.dump(estimator,'powerANN.pkl')
 
 
 
