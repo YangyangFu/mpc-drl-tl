@@ -46,7 +46,7 @@ def get_states(states,measurement):
 
     # read scalor
     Tz = measurement['TRoo'].values[0]
-    P = measurement['PTot'].values[0]
+    P = measurement['PCoo.y'].values[0]
 
     # new list
     new_Tz_his = FILO(Tz_his,Tz)
@@ -99,7 +99,7 @@ start = 212*24*3600.+13*24*3600
 end = start + 24*3600.
 
 ### 1- Load virtual building model
-hvac = load_fmu('SingleZoneDamperControl.fmu')
+hvac = load_fmu('SingleZoneTemperature.fmu')
 
 ## fmu settings
 options = hvac.simulate_options()
@@ -121,7 +121,7 @@ with open('Power.json') as f:
   parameters_power = json.load(f)
 
 # measurement at current time
-measurement_names=['TRoo','TOut','PTot','uFan','hvac.fanSup.m_flow_in']
+measurement_names=['TRoo','TOut','PCoo.y','TSetCoo']
 measurement_ini = {}
 # states at current time for MPC model - this should be customized based on mpc design
 lag_Tz = 4 # 4-step lag - should be identified for MPC model
@@ -142,9 +142,9 @@ Toa_year = read_temperature(weather_file,dt)
 predictor['Toa'] = get_Toa(ts,dt,PH,Toa_year)
 
 ### 3- MPC Control Loop
-uFan_ini = 0.1
+uTSet_ini = 273.15+24
 # initialize fan speed for warmup setup
-uFan = uFan_ini
+uTSet = uTSet_ini
 states = states_ini
 measurement = measurement_ini
 # initialize mpc case 
@@ -185,14 +185,14 @@ while ts<end:
         # get the control action for the control horizon
         u_opt_ch = u_opt_ph[0]
 
-        # overwrite fan speed
-        uFan = u_opt_ch
+        # update setpoitns 
+        uTSet = u_opt_ch
 
         # update start points for optimizer using previous optimum value
         case.set_u_start(u_opt_ph)
     ### advance building simulation by one step
-    u_traj = np.transpose(np.vstack(([ts,te],[uFan,uFan])))
-    input_object = ("uFan",u_traj)
+    u_traj = np.transpose(np.vstack(([ts,te],[uTSet, uTSet])))
+    input_object = ("TSetCoo",u_traj)
     res = hvac.simulate(start_time = ts,
                         final_time = te, 
                         options = options,
@@ -223,7 +223,7 @@ while ts<end:
     options['initialize'] = False
 
     # Save all the optimal results for future simulation
-    u_opt.append(uFan)
+    u_opt.append(uTSet)
 
 final = {'u_opt':u_opt,
         't_opt':t_opt}

@@ -36,21 +36,14 @@ class mpc_case():
         # initialize optimiztion
         #self.optimization_model=self.get_optimization_model() # pyomo object
         self.optimum= {}
-        self.u_start = [0.5]*PH
-        self.u_lb = [0.1]*PH
-        self.u_ub = [1.0]*PH
+        self.u_start = [273.15+24]*PH
+        self.u_lb = [273.15+22]*PH
+        self.u_ub = [273.15+26]*PH
 
 
     def obj(self,u_ph):
         #u_ph = u_ph.inputs
         # MPC model predictor settings
-        alpha_power = np.array(self.parameters_power['alpha'])
-        #beta_power = np.array(self.parameters_power['beta'])
-        #gamma_power = np.array(self.parameters_power['gamma'])
-
-        alpha_zone = np.array(self.parameters_zone['alpha'])
-        beta_zone = np.array(self.parameters_zone['beta'])
-        gamma_zone = np.array(self.parameters_zone['gamma'])  
         l = 4
 
         # zone temperature bounds - need check with the high-fidelty model
@@ -79,31 +72,15 @@ class mpc_case():
 
         while i < self.PH:
 
-            mz = u_ph[i]*0.75 # control inputs
+            ui = u_ph[i] # control inputs
             Toa = self.predictor['Toa'][i] # predicted outdoor air temperature
-
-            ### ====================================================================
-            ###            Power Predictor
-            ### =====================================================================
-            # predict total power at current step
-            #P_pred = self.total_power(alpha_power, beta_power, gamma_power, l, P_his, mz, Toa) 
-            P_pred = self.total_power(alpha_power, mz) 
-            # update historical power measurement for next prediction
-            # reverst the historical data to enable FILO: [t, t-1, ...,t-l]
-            P_his = self.FILO(P_his,P_pred)
-
-            # Save step-wise power
-            P_pred_ph.append(P_pred) # save all step-wise power for cost calculation
 
             ### =================================================================
             ###       Zone Temperatre Predicction
             ### ============================================================
             Ts = 273.15+13 # used as constant in this model
-            #Tz_pred = self.zone_temperature(alpha_zone, beta_zone, gamma_zone, l, Tz_his, mz, Ts, Toa)
-            Tz_pred = self.zone_temperature(Tz_his, mz, Toa)
-            # update historical zone temperature measurement for next prediction
-            # reverse the historical data to enable FILO
-            Tz_his = self.FILO(Tz_his,Tz_pred)
+            Tz_pred = self.zone_temperature(Tz_his, ui, Toa)
+
 
             # save step-wise temperature
             Tz_pred_ph.append(Tz_pred) # save all step-wise power for cost calculation
@@ -117,7 +94,23 @@ class mpc_case():
             for k in range(self.number_zone):
                 overshoot.append(np.array([float((Tz_pred -273.15) - T_upper[t]), 0.0]).max())
                 undershoot.append(np.array([float(T_lower[t] - (Tz_pred-273.15)), 0.0]).max())
-            
+
+            ### ====================================================================
+            ###            Power Predictor
+            ### =====================================================================
+            # predict total power at current step
+            #P_pred = self.total_power(alpha_power, mz) 
+            P_pred = self.cool_power(P_his, Tz_his, Tz_pred, ui, Toa, t)
+            # Save step-wise power
+            P_pred_ph.append(P_pred) # save all step-wise power for cost calculation
+
+            # update historical zone temperature measurement for next prediction
+            # reverse the historical data to enable FILO
+            Tz_his = self.FILO(Tz_his,Tz_pred)
+            # update historical power measurement for next prediction
+            # reverst the historical data to enable FILO: [t, t-1, ...,t-l]
+            P_his = self.FILO(P_his,P_pred)
+
             ### ===========================================================
             ###      Update for next step
             ### ==========================================================
@@ -133,8 +126,7 @@ class mpc_case():
 
         ener_cost = float(np.sum(np.array(price_ph)*np.array(P_pred_ph)))*self.dt/3600./1000. 
 
-        print mz, np.array(Tz_pred_ph)-273.15, ener_cost, penalty
-
+  
         # objective for a minimization problem
         f = ener_cost + penalty
         #f = ener_cost
@@ -202,9 +194,8 @@ class mpc_case():
         objective = lambda u: self.obj([u[i] for i in range(self.PH)])
         #startPoint = 0.5*np.array(self.PH)
 
-        # bounds
-        lb = self.u_lb
-        ub = self.u_ub
+        # bounds - adaptive for occupied and unoccupied hours
+        lb, ub = self.moving_constraints()
 
         return GLP(objective, lb=lb, ub=ub, maxIter = 5e5)
 
@@ -226,9 +217,8 @@ class mpc_case():
         Aeq = None # linear equality
         beq = None # linear equality
 
-        # bounds
-        lb = self.u_lb
-        ub = self.u_ub
+        # bounds - adaptive for occupied and unoccupied hours
+        lb, ub = self.moving_constraints()
 
         # tolerance control
         # required constraints tolerance, default for NLP is 1e-6
@@ -255,8 +245,25 @@ class mpc_case():
 
         return lis
 
+    def moving_constraints(self):
+        t = self.time
+        h = int((t % 86400)/3600)  # hour index 0~23
+        PH = self.PH
+        dt = self.dt 
+
+        # zone temperature bounds - need check with the high-fidelty model
+        T_upper = np.array([30.0 for i in range(24)])
+        T_upper[self.occ_start:self.occ_end] = 26.0
+        T_lower = np.array([12.0 for i in range(24)])
+        T_lower[self.occ_start:self.occ_end] = 22.0
+
+        # 
+        self.u_lb = [T_lower[int((t+ph*dt) % 86400 / 3600)] for ph in range(PH)]
+        self.u_ub = [T_upper[int((t+ph*dt) % 86400 / 3600)] for ph in range(PH)]
+
+        return self.u_lb, self.u_ub
     def zone_temperature(self,Tz_his, mz, Toa):
-        ann = joblib.load('ann.pkl')
+        ann = joblib.load('TZoneANN.pkl')
         x=list(Tz_his)
         x.append(mz)
         x.append(Toa)
@@ -265,36 +272,18 @@ class mpc_case():
         
         return np.maximum(273.15+14,np.minimum(y,273.15+35))
 
-    def total_power(self,alpha, mz):
-        """Predicte power at next step
+    def cool_power(self,P_his, Tz_his, Tz_pred, Tz_set, Toa,h):
+        ann = joblib.load('powerANN.pkl')
+        x = list(P_his)
+        x += list(Tz_his)
+        x.append(Tz_set)
+        x.append(Toa)
+        x.append(h)
+        x = np.array(x).reshape(1,-1)
+        y=float(ann.predict(x))
+        
+        return y
 
-        :param alpha: coefficients from curve-fitting
-        :type alpha: np array (l,)
-        :param beta: coefficient from curve-fitting
-        :type beta: scalor
-        :param gamma: coefficient from curve-fitting
-        :type gamma: scalor
-        :param l: historical step
-        :type l: scalor
-        :param Tz_his: historical zone temperature array
-        :type Tz_his: np array (l,)
-        :param mz: zone air mass flowrate at time t
-        :type mz: scalor
-        :param Ts: discharge air temperaure at time t
-        :type Ts: scalor
-        :param Toa: outdoor air dry bulb temperature at time t
-        :type Toa: scalor
-
-        :return: predicted zone temperature at time t
-        :rtype: scalor
-        """
-        # check dimensions
-
-        alpha=np.array(alpha).reshape(-1)
-        #beta=np.array(beta).reshape(-1)
-        P = alpha[0]+alpha[1]*mz+alpha[2]*mz**2 #+ beta[0]+ beta[1]*Toa+beta[2]*Toa**2
-
-        return float(abs(P))
 
     def set_time(self, time):
         
