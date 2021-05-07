@@ -42,7 +42,6 @@ class mpc_case():
 
 
     def obj(self,u_ph):
-        #u_ph = u_ph.inputs
         # MPC model predictor settings
         l = 4
 
@@ -258,8 +257,8 @@ class mpc_case():
         T_lower[self.occ_start:self.occ_end] = 22.0
 
         # 
-        self.u_lb = [T_lower[int((t+ph*dt) % 86400 / 3600)] for ph in range(PH)]
-        self.u_ub = [T_upper[int((t+ph*dt) % 86400 / 3600)] for ph in range(PH)]
+        self.u_lb = [T_lower[int((t+ph*dt) % 86400 / 3600)]+273.15 for ph in range(PH)]
+        self.u_ub = [T_upper[int((t+ph*dt) % 86400 / 3600)]+273.15 for ph in range(PH)]
 
         return self.u_lb, self.u_ub
     def zone_temperature(self,Tz_his, mz, Toa):
@@ -276,10 +275,12 @@ class mpc_case():
         ann = joblib.load('powerANN.pkl')
         x = list(P_his)
         x += list(Tz_his)
+        x.append(Tz_pred)
         x.append(Tz_set)
         x.append(Toa)
         x.append(h)
         x = np.array(x).reshape(1,-1)
+
         y=float(ann.predict(x))
         
         return y
