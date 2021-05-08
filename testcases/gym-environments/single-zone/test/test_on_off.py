@@ -18,7 +18,7 @@ from evaluate_tools.paint import plot_one_ep
 
 def ON_OFF_controller(T_lower, T_upper, T_cur):
     if T_cur > T_upper:
-        return 4
+        return 10
     else:
         return 0
 

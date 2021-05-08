@@ -30,7 +30,7 @@ def train_qlearning(singlezone_env, max_number_of_steps=500, n_episodes=4, visua
     ts = singlezone_env.simulation_start_time
     te = ts + max_number_of_steps*singlezone_env.tau
 
-    TZon_bins = _get_bins(273.15+10, 273.15+26, 4)
+    TZon_bins = _get_bins(273.15+10, 273.15+30, 4)
     TOut_bins = _get_bins(273.15+0, 273.15+40, 4)
     solar_bins = _get_bins(0, 2000, 4)
     power_bins = _get_bins(0, 10000, 4)
@@ -91,7 +91,7 @@ def train_qlearning(singlezone_env, max_number_of_steps=500, n_episodes=4, visua
 
             rew = reward[0][0]+reward[1][0]
             action = learner.learn_observation(state_prime, rew)
-
+            print (action)
             if done or step == max_number_of_steps - 1:
                 episode_lengths = np.append(episode_lengths, int(step + 1))
                 break
