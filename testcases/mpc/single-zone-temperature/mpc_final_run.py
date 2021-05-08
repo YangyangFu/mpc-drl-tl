@@ -6,19 +6,20 @@ import matplotlib.pyplot as plt
 import json
 # load testbed
 from pyfmi import load_fmu
-import os
 
 # simulation setup
-ts = 212*24*3600.
-te = ts + 1*24*3600.
+ts = 212*24*3600.#+13*24*3600
+nday = 7
+period = nday*24*3600.
+te = ts + period
 dt = 15*60.
-
+nsteps_h = int(3600//dt)
 ##########################################
 ##          Baseline Simulation
 ## =========================================
 # DEFINE MODEL
 # ------------
-baseline = load_fmu('SingleZoneVAVBaseline.fmu')
+baseline = load_fmu('SingleZoneTemperatureBaseline.fmu')
 
 ## fmu settings
 options = baseline.simulate_options()
@@ -41,74 +42,101 @@ with open('u_opt.json') as f:
 t_opt = opt['t_opt']
 u_opt = opt['u_opt']
 
-# save for Modelica model
-outTable = 'u_opt.txt'
-if os.path.exists(outTable):
-	os.remove(outTable)
-
-f = open(outTable,'w')
-f.writelines('#1 \n')
-f.writelines('double tab('+str(len(u_opt))+',2)\n')
-for i in range(len(u_opt)):
-	f.writelines(str(t_opt[i])+' '+str(u_opt[i])+'\n')
-f.close()
-
-
 ### 1- Load virtual building model
-mpc = load_fmu('SingleZoneVAV.fmu')
+mpc = load_fmu('SingleZoneTemperature.fmu')
 
 ## fmu settings
 options = mpc.simulate_options()
-options['ncp'] = 5000.
+options['ncp'] = 500.
 options['initialize'] = True
 
 ## construct optimal input for fmu
-u_traj = np.transpose(np.vstack((t_opt,u_opt)))
-input_object = ("uFan",u_traj)
-res_mpc = mpc.simulate(start_time = ts,
-                    final_time = te, 
+res_mpc=[]
+i=0
+while i<len(t_opt):
+  its=t_opt[i]
+  ite=its+dt
+  iu = u_opt[i]
+  u_traj = np.transpose(np.vstack(([its,ite],[iu,iu])))
+  input_object = ("TSetCoo",u_traj)
+  ires_mpc = mpc.simulate(start_time = its,
+                    final_time = ite, 
                     options = options,
                     input = input_object)
-
+  res_mpc.append(ires_mpc)
+  i += 1
+  options['initialize'] = False
 ################################################################
 ##           Compare MPC with Baseline
 ## =============================================================
 
 # read measurements
-measurement_names = ['time','TRoo','TOut','PTot','hvac.uFan','hvac.fanSup.m_flow_in', 'senTSetRooCoo.y', 'CO2Roo']
+measurement_names = ['time','TRoo','TOut','PCoo.y', 'senTSetRooCoo.y']
 measurement_mpc = {}
 measurement_base = {}
 
 for name in measurement_names:
     measurement_base[name] = res_base[name]
-    measurement_mpc[name] = res_mpc[name]
+
+    value_name_mpc=[]
+    for ires in res_mpc:
+      value_name_mpc += list(ires[name])
+    measurement_mpc[name] = value_name_mpc
 
 ## simulate baseline
 occ_start = 7
-occ_end = 20
+occ_end = 19
 tim = np.arange(ts,te,dt)
 T_upper = np.array([30.0 for i in tim])
-T_upper[occ_start*4:(occ_end-1)*4] = 25.0
-T_lower = np.array([18.0 for i in tim])
-T_lower[occ_start*4:(occ_end-1)*4] = 23.0
+#T_upper[occ_start*4:(occ_end-1)*4] = 26.0
+T_lower = np.array([12.0 for i in tim])
+#T_lower[occ_start*4:(occ_end-1)*4] = 22.0
+for i in range(nday):
+  T_upper[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 26.0
+  T_lower[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 22.
 
+price_tou = [0.0640, 0.0640, 0.0640, 0.0640, 
+        0.0640, 0.0640, 0.0640, 0.0640, 
+        0.1391, 0.1391, 0.1391, 0.1391, 
+        0.3548, 0.3548, 0.3548, 0.3548, 
+        0.3548, 0.3548, 0.1391, 0.1391, 
+        0.1391, 0.1391, 0.1391, 0.0640]*nday
+
+def interpolate_dataframe(df,new_index):
+    """Interpolate a dataframe along its index based on a new index
+    """
+    df_out = pd.DataFrame(index=new_index)
+    df_out.index.name = df.index.name
+
+    for col_name, col in df.items():
+        df_out[col_name] = np.interp(new_index, df.index, col)    
+    return df_out
+
+measurement_mpc = pd.DataFrame(measurement_mpc,index=measurement_mpc['time'])
+measurement_mpc = interpolate_dataframe(measurement_mpc,tim)
+print measurement_mpc
 
 xticks=np.arange(ts,te,4*3600)
-xticks_label = np.arange(0,24,4)
+xticks_label = np.arange(0,24*nday,4)
 
 plt.figure()
-plt.subplot(311)
-plt.plot(measurement_base['time'], measurement_base['hvac.uFan'],'b--',label='Baseline')
-plt.plot(measurement_mpc['time'], measurement_mpc['hvac.uFan'],'r-',label='MPC')
+plt.subplot(411)
+plt.step(np.arange(ts, te, 3600.),price_tou, where='pre')
+plt.grid(True)
+plt.xticks(xticks,[])
+plt.ylabel('Price ($/kW)')
+
+plt.subplot(412)
+plt.step(measurement_base['time'], measurement_base['senTSetRooCoo.y']-273.15,'b--',label='Baseline')
+plt.step(np.array(t_opt), np.array(u_opt)-273.15,'r-',where='post',label='MPC')
 plt.grid(True)
 plt.xticks(xticks,[])
 plt.legend()
-plt.ylabel('Fan Speed')
+plt.ylabel('Cooling Setpoint')
 
-plt.subplot(312)
+plt.subplot(413)
 plt.plot(measurement_base['time'], measurement_base['TRoo']-273.15,'b--',label='Baseline')
-plt.plot(measurement_mpc['time'], measurement_mpc['TRoo']-273.15,'r-',label='MPC')
-plt.plot(measurement_base['time'], measurement_base['senTSetRooCoo.y']-273.15,'k:',label='Setpoint')
+plt.plot(measurement_mpc['time'], np.array(measurement_mpc['TRoo'])-273.15,'r-',label='MPC')
 plt.plot(tim,T_upper, 'g-.', lw=1,label='Bounds')
 plt.plot(tim,T_lower, 'g-.', lw=1)
 plt.grid(True)
@@ -116,9 +144,9 @@ plt.xticks(xticks,[])
 plt.legend()
 plt.ylabel('Room Temperature [C]')
 
-plt.subplot(313)
-plt.plot(measurement_base['time'], measurement_base['PTot'],'b--',label='Baseline')
-plt.plot(measurement_mpc['time'], measurement_mpc['PTot'],'r-',label='MPC')
+plt.subplot(414)
+plt.plot(measurement_base['time'], measurement_base['PCoo.y'],'b--',label='Baseline')
+plt.plot(measurement_mpc['time'], measurement_mpc['PCoo.y'],'r-',label='MPC')
 plt.grid(True)
 plt.xticks(xticks,xticks_label)
 plt.ylabel('Total [W]')

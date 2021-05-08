@@ -1,4 +1,4 @@
-docker run --name fmuc^
+docker run^
       --user=root^
 	  --detach=false^
 	  -e DISPLAY=${DISPLAY}^

@@ -10,6 +10,7 @@ from FuncDesigner import *
 from openopt import NSP
 from openopt import NLP
 from openopt import GLP 
+from sklearn.externals import joblib
 
 class mpc_case():
     def __init__(self,PH,CH,time,dt,parameters_zone, parameters_power,measurement,states,predictor):
@@ -24,6 +25,9 @@ class mpc_case():
         self.measurement = measurement # measurement at current time step, dictionary
         self.predictor = predictor # price and outdoor air temperature for the future horizons
 
+        self.zone_model = joblib.load('TZoneANN.pkl')
+        self.power_model = joblib.load('powerANN.pkl')
+
         self.states = states # dictionary
         self.P_his_t = []
         self.Tz_his_t = []
@@ -34,26 +38,21 @@ class mpc_case():
 
         # initialize optimiztion
         #self.optimization_model=self.get_optimization_model() # pyomo object
-        self.optimum={}
+        self.optimum= {}
+        self.u_start = [273.15+24]*PH
+        self.u_lb = [273.15+22]*PH
+        self.u_ub = [273.15+26]*PH
 
 
     def obj(self,u_ph):
-        #u_ph = u_ph.inputs
         # MPC model predictor settings
-        alpha_power = np.array(self.parameters_power['alpha'])
-        beta_power = np.array(self.parameters_power['beta'])
-        gamma_power = np.array(self.parameters_power['gamma'])
-
-        alpha_zone = np.array(self.parameters_zone['alpha'])
-        beta_zone = np.array(self.parameters_zone['beta'])
-        gamma_zone = np.array(self.parameters_zone['gamma'])  
         l = 4
 
         # zone temperature bounds - need check with the high-fidelty model
         T_upper = np.array([30.0 for i in range(24)])
-        T_upper[self.occ_start:self.occ_end] = 25.0
-        T_lower = np.array([18.0 for i in range(24)])
-        T_lower[self.occ_start:self.occ_end] = 23.0
+        T_upper[self.occ_start:self.occ_end] = 26.0
+        T_lower = np.array([12.0 for i in range(24)])
+        T_lower[self.occ_start:self.occ_end] = 22.0
 
         overshoot = []
         undershoot = []
@@ -69,37 +68,21 @@ class mpc_case():
         
         # initialize the cost function
         penalty = []  # temperature violation penalty for each zone
-        alpha_up = 200.0
-        alpha_low = 200.0
+        alpha_up = 0.01
+        alpha_low = 0.01
         time = self.time
 
         while i < self.PH:
 
-            mz = u_ph[i]*0.75 # control inputs
+            ui = u_ph[i] # control inputs
             Toa = self.predictor['Toa'][i] # predicted outdoor air temperature
-
-            ### ====================================================================
-            ###            Power Predictor
-            ### =====================================================================
-            # predict total power at current step
-            P_pred = self.total_power(alpha_power, beta_power, gamma_power, l, P_his, mz, Toa) 
-
-            # update historical power measurement for next prediction
-            # reverst the historical data to enable FILO: [t, t-1, ...,t-l]
-            P_his = self.FILO(P_his,P_pred)
-
-            # Save step-wise power
-            P_pred_ph.append(P_pred) # save all step-wise power for cost calculation
 
             ### =================================================================
             ###       Zone Temperatre Predicction
             ### ============================================================
             Ts = 273.15+13 # used as constant in this model
-            Tz_pred = self.zone_temperature(alpha_zone, beta_zone, gamma_zone, l, Tz_his, mz, Ts, Toa)
+            Tz_pred = self.zone_temperature(Tz_his, ui, Toa)
 
-            # update historical zone temperature measurement for next prediction
-            # reverse the historical data to enable FILO
-            Tz_his = self.FILO(Tz_his,Tz_pred)
 
             # save step-wise temperature
             Tz_pred_ph.append(Tz_pred) # save all step-wise power for cost calculation
@@ -113,7 +96,23 @@ class mpc_case():
             for k in range(self.number_zone):
                 overshoot.append(np.array([float((Tz_pred -273.15) - T_upper[t]), 0.0]).max())
                 undershoot.append(np.array([float(T_lower[t] - (Tz_pred-273.15)), 0.0]).max())
-            
+
+            ### ====================================================================
+            ###            Power Predictor
+            ### =====================================================================
+            # predict total power at current step
+            #P_pred = self.total_power(alpha_power, mz) 
+            P_pred = self.cool_power(P_his, Tz_his, Tz_pred, ui, Toa, t)
+            # Save step-wise power
+            P_pred_ph.append(P_pred) # save all step-wise power for cost calculation
+
+            # update historical zone temperature measurement for next prediction
+            # reverse the historical data to enable FILO
+            Tz_his = self.FILO(Tz_his,Tz_pred)
+            # update historical power measurement for next prediction
+            # reverst the historical data to enable FILO: [t, t-1, ...,t-l]
+            P_his = self.FILO(P_his,P_pred)
+
             ### ===========================================================
             ###      Update for next step
             ### ==========================================================
@@ -127,13 +126,13 @@ class mpc_case():
         # zone temperature bounds penalty
         penalty = alpha_up*sum(np.array(overshoot)) + alpha_low*sum(np.array(undershoot))
 
-        ener_cost = float(np.sum(np.array(price_ph)*np.array(P_pred_ph)))
+        ener_cost = float(np.sum(np.array(price_ph)*np.array(P_pred_ph)))*self.dt/3600./1000. 
 
-        #print u_ph,P_pred_ph,penalty
-
+  
         # objective for a minimization problem
         f = ener_cost + penalty
-
+        #f = ener_cost
+        #f=penalty
         # constraints - unconstrained
         #g=[0.0]*self.PH
         #for i in range(self.PH):
@@ -157,16 +156,12 @@ class mpc_case():
         model = self.get_optimization_model()
 
         # solve optimization
-        # call optimizer
-        #x0=[0.1]*self.PH
-        #lb=[0.1]*self.PH
-        #ub=[1.0]*self.PH
-        #x_opt,f_opt,nbr_iters,nbr_fevals,solve_time = \
-        #    dfo.fmin(obj, xstart=x0,lb=lb,ub=ub,alg=3,nbr_cores=3,x_tol=1e-3,f_tol=1e-6)
-        xtol=1e-6
+        xtol=1e-3
         ftol=1e-6
-        #solver='de' # GLP
-        solver='ralg'
+        solver='de' # GLP
+        #solver = "interalg" # GLP
+        #solver='ralg' # NLP
+        #solver='ipopt'# NLP
         r = model.solve(solver,xtol=xtol,ftol=ftol)
         x_opt, f_opt = r.xf, r.ff
         d1 = r.evals
@@ -201,11 +196,10 @@ class mpc_case():
         objective = lambda u: self.obj([u[i] for i in range(self.PH)])
         #startPoint = 0.5*np.array(self.PH)
 
-        # bounds
-        lb = [0.1]*self.PH
-        ub = [1.0]*self.PH
+        # bounds - adaptive for occupied and unoccupied hours
+        lb, ub = self.moving_constraints()
 
-        return GLP(objective, lb=lb, ub=ub, maxIter = 1e5)
+        return GLP(objective, lb=lb, ub=ub, maxIter = 5e5)
 
     def openopt_model_nlp(self):
         """This is to formulate a nolinear programming problem in openopt: minimization
@@ -214,7 +208,7 @@ class mpc_case():
         # objective gradient - optional
         df = None
         # start point
-        start = 0.5*np.ones(self.PH)
+        start = self.u_start
         # constraints if any
         c = None # nonlinear inequality
         dc = None # derivative of c
@@ -225,9 +219,8 @@ class mpc_case():
         Aeq = None # linear equality
         beq = None # linear equality
 
-        # bounds
-        lb = [0.1]*self.PH
-        ub = [1.0]*self.PH
+        # bounds - adaptive for occupied and unoccupied hours
+        lb, ub = self.moving_constraints()
 
         # tolerance control
         # required constraints tolerance, default for NLP is 1e-6
@@ -236,11 +229,11 @@ class mpc_case():
         # If you use solver algencan, NB! - it ignores xtol and ftol; using maxTime, maxCPUTime, maxIter, maxFunEvals, fEnough is recommended.
         # Note that in algencan gtol means norm of projected gradient of  the Augmented Lagrangian
         # so it should be something like 1e-3...1e-5
-        gtol = 1e-7 # (default gtol = 1e-6)
+        gtol = 1e-6 # (default gtol = 1e-6)
 
         # see https://github.com/troyshu/openopt/blob/d15e81999ef09d3c9c8cb2fbb83388e9d3f97a98/openopt/oo.py#L390.
         return NLP(objective, start, df=df,  c=c,  dc=dc, h=h,  dh=dh,  A=A,  b=b,  Aeq=Aeq,  beq=beq,  
-        lb=lb, ub=ub, gtol=gtol, contol=contol, maxIter = 10000, maxFunEvals = 1e7, name = 'NLP for: '+str(self.time))
+        lb=lb, ub=ub, gtol=gtol, contol=contol, maxIter = 10000, maxFunEvals = 1e4, name = 'NLP for: '+str(self.time))
 
     def get_optimization_model(self):
         #return self.openopt_model_glp()
@@ -254,74 +247,47 @@ class mpc_case():
 
         return lis
 
-    def zone_temperature(self,alpha, beta, gamma, l, Tz_his, mz, Ts, Toa):
-        """Predicte zone temperature at next step
+    def moving_constraints(self):
+        t = self.time
+        h = int((t % 86400)/3600)  # hour index 0~23
+        PH = self.PH
+        dt = self.dt 
 
-        :param alpha: coefficients from curve-fitting
-        :type alpha: list
-        :param beta: coefficient from curve-fitting
-        :type beta: scalor
-        :param gamma: coefficient from curve-fitting
-        :type gamma: scalor
-        :param l: historical step
-        :type l: scalor
-        :param Tz_his: historical zone temperature array
-        :type Tz_his: list
-        :param mz: zone air mass flowrate at time t
-        :type mz: scalor
-        :param Ts: discharge air temperaure at time t
-        :type Ts: scalor
-        :param Toa: outdoor air dry bulb temperature at time t
-        :type Toa: scalor
+        # zone temperature bounds - need check with the high-fidelty model
+        T_upper = np.array([30.0 for i in range(24)])
+        T_upper[self.occ_start:self.occ_end] = 26.0
+        T_lower = np.array([12.0 for i in range(24)])
+        T_lower[self.occ_start:self.occ_end] = 22.0
 
-        :return: predicted zone temperature at time t
-        :rtype: scalor
-        """
-        # check dimensions
-        if int(l) != len(alpha) or int(l) != len(Tz_his):
-            raise ValueError("'l' is not equal to the size of historical zone temperature or the coefficients.")
-        # conver to numpy array
-        Tz_his = np.array(Tz_his).reshape(1,-1)
-        alpha = np.array(alpha).reshape(-1)
-        Tz = (np.sum(alpha*Tz_his,axis=1) + beta*mz*Ts + gamma*Toa)/(1+beta*mz)
+        # 
+        self.u_lb = [T_lower[int((t+ph*dt) % 86400 / 3600)]+273.15 for ph in range(PH)]
+        self.u_ub = [T_upper[int((t+ph*dt) % 86400 / 3600)]+273.15 for ph in range(PH)]
 
-        return float(Tz)
+        return self.u_lb, self.u_ub
+    def zone_temperature(self,Tz_his, mz, Toa):
+        ann = self.zone_model
+        x=list(Tz_his)
+        x.append(mz)
+        x.append(Toa)
+        x = np.array(x).reshape(1,-1)
+        y=float(ann.predict(x))
+        
+        return np.maximum(273.15+14,np.minimum(y,273.15+35))
 
-    def total_power(self,alpha, beta, gamma, l, P_his, mz, Toa):
-        """Predicte zone temperature at next step
+    def cool_power(self,P_his, Tz_his, Tz_pred, Tz_set, Toa,h):
+        ann = self.power_model
+        x = list(P_his)
+        x += list(Tz_his)
+        x.append(Tz_pred)
+        x.append(Tz_set)
+        x.append(Toa)
+        x.append(h)
+        x = np.array(x).reshape(1,-1)
 
-        :param alpha: coefficients from curve-fitting
-        :type alpha: list
-        :param beta: coefficient from curve-fitting
-        :type beta: list
-        :param gamma: coefficient from curve-fitting
-        :type gamma: list
-        :param l: historical step
-        :type l: scalor
-        :param P_his: historical zone temperature array
-        :type P_his: list
-        :param mz: zone air mass flowrate at time t
-        :type mz: scalor
-        :param Toa: outdoor air dry bulb temperature at time t
-        :type Toa: scalor
+        y=float(ann.predict(x))
+        
+        return y
 
-        :return: predicted system power at time t
-        :rtype: scalor
-        """
-        # check dimensions
-        if int(l) != len(alpha) or int(l) != len(P_his):
-            raise ValueError("'l' is not equal to the size of historical zone temperature or the coefficients.")
-        # conver to numpy array
-        P_his = np.array(P_his).reshape(1,-1)
-        alpha = np.array(alpha).reshape(-1)   
-        beta = np.array(beta).reshape(-1) 
-        gamma = np.array(gamma).reshape(-1)      
-        #perform prediction     
-        P = (np.sum(alpha*P_his,axis=1) + beta[0]*mz+beta[1]*mz**2 + gamma[0]+ gamma[1]*Toa+gamma[2]*Toa**2)
-        # need improve this part when power is negative, cannot assign it to 0 because for optimization problem this would lead to minimum cost 0
-        # cannot assign a big number either because the historical value will be used for next step prediction
-        P = abs(P) 
-        return float(P)
 
     def set_time(self, time):
         
@@ -363,3 +329,14 @@ class mpc_case():
 
         """
         self.predictor = predictor
+
+    def get_u_start(self,optimum_prev):
+        fut = optimum_prev[1:]
+        start = np.append(fut,(self.u_lb[-1]+self.u_ub[-1])/2.)
+        return start
+
+    def set_u_start(self,prev):
+        """Set start value for design variables using previous optimization results
+        """
+        start = self.get_u_start(prev)
+        self.u_start = start

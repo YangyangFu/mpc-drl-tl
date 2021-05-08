@@ -17,6 +17,7 @@ A paper plan for comparing MPC and DRL/TL in building control
   - [03/23/2021](#03232021)
   - [04/05/2021](#04052021)
   - [04/06/2021](#04062021)
+  - [05/04/2021](#05042021)
   
 
 
@@ -154,3 +155,14 @@ Some updates:
 
 ## 04/06/2021
 Overwriting fan speed signal from external sources will lead to the wrong fan status output from supervisory controller. For example, when fan is activated at night, the fan on/off controller that uses occupancy information still think the fan is off.
+
+
+## 05/04/2021
+DRL vs MPC comparison matrix
+
+1. optimization problem formulation 
+2. learning curves - speed of reaching optimal and comparison of optimality
+3. Average CPU time: To get a control action
+   1. - MPC: get a control action:
+   2. - RL: CPU time to compute Q value:
+   3. - RL: CPU time to extract from Q an action:

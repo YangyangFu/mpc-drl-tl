@@ -24,6 +24,7 @@ class mpc_case():
         self.parameters_power = parameters_power # parameters for system power dynamic mpc model, dictionary
         self.measurement = measurement # measurement at current time step, dictionary
         self.predictor = predictor # price and outdoor air temperature for the future horizons
+        self.zone_model = joblib.load('ann.pkl')
 
         self.states = states # dictionary
         self.P_his_t = []
@@ -133,7 +134,7 @@ class mpc_case():
 
         ener_cost = float(np.sum(np.array(price_ph)*np.array(P_pred_ph)))*self.dt/3600./1000. 
 
-        print mz, np.array(Tz_pred_ph)-273.15, ener_cost, penalty
+        #print mz, np.array(Tz_pred_ph)-273.15, ener_cost, penalty
 
         # objective for a minimization problem
         f = ener_cost + penalty
@@ -241,7 +242,7 @@ class mpc_case():
 
         # see https://github.com/troyshu/openopt/blob/d15e81999ef09d3c9c8cb2fbb83388e9d3f97a98/openopt/oo.py#L390.
         return NLP(objective, start, df=df,  c=c,  dc=dc, h=h,  dh=dh,  A=A,  b=b,  Aeq=Aeq,  beq=beq,  
-        lb=lb, ub=ub, gtol=gtol, contol=contol, maxIter = 50000, maxFunEvals = 1e7, name = 'NLP for: '+str(self.time))
+        lb=lb, ub=ub, gtol=gtol, contol=contol, maxIter = 50000, maxFunEvals = 20000, name = 'NLP for: '+str(self.time))
 
     def get_optimization_model(self):
         return self.openopt_model_glp()
@@ -256,7 +257,7 @@ class mpc_case():
         return lis
 
     def zone_temperature(self,Tz_his, mz, Toa):
-        ann = joblib.load('ann.pkl')
+        ann = self.zone_model
         x=list(Tz_his)
         x.append(mz)
         x.append(Toa)

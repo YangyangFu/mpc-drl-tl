@@ -6,8 +6,8 @@ import pandas as pd
 from scipy.optimize import curve_fit
 import json
 
-def total_power(alpha, beta, gamma, l, P_his, mz, Toa):
-    """Predicte zone temperature at next step
+def total_power(alpha, mz):
+    """Predicte power at next step
 
     :param alpha: coefficients from curve-fitting
     :type alpha: np array (l,)
@@ -30,27 +30,27 @@ def total_power(alpha, beta, gamma, l, P_his, mz, Toa):
     :rtype: scalor
     """
     # check dimensions
-    if int(l) != len(alpha) or int(l) != P_his.shape[1]:
-        raise ValueError("'l' is not equal to the size of historical zone temperature or the coefficients.")
 
-    P = (np.sum(alpha*P_his,axis=1) + beta[0]*mz+beta[1]*mz**2 + gamma[0]+ gamma[1]*Toa+gamma[2]*Toa**2)
-    return P
+    alpha=np.array(alpha).reshape(-1)
+    #beta=np.array(beta).reshape(-1)
+    P = alpha[0]+alpha[1]*mz+alpha[2]*mz**2 #+ beta[0]+ beta[1]*Toa+beta[2]*Toa**2
+
+    return abs(P)
 
 data = pd.read_csv('train_data.csv',index_col=[0])
 
-# prepare data for zone temperature prediction
-l = 4
-P_his = pd.DataFrame(data['P_total'])
+# prepare data for fan power prediction
+"""l = 4
+P_his = pd.DataFrame(data['P_tot'])
 for i in range(l):
-    P_his['P_total_'+str(i+1)] = data['P_total'].values
-    shift = P_his['P_total_'+str(i+1)].shift(periods=i+1)
-    P_his['P_total_'+str(i+1)]=shift.values
-P_his=P_his.drop(columns=['P_total'])
-
-# remove NANs
+    P_his['P_tot_'+str(i+1)] = data['P_tot'].values
+    shift = P_his['P_tot_'+str(i+1)].shift(periods=i+1)
+    P_his['P_tot_'+str(i+1)]=shift.values
+P_his=P_his.drop(columns=['P_tot'])
 data=pd.concat([data,P_his],axis=1)
 data.dropna(inplace=True)
 data.to_csv('prepared_data_power.csv')
+"""
 
 print data
 # split training and testing
@@ -59,27 +59,24 @@ print data_train
 data_test = data.iloc[20*24*4:-1,:]
 
 # fit a zone temperature model
-def func_P(x,alpha1,alpha2,alpha3,alpha4,beta1,beta2,gamma0,gamma1,gamma2):
-    l = 4
-    alpha = np.array([alpha1,alpha2,alpha3,alpha4])
-    beta = np.array([beta1,beta2])
-    gamma = np.array([gamma0, gamma1, gamma2])
-    P_his = x[:,:l]
-    mz = x[:,l]
-    Toa = x[:,l+1]
-    y = total_power(alpha, beta, gamma, l, P_his, mz, Toa)
+def func_P(x,alpha1,alpha2,alpha3):
+
+    alpha = np.array([alpha1,alpha2,alpha3])
+    y = total_power(alpha,x)
 
     return y
 
-x_train = data_train[['P_total_1','P_total_2','P_total_3','P_total_4','mass_flow','T_oa']].values
-y_train = data_train['P_total'].values
+x_train = data_train['mass_flow'].values
+y_train = data_train['P_tot'].values
 
+print x_train
+print y_train
 popt,pcov = curve_fit(func_P,x_train,y_train)
 ypred_train = func_P(x_train,*popt)
 
 # test on testing data
-x_test = data_test[['P_total_1','P_total_2','P_total_3','P_total_4','mass_flow','T_oa']].values
-y_test = data_test['P_total'].values
+x_test = data_test['mass_flow'].values
+y_test = data_test['P_tot'].values
 ypred_test = func_P(x_test,*popt)
 
 plt.figure()
@@ -100,13 +97,11 @@ plt.plot(ypred_test-y_test, 'b-', label='Prediction Errors in Testing')
 plt.ylabel('Error (W)')
 plt.legend()
 
-plt.savefig('PTotal.pdf')
+plt.savefig('Power.pdf')
 
 
 # export model parameter
-popt_zone = {'alpha':list(popt[:4]),
-            'beta':list(popt[4:6]),
-            'gamma':list(popt[6:9])}
+popt_zone = {'alpha':list(popt)}
 
-with open('PTotal.json', 'w') as fp:
+with open('Power.json', 'w') as fp:
     json.dump(popt_zone, fp)

@@ -8,10 +8,12 @@ import json
 from pyfmi import load_fmu
 
 # simulation setup
-ts = 212*24*3600.+13*24*3600
-te = ts + 1*24*3600.
+ts = 212*24*3600.#+13*24*3600
+nday = 7
+period = nday*24*3600.
+te = ts + period
 dt = 15*60.
-
+nsteps_h = int(3600//dt)
 ##########################################
 ##          Baseline Simulation
 ## =========================================
@@ -75,23 +77,25 @@ for name in measurement_names:
 
 ## simulate baseline
 occ_start = 7
-occ_end = 20
+occ_end = 19
 tim = np.arange(ts,te,dt)
 T_upper = np.array([30.0 for i in tim])
-T_upper[occ_start*4:(occ_end-1)*4] = 26.0
+#T_upper[occ_start*4:(occ_end-1)*4] = 26.0
 T_lower = np.array([18.0 for i in tim])
-T_lower[occ_start*4:(occ_end-1)*4] = 22.0
-
+#T_lower[occ_start*4:(occ_end-1)*4] = 22.0
+for i in range(nday):
+  T_upper[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 26.0
+  T_lower[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 22.
 
 price_tou = [0.0640, 0.0640, 0.0640, 0.0640, 
         0.0640, 0.0640, 0.0640, 0.0640, 
         0.1391, 0.1391, 0.1391, 0.1391, 
         0.3548, 0.3548, 0.3548, 0.3548, 
         0.3548, 0.3548, 0.1391, 0.1391, 
-        0.1391, 0.1391, 0.1391, 0.0640]
+        0.1391, 0.1391, 0.1391, 0.0640]*nday
 
 xticks=np.arange(ts,te,4*3600)
-xticks_label = np.arange(0,24,4)
+xticks_label = np.arange(0,24*nday,4)
 
 plt.figure()
 plt.subplot(411)

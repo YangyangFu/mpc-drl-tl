@@ -20,40 +20,100 @@ ts = 212*24*3600.
 te = ts + time_stop
 
 ## load fmu - cs
-fmu_name = "SingleZoneVAV.fmu"
+fmu_name = "SingleZoneTemperature.fmu"
 fmu = load_fmu(fmu_name)
 options = fmu.simulate_options()
-options['ncp'] = 500.
+options['ncp'] = 10000.
 
 # excite signal: - generator for exciting signals
-def uniform(a,b):
+def uniform_real(a,b):
     return (b-a)*random.random_sample()+a
 
-def excite_fan(time):
-    y = np.zeros(time.shape)
-    j = 0
-    for i in time:
-        h = int((i%86400)/3600)
-        if h<6:
-             y[j] = 0.1
-        elif h<19:
-            y[j] = uniform(0,1) 
+def uniform_int(a,b):
+    return random.randint(a,b)
+
+def excite(time, signals, min_dur, max_dur):
+    """
+    psuedo code:
+    excite_flag = true
+    for time t:
+        if excite_flag:
+            randomly generate a set of values for each signal
+            randomly generate a set of durations for each signal
+            use the generated signal and durations
+            update excite flag for each signal
+                compare excitation end time and next step
+            update previous signal
         else:
-            y[j] = 0.1         
-        j+=1
-    return y
+            use previous signal
+            update excite flag
+                ends of current excited period
+    """
+    # for each signal
+    N = len(time)
+    # initialize flag for each signal
+    for key in signals.keys():
+        signals[key]['flag'] = True
+
+    # initialize a data frame for storing excited signals
+    col_names = signals.keys()
+    excited_signals = pd.DataFrame(columns=col_names, index=time)
+    # main loop
+    for i in range(N):
+        t = time[i]
+        t_next = time[min(i+1,N-1)] 
+        h = int((t%86400)/3600)            
+        # generate signal/duration for each signal
+        for key in signals.keys():
+            min_sig = signals[key]['min']
+            max_sig = signals[key]['max']
+            typ_sig = signals[key]['type']
+            flag = signals[key]['flag']
+            if flag:
+                # generate excite signal
+                if typ_sig == 'real':
+                    if h<7 or h>=19:
+                        sig_t = uniform_real(min_sig, max_sig)
+                        sig_dur = uniform_int(min_dur, max_dur+1)
+                    else:
+                        sig_t = uniform_real(273.15+20, max_sig)
+                        sig_dur = uniform_int(min_dur, max_dur+1)
+                else:
+                    sig_t = uniform_int(min_sig, max_sig+1)
+                    sig_dur = uniform_int(min_dur, max_dur+1)
+                print key+': '+str(sig_dur)
+                # check excite flag and update excited signal
+                excited_signals.loc[t,key] = sig_t
+
+                # update excite flag
+                t_exc_end = time[min(i+sig_dur,N-1)]
+
+                if t_next< t_exc_end:
+                    signals[key]['flag']= False
+
+                # update previous signal and endtime of current excitation duration
+                signals[key]['signal_prev'] = sig_t
+                signals[key]['excite_endtime'] = t_exc_end
+            else: # dont excite instead we use previous excited signal till the end of excited duration
+         
+                excited_signals.loc[t,key] = signals[key]['signal_prev'] 
+                # update flag
+                t_exc_end = signals[key]['excite_endtime']
+                if t_next>= t_exc_end:
+                    signals[key]['flag']= True
+
+    return excited_signals
 
 # generate signal for every dt
 dt = 15*60. 
 time_arr = np.arange(ts,te+1,dt)
-spe_sig = excite_fan(time_arr)
-
+control_sig = {"TSetCoo":{'min':273.15+12, 'max':273.15+34,'type':'real'}}
+sig_df = excite(time_arr,control_sig,4,13)
+sig_values = sig_df["TSetCoo"].values
 
 # input
 input_names = fmu.get_model_variables(causality=2).keys()
-print input_names
-
-input_trac = np.transpose(np.vstack((time_arr.flatten(),spe_sig.flatten())))
+input_trac = np.transpose(np.vstack((time_arr.flatten(),sig_values.flatten()))).astype('float64')
 input_object = (input_names,input_trac)
 
 # simulate fmu
@@ -64,18 +124,24 @@ res = fmu.simulate(start_time=ts,
 
 # what data do we need??
 tim = res['time']
-spe = res['uFan']
-flo = res['hvac.fanSup.m_flow_in']
+TCooSet = res['TSetCoo']
 Toa = res['TOut']
 TRoo = res['TRoo']
 PTot = res['PTot']
+PCoo = res['PCoo.y']
+PHea = res['PHea.y']
+PPum = res['PPum.y']
+PFan = res['PFan.y']
 
 # interpolate data
-train_data = pd.DataFrame({'speed':np.array(spe),
-                            'mass_flow':np.array(flo),
+train_data = pd.DataFrame({'T_set':np.array(TCooSet),
                             'T_oa':np.array(Toa),
                             'T_roo':np.array(TRoo),
-                            'P_total':np.array(PTot)}, index=tim)
+                            'P_tot':np.array(PTot),
+                            'P_coo':np.array(PCoo),
+                            'P_pum':np.array(PPum),
+                            'P_fan':np.array(PFan),
+                            'P_hea':np.array(PHea)}, index=tim)
 
 def interp(df, new_index):
     """Return a new DataFrame with all columns values interpolated
@@ -88,8 +154,12 @@ def interp(df, new_index):
 
     return df_out
 
-train_data = interp(train_data, time_arr)
-train_data.to_csv('train_data.csv')
+#interpolate one minute data
+train_data_tim = np.arange(ts,te+1,60) 
+train_data = interp(train_data, train_data_tim)
+#average every 15 minutes
+train_data_15 = train_data.groupby(train_data.index//900).mean()
+train_data_15.to_csv('train_data.csv')
 
 # clean folder after simulation
 def deleteFiles(fileList):
