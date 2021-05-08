@@ -95,8 +95,8 @@ def get_Toa(time,dt,PH,Toa_year):
     return list(Toa.values.flatten())
 
 ### 0- Simulation setup
-start = 212*24*3600.+13*24*3600
-end = start + 24*3600.
+start = 212*24*3600.#+13*24*3600
+end = start + 7*24*3600.
 
 ### 1- Load virtual building model
 hvac = load_fmu('SingleZoneTemperature.fmu')
@@ -112,7 +112,7 @@ te_warm = ts + 4*3600
 
 ### 2- Initialize MPC case 
 dt = 15*60.
-PH = 4
+PH = 8
 CH = 1
 with open('TZone.json') as f:
   parameters_zone = json.load(f)

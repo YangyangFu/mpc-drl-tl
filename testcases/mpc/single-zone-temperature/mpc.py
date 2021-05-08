@@ -25,6 +25,9 @@ class mpc_case():
         self.measurement = measurement # measurement at current time step, dictionary
         self.predictor = predictor # price and outdoor air temperature for the future horizons
 
+        self.zone_model = joblib.load('TZoneANN.pkl')
+        self.power_model = joblib.load('powerANN.pkl')
+
         self.states = states # dictionary
         self.P_his_t = []
         self.Tz_his_t = []
@@ -230,11 +233,11 @@ class mpc_case():
 
         # see https://github.com/troyshu/openopt/blob/d15e81999ef09d3c9c8cb2fbb83388e9d3f97a98/openopt/oo.py#L390.
         return NLP(objective, start, df=df,  c=c,  dc=dc, h=h,  dh=dh,  A=A,  b=b,  Aeq=Aeq,  beq=beq,  
-        lb=lb, ub=ub, gtol=gtol, contol=contol, maxIter = 50000, maxFunEvals = 1e7, name = 'NLP for: '+str(self.time))
+        lb=lb, ub=ub, gtol=gtol, contol=contol, maxIter = 10000, maxFunEvals = 1e4, name = 'NLP for: '+str(self.time))
 
     def get_optimization_model(self):
-        return self.openopt_model_glp()
-        #return self.openopt_model_nlp()
+        #return self.openopt_model_glp()
+        return self.openopt_model_nlp()
 
     def FILO(self,lis,x):
         lis.pop() # remove the last element
@@ -262,7 +265,7 @@ class mpc_case():
 
         return self.u_lb, self.u_ub
     def zone_temperature(self,Tz_his, mz, Toa):
-        ann = joblib.load('TZoneANN.pkl')
+        ann = self.zone_model
         x=list(Tz_his)
         x.append(mz)
         x.append(Toa)
@@ -272,7 +275,7 @@ class mpc_case():
         return np.maximum(273.15+14,np.minimum(y,273.15+35))
 
     def cool_power(self,P_his, Tz_his, Tz_pred, Tz_set, Toa,h):
-        ann = joblib.load('powerANN.pkl')
+        ann = self.power_model
         x = list(P_his)
         x += list(Tz_his)
         x.append(Tz_pred)
