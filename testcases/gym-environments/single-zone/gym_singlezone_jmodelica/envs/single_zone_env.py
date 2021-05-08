@@ -46,9 +46,9 @@ class SingleZoneEnv(object):
         Internal logic that is utilized by parent classes.
         Returns action space according to OpenAI Gym API requirements
 
-        :return: Discrete action space of size 5, 5-levels of mass flowrate.
+        :return: Discrete action space of size 11, 11-levels of mass flowrate from [0,1] with an increment of 0.1
         """
-        return spaces.Discrete(5)
+        return spaces.Discrete(11)
 
     def _get_observation_space(self):
         """
@@ -79,13 +79,13 @@ class SingleZoneEnv(object):
         in the current state perform given action to move to the next action.
         Applies force of the defined magnitude in one of two directions, depending on the action parameter sign.
 
-        :param action: alias of an action [0-4] to be performed. 
+        :param action: alias of an action [0-10] to be performed. 
         :return: next (resulting) state
         """
         # 0 - max flow: 
         mass_flow_nor = self.mass_flow_nor # norminal flowrate: kg/s 
-        action = np.array(action) + 1
-        action = [mass_flow*action/4. for mass_flow in mass_flow_nor]
+        action = np.array(action)
+        action = [mass_flow*action/10. for mass_flow in mass_flow_nor]
         return super(SingleZoneEnv,self).step(action)
     
     def _reward_policy(self):
@@ -115,8 +115,8 @@ class SingleZoneEnv(object):
         # temperture upper and lower bound
         T_upper = [30.0 for i in range(24)] # upper bound for unoccuppied: cooling
         T_lower = [12.0 for i in range(24)] # lower bound for unoccuppied: heating 
-        T_upper[7:19] = [24.0]*12 # upper bound for occuppied: cooling 
-        T_lower[7:19] = [20.0]*12 # lower bound for occuppied: heating
+        T_upper[7:19] = [26.0]*12 # upper bound for occuppied: cooling 
+        T_lower[7:19] = [22.0]*12 # lower bound for occuppied: heating
         
         # control period:
         delCtrl = self.tau/3600.0 #may be better to set a variable in initial
