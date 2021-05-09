@@ -21,8 +21,8 @@ class Agent(object):
         self.explore_low = explore_l
         self.explore_decay = explore_d
         self.directory = pa
-        #self.device = torch.device("cuda")
-        self.device = torch.device("cpu")
+        self.device = torch.device("cuda")
+        #self.device = torch.device("cpu")
 
         self.explore_rate = explore 
         self.index_learning = 0                        # how many times updating Q network
