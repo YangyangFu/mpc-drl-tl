@@ -156,7 +156,13 @@ def get_rewards(Ptot,TZone,price_tou):
 
 rewards = get_rewards(measurement_df['PTot'],measurement_df['TRoo'],price_tou)
 
+acc_rewards = []
+
 plt.figure()
 plt.plot(rewards,'r-')
 plt.grid(True)
 plt.savefig('rewards.pdf')
+
+
+# epoch by epoch: 20 points 
+# 1 day by 1 day - 140 points
