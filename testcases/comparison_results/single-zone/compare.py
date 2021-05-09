@@ -157,9 +157,16 @@ def get_rewards(Ptot,TZone,price_tou):
 rewards = get_rewards(measurement_df['PTot'],measurement_df['TRoo'],price_tou)
 
 acc_rewards = []
+acc_period = 96 # accumative period in steps: 1 day
+npoints = (nepoches*nsteps)//acc_period
+
+acc_reward = 0
+for i in range(npoints):
+    acc_reward += np.array(rewards[i*acc_period:(i+1)*acc_period]).sum()
+    acc_rewards.append(acc_reward)
 
 plt.figure()
-plt.plot(rewards,'r-')
+plt.plot(acc_rewards,'r-')
 plt.grid(True)
 plt.savefig('rewards.pdf')
 
