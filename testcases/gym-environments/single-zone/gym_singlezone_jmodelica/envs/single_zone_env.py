@@ -83,9 +83,9 @@ class SingleZoneEnv(object):
         :return: next (resulting) state
         """
         # 0 - max flow: 
-        mass_flow_nor = self.mass_flow_nor # norminal flowrate: kg/s 
+        #mass_flow_nor = self.mass_flow_nor # norminal flowrate: kg/s 
         action = np.array(action)
-        action = [mass_flow*action/10. for mass_flow in mass_flow_nor]
+        action = [action/10.]
         return super(SingleZoneEnv,self).step(action)
     
     def _reward_policy(self):
