@@ -18,8 +18,8 @@ def plot_one_ep(num_zone = 1, history_Z_T = None, history_Env_T = None, ep = 1, 
         T_zone[nz].extend(history_Z_T[ne,:,nz])
 
     t = range(len(T_out))
-    T_up = 24.0*np.ones([len(T_out)])
-    T_low = 19.0*np.ones([len(T_out)])
+    T_up = 26.0*np.ones([len(T_out)])
+    T_low = 22.0*np.ones([len(T_out)])
 
     colors = [[121/255.0,90/255.0,206/255.0],
         [91/255.0,131/255.0,28/255.0],
@@ -47,8 +47,8 @@ def getViolation(num_zone = 1, ep = 1, history_Z_T = None, delCtrl = 15*60.0, nu
     for nz in range(num_zone):
         T_zone[nz].extend(history_Z_T[ne,:,nz])  
     len_his = len(T_zone[0])
-    T_up = 24*np.ones([len_his])
-    T_low = 19*np.ones([len_his])
+    T_up = 26*np.ones([len_his])
+    T_low = 22*np.ones([len_his])
     violation = [[] for i in range(num_zone)]
     num_step_hour = 3600 / delCtrl
     num_step_day = 24*3600 / delCtrl
@@ -87,8 +87,8 @@ def plot_one_action_ep(num_zone = 1, history_Z_T = None, history_Env_T = None, h
         T_zone[nz].extend(history_Z_T[ne,:,nz])
 
     t = range(len(T_out))
-    T_up = 24.0*np.ones([len(T_out)])
-    T_low = 19.0*np.ones([len(T_out)])
+    T_up = 26.0*np.ones([len(T_out)])
+    T_low = 22.0*np.ones([len(T_out)])
 
     colors = [[121/255.0,90/255.0,206/255.0],
         [91/255.0,131/255.0,28/255.0],
