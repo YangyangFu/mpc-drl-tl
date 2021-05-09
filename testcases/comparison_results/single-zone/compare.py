@@ -39,8 +39,8 @@ for epoch in range(nepoches):
     actions += list(action[epoch,:,0])
 print actions
 
-# transform to mass flow rate
-u_opt = [action/5. for action in actions]
+# transform to damper position
+u_opt = [action/10. for action in actions]
 
 # load FMU - set up measumrents
 measurement_names = ['time','TRoo', 'PTot']
