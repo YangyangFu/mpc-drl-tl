@@ -130,6 +130,7 @@ plt.grid(True)
 plt.xticks(xticks,xticks_label)
 plt.ylabel('Total [W]')
 plt.savefig('mpc-vs-rbc.pdf')
+plt.savefig('mpc-vs-rbc.png')
 
 
 
