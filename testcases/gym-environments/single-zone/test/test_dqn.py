@@ -23,12 +23,12 @@ from neural import NeuralNet
 from agent import Agent
 
 
-training_epochs = 20
+training_epochs = 50
 
 def raw_agent(path):
     explore_high = 1.0
     explore_low = 0.1
-    num_ctr_step = 2976
+    num_ctr_step = 24*7 #2976 # one month
     explore_decay = (explore_high-explore_low)/(num_ctr_step*training_epochs*1.0)
     agent = Agent(layout=[11,50,100,200,400,11],
             batch=48,
@@ -151,22 +151,22 @@ def model_simulation(folder, path):
 
 if __name__ == "__main__":
     
-    #start = time.time()
+    start = time.time()
     folder = "dqn_experiments_results"
     if not os.path.exists(folder):
         os.mkdir(folder)
-    #tim_env, tim_learn, tim_ctl = model_simulation(folder, './'+folder)
-    #end = time.time()
-    #print("tim_env, tim_learn, tim_ctl = ", -tim_env, -tim_learn, -tim_ctl)
-    #print("Total execution time {:.2f} seconds".format(end-start))
+    tim_env, tim_learn, tim_ctl = model_simulation(folder, './'+folder)
+    end = time.time()
+    print("tim_env, tim_learn, tim_ctl = ", -tim_env, -tim_learn, -tim_ctl)
+    print("Total execution time {:.2f} seconds".format(end-start))
     
     
     history_Z_T = np.load("./"+folder+"/history_Z_T.npy")
     history_Env_T = np.load("./"+folder+"/history_Env_T.npy")
     history_Action = np.load("./"+folder+"/history_Action.npy")
 
-    plot_one_action_ep(num_zone = 1, history_Z_T = history_Z_T, history_Env_T = history_Env_T, history_action = history_Action, ep = 1, fig_path_name = "./"+folder+"/DQN_simulation.png")
-    #plot_one_ep(num_zone = 1, history_Z_T = history_Z_T, history_Env_T = history_Env_T, ep = 1, fig_path_name = "./"+folder+"/DQN_simulation.png")
+    #plot_one_action_ep(num_zone = 1, history_Z_T = history_Z_T, history_Env_T = history_Env_T, history_action = history_Action, ep = 20, fig_path_name = "./"+folder+"/DQN_simulation.png")
+    plot_one_ep(num_zone = 1, history_Z_T = history_Z_T, history_Env_T = history_Env_T, ep = 50, fig_path_name = "./"+folder+"/DQN_simulation.png")
     getViolation(num_zone = 1, ep = 1, history_Z_T = history_Z_T, delCtrl=15*60.0, num_days = 7)
     
 
