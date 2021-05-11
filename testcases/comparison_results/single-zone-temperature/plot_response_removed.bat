@@ -7,5 +7,5 @@ docker run^
 	  -v %CD%:/mnt/shared^
 	  -i^
       -t^
-	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/compare.py"
+	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/plot_response_removed.py"
 

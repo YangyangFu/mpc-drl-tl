@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
 import json
+from sklearn.metrics import r2_score
+from sklearn.metrics import mean_squared_error
 
 def total_power(alpha, mz):
     """Predicte power at next step
@@ -105,3 +107,16 @@ popt_zone = {'alpha':list(popt)}
 
 with open('Power.json', 'w') as fp:
     json.dump(popt_zone, fp)
+
+# Look at the accuracy
+r2 = r2_score(y_test,ypred_test)
+mse = mean_squared_error(y_test,ypred_test)
+def nrmse(y,ypred):
+      mse = mean_squared_error(y,ypred)
+      return np.sqrt(np.sum(mse))/np.mean(y+1e-06)
+
+nr_mse = nrmse(y_test, ypred_test)
+accuracy = {'r2':r2,'mse':mse, 'nrmse':nr_mse}
+
+with open('power_accuracy.json', 'w') as json_file:
+      json.dump(accuracy,json_file)

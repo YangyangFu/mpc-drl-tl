@@ -64,8 +64,8 @@ def get_rewards(Ptot,TZone,price_tou):
 
 #### get rewards
 #================================================================================
-rewards_base = get_rewards(measurement_base['PTot'],measurement_base['TRoo'],price_tou)
-rewards_mpc = get_rewards(measurement_mpc['PTot'],measurement_mpc['TRoo'],price_tou)
+rewards_base = get_rewards(measurement_base['PCoo.y'],measurement_base['TRoo'],price_tou)
+rewards_mpc = get_rewards(measurement_mpc['PCoo.y'],measurement_mpc['TRoo'],price_tou)
 
 rewards_base = pd.DataFrame(rewards_base,columns=[['ene_cost','penalty']])
 rewards_base['sum'] = rewards_base.sum(axis=1)
@@ -90,8 +90,8 @@ rewards_moving_mpc = rewards_mpc['sum'].groupby(rewards_mpc.index//moving).sum()
 rewards_moving_drl = rewards_drl['sum'].groupby(rewards_drl.index//moving).sum()
 
 plt.figure(figsize=(9,6))
-plt.plot(list(rewards_moving_base.values)*nepochs,'b-',label='RBC')
-plt.plot(list(rewards_moving_mpc.values)*nepochs,'b--',label='MPC')
+plt.plot(list(rewards_moving_base.values)*nepochs,'b--',label='MPC')
+plt.plot(list(rewards_moving_mpc.values)*nepochs,'b-',label='RBC')
 plt.plot(rewards_moving_drl['sum'],'r--',label='DQN')
 plt.ylabel('rewards')
 plt.xlabel('epoch')

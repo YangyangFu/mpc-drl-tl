@@ -143,7 +143,7 @@ class SingleZoneEnv(object):
         t_pre = int((t_pre%86400)/3600) # hour index 0~23
         
         for k in range(num_zone):
-            cost.append(- ZPower[k] * delCtrl * p_g[t_pre])
+            cost.append(- ZPower[k]/1000. * delCtrl * p_g[t_pre])
         
         return [cost, penalty]
 

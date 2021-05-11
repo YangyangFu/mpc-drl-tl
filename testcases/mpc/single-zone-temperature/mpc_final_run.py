@@ -116,10 +116,10 @@ measurement_mpc = pd.DataFrame(measurement_mpc,index=measurement_mpc['time'])
 measurement_mpc = interpolate_dataframe(measurement_mpc,tim)
 print measurement_mpc
 
-xticks=np.arange(ts,te,4*3600)
-xticks_label = np.arange(0,24*nday,4)
+xticks=np.arange(ts,te,12*3600)
+xticks_label = np.arange(0,24*nday,12)
 
-plt.figure()
+plt.figure(figsize=(16,12))
 plt.subplot(411)
 plt.step(np.arange(ts, te, 3600.),price_tou, where='pre')
 plt.grid(True)
@@ -151,6 +151,7 @@ plt.grid(True)
 plt.xticks(xticks,xticks_label)
 plt.ylabel('Total [W]')
 plt.savefig('mpc-vs-rbc.pdf')
+plt.savefig('mpc-vs-rbc.png')
 
 
 

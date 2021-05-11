@@ -38,7 +38,7 @@ class mpc_case():
         #self.optimization_model=self.get_optimization_model() # pyomo object
         self.optimum= {}
         self.u_start = [0.5]*PH
-        self.u_lb = [0.1]*PH
+        self.u_lb = [0.0]*PH
         self.u_ub = [1.0]*PH
 
 
@@ -293,8 +293,10 @@ class mpc_case():
 
         alpha=np.array(alpha).reshape(-1)
         #beta=np.array(beta).reshape(-1)
-        P = alpha[0]+alpha[1]*mz+alpha[2]*mz**2 #+ beta[0]+ beta[1]*Toa+beta[2]*Toa**2
-
+        if mz>=1e-03:
+            P = alpha[0]+alpha[1]*mz+alpha[2]*mz**2 #+ beta[0]+ beta[1]*Toa+beta[2]*Toa**2
+        else:
+            P = 0
         return float(abs(P))
 
     def set_time(self, time):
