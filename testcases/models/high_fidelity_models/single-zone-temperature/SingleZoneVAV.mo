@@ -112,7 +112,7 @@ package SingleZoneVAV
     Modelica.Blocks.Interfaces.RealOutput CO2Roo
       "Connector of Real output signal"
       annotation (Placement(transformation(extent={{160,-40},{180,-20}})));
-    Modelica.Blocks.Math.MultiSum PHVAC(nu=4)
+    Modelica.Blocks.Math.MultiSum PHVAC(nu=3)
       annotation (Placement(transformation(extent={{126,34},{138,46}})));
     Modelica.Blocks.Interfaces.RealOutput PTot
       annotation (Placement(transformation(extent={{160,30},{180,50}})));
@@ -199,14 +199,14 @@ package SingleZoneVAV
       annotation (Line(points={{141,0},{170,0}}, color={0,0,127}));
     connect(CO2RooAir.y, CO2Roo)
       annotation (Line(points={{141,-30},{170,-30}}, color={0,0,127}));
-    connect(PFan.y, PHVAC.u[1]) annotation (Line(points={{161,140},{174,140},{174,
-            64},{94,64},{94,43.15},{126,43.15}}, color={0,0,127}));
-    connect(PHea.y, PHVAC.u[2]) annotation (Line(points={{141,120},{170,120},{170,
-            66},{92,66},{92,41.05},{126,41.05}}, color={0,0,127}));
-    connect(PCoo.y, PHVAC.u[3]) annotation (Line(points={{161,100},{168,100},{168,
-            68},{90,68},{90,38.95},{126,38.95}}, color={0,0,127}));
-    connect(PPum.y, PHVAC.u[4]) annotation (Line(points={{141,80},{160,80},{160,68},
-            {88,68},{88,36.85},{126,36.85}}, color={0,0,127}));
+    connect(PFan.y, PHVAC.u[1]) annotation (Line(points={{161,140},{174,140},{
+            174,64},{94,64},{94,42.8},{126,42.8}},
+                                                 color={0,0,127}));
+    connect(PCoo.y, PHVAC.u[2]) annotation (Line(points={{161,100},{168,100},{
+            168,68},{90,68},{90,40},{126,40}},   color={0,0,127}));
+    connect(PPum.y, PHVAC.u[3]) annotation (Line(points={{141,80},{160,80},{160,
+            68},{88,68},{88,37.2},{126,37.2}},
+                                             color={0,0,127}));
     connect(PHVAC.y, PTot)
       annotation (Line(points={{139.02,40},{170,40}}, color={0,0,127}));
     connect(weaBus.TDryBul, TOut) annotation (Line(
@@ -390,7 +390,7 @@ First implementation.
     Modelica.Blocks.Interfaces.RealOutput CO2Roo
       "Connector of Real output signal"
       annotation (Placement(transformation(extent={{160,-40},{180,-20}})));
-    Modelica.Blocks.Math.MultiSum PHVAC(nu=4)
+    Modelica.Blocks.Math.MultiSum PHVAC(nu=3)
       annotation (Placement(transformation(extent={{126,34},{138,46}})));
     Modelica.Blocks.Interfaces.RealOutput PTot
       annotation (Placement(transformation(extent={{160,30},{180,50}})));
@@ -480,14 +480,14 @@ First implementation.
       annotation (Line(points={{141,0},{170,0}}, color={0,0,127}));
     connect(CO2RooAir.y, CO2Roo)
       annotation (Line(points={{141,-30},{170,-30}}, color={0,0,127}));
-    connect(PFan.y, PHVAC.u[1]) annotation (Line(points={{161,140},{174,140},{174,
-            64},{94,64},{94,43.15},{126,43.15}}, color={0,0,127}));
-    connect(PHea.y, PHVAC.u[2]) annotation (Line(points={{141,120},{170,120},{170,
-            66},{92,66},{92,41.05},{126,41.05}}, color={0,0,127}));
-    connect(PCoo.y, PHVAC.u[3]) annotation (Line(points={{161,100},{168,100},{168,
-            68},{90,68},{90,38.95},{126,38.95}}, color={0,0,127}));
-    connect(PPum.y, PHVAC.u[4]) annotation (Line(points={{141,80},{160,80},{160,68},
-            {88,68},{88,36.85},{126,36.85}}, color={0,0,127}));
+    connect(PFan.y, PHVAC.u[1]) annotation (Line(points={{161,140},{174,140},{
+            174,64},{94,64},{94,42.8},{126,42.8}},
+                                                 color={0,0,127}));
+    connect(PCoo.y, PHVAC.u[2]) annotation (Line(points={{161,100},{168,100},{
+            168,68},{90,68},{90,40},{126,40}},   color={0,0,127}));
+    connect(PPum.y, PHVAC.u[3]) annotation (Line(points={{141,80},{160,80},{160,
+            68},{88,68},{88,37.2},{126,37.2}},
+                                             color={0,0,127}));
     connect(PHVAC.y, PTot)
       annotation (Line(points={{139.02,40},{170,40}}, color={0,0,127}));
     connect(weaBus.TDryBul, TOut) annotation (Line(
