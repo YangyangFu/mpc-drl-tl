@@ -64,8 +64,8 @@ def get_rewards(Ptot,TZone,price_tou):
 
 #### get rewards
 #================================================================================
-rewards_base = get_rewards(measurement_base['PCoo.y'],measurement_base['TRoo'],price_tou)
-rewards_mpc = get_rewards(measurement_mpc['PCoo.y'],measurement_mpc['TRoo'],price_tou)
+rewards_base = get_rewards(measurement_base['PTot'],measurement_base['TRoo'],price_tou)
+rewards_mpc = get_rewards(measurement_mpc['PTot'],measurement_mpc['TRoo'],price_tou)
 
 rewards_base = pd.DataFrame(rewards_base,columns=[['ene_cost','penalty']])
 rewards_base['sum'] = rewards_base.sum(axis=1)
