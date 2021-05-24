@@ -17,5 +17,5 @@ states = env.reset()
 n_outputs = env.observation_space.shape[0]
 print(states)
 print(env.tau, env.simulation_start_time)
-print(n_outputs,env.nActions)
+print(env._get_action_space(),env.nActions)
 print(env.alpha)
