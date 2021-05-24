@@ -46,9 +46,9 @@ class SingleZoneEnv(object):
         Internal logic that is utilized by parent classes.
         Returns action space according to OpenAI Gym API requirements
 
-        :return: Discrete action space of size 11, 11-levels of mass flowrate from [0,1] with an increment of 0.1
+        :return: Discrete action space of size n, n-levels of mass flowrate from [0,1] with an increment of 1/(n-1)
         """
-        return spaces.Discrete(11)
+        return spaces.Discrete(self.nActions)
 
     def _get_observation_space(self):
         """
@@ -85,7 +85,7 @@ class SingleZoneEnv(object):
         # 0 - max flow: 
         #mass_flow_nor = self.mass_flow_nor # norminal flowrate: kg/s 
         action = np.array(action)
-        action = [action/10.]
+        action = [action/float(self.nActions)]
         return super(SingleZoneEnv,self).step(action)
     
     def _reward_policy(self):
@@ -130,10 +130,10 @@ class SingleZoneEnv(object):
         #calculate penalty for each zone
         overshoot = []
         undershoot = []
-        penalty = [] #temperature violation penalty for each zone
+        penalty = [] #temperature violation for each zone
         cost = [] # erengy cost for each zone
-        alpha_up = 200.0
-        alpha_low = 200.0
+        alpha_up = self.alpha
+        alpha_low = self.alpha
         for k in range(num_zone):
             overshoot.append(max(ZTemperature[k] - T_upper[t] , 0.0))
             undershoot.append(max(T_lower[t] - ZTemperature[k] , 0.0))
@@ -262,7 +262,9 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
                  log_level,
                  fmu_result_handling='memory',
                  fmu_result_ncp=100.,
-                 filter_flag=True):
+                 filter_flag=True,
+                 alpha=0.01,
+                 nActions=11):
 
         logger.setLevel(log_level)
 
@@ -273,7 +275,8 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         # state bounds if any
         
         # experiment parameters
- 
+        self.alpha = alpha # Positive: penalty coefficients for temperature violation in reward function 
+        self.nActions = nActions # Integer: number of actions for one control variable (level of damper position)
         # others
         self.viewer = None
         self.display = None

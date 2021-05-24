@@ -131,8 +131,8 @@ class SingleZoneTemperatureEnv(object):
         undershoot = []
         penalty = [] #temperature violation penalty for each zone
         cost = [] # erengy cost for each zone
-        alpha_up = 200.0
-        alpha_low = 200.0
+        alpha_up = self.alpha
+        alpha_low = self.alpha
         for k in range(num_zone):
             overshoot.append(max(ZTemperature[k] - T_upper[t] , 0.0))
             undershoot.append(max(T_lower[t] - ZTemperature[k] , 0.0))
@@ -142,7 +142,7 @@ class SingleZoneTemperatureEnv(object):
         t_pre = int((t_pre%86400)/3600) # hour index 0~23
         
         for k in range(num_zone):
-            cost.append(- ZPower[k] * delCtrl * p_g[t_pre])
+            cost.append(- ZPower[k]/1000. * delCtrl * p_g[t_pre])
         
         return [cost, penalty]
 
@@ -261,7 +261,8 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
                  log_level,
                  fmu_result_handling='memory',
                  fmu_result_ncp=100.,
-                 filter_flag=True):
+                 filter_flag=True,
+                 alpha = 0.01):
 
         logger.setLevel(log_level)
 
@@ -272,7 +273,8 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
         # state bounds if any
         
         # experiment parameters
- 
+        self.alpha = alpha # Positive: penalty coefficients for temperature violation in reward function 
+
         # others
         self.viewer = None
         self.display = None

@@ -118,7 +118,7 @@ while t < te:
 ## =============================================================
 
 # read measurements
-measurement_names = ['time','TRoo','TOut','PCoo.y','hvac.uFan','hvac.fanSup.m_flow_in', 'senTSetRooCoo.y', 'CO2Roo']
+measurement_names = ['time','TRoo','TOut','PTot','hvac.uFan','hvac.fanSup.m_flow_in', 'senTSetRooCoo.y', 'CO2Roo']
 measurement_mpc = {}
 measurement_base = {}
 measurement_drl = {}
@@ -186,9 +186,9 @@ plt.legend()
 plt.ylabel('Room Temperature [C]')
 
 plt.subplot(414)
-plt.plot(measurement_base['time'], measurement_base['PCoo.y'],'b-',label='Baseline')
-plt.plot(measurement_mpc['time'], measurement_mpc['PCoo.y'],'b--',label='MPC')
-plt.plot(measurement_drl['time'], measurement_drl['PCoo.y'],'r--',label='DRL')
+plt.plot(measurement_base['time'], measurement_base['PTot'],'b-',label='Baseline')
+plt.plot(measurement_mpc['time'], measurement_mpc['PTot'],'b--',label='MPC')
+plt.plot(measurement_drl['time'], measurement_drl['PTot'],'r--',label='DRL')
 plt.grid(True)
 plt.xticks(xticks,xticks_label)
 plt.ylabel('Total [W]')
@@ -212,8 +212,8 @@ measurement_base = pd.DataFrame(measurement_base,index=measurement_base['time'])
 measurement_mpc = pd.DataFrame(measurement_mpc,index=measurement_mpc['time'])
 
 tim_intp = np.arange(ts,te,dt)
-measurement_base_intp = interpolate_dataframe(measurement_base[['PCoo.y','TRoo']],tim_intp)
-measurement_mpc_intp = interpolate_dataframe(measurement_mpc[['PCoo.y','TRoo']],tim_intp)
+measurement_base_intp = interpolate_dataframe(measurement_base[['PTot','TRoo']],tim_intp)
+measurement_mpc_intp = interpolate_dataframe(measurement_mpc[['PTot','TRoo']],tim_intp)
 
 
 measurement_base_intp.to_csv('measurement_base.csv')
