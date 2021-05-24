@@ -23,7 +23,7 @@ from neural import NeuralNet
 from agent import Agent
 
 
-training_epochs = 50
+training_epochs = 20
 
 def raw_agent(path):
     explore_high = 1.0
@@ -72,7 +72,7 @@ def model_simulation(folder, path):
     simulation_start_time = 212*24*3600.0
     log_level = 7
     num_eps = training_epochs
-    alpha = 0.01
+    alpha = 200
     
     env = gym.make(env_name,
                    mass_flow_nor = mass_flow_nor,
