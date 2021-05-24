@@ -11,10 +11,11 @@ env = gym.make("JModelicaCSSingleZoneEnv-v0",
                 fmu_result_handling='memory',
                 fmu_result_ncp=100.,
                 filter_flag=True,
-                alpha=200)
+                alpha=200,
+                nActions=101)
 states = env.reset()
 n_outputs = env.observation_space.shape[0]
 print(states)
 print(env.tau, env.simulation_start_time)
-print(n_outputs)
+print(n_outputs,env.nActions)
 print(env.alpha)
