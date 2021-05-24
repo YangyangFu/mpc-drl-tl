@@ -7,6 +7,9 @@ import json
 # load testbed
 from pyfmi import load_fmu
 
+#==========================================================
+##              General Settings
+# =======================================================
 # simulation setup
 ts = 212*24*3600.#+13*24*3600
 nday = 7
@@ -14,6 +17,15 @@ period = nday*24*3600.
 te = ts + period
 dt = 15*60.
 nsteps_h = int(3600//dt)
+
+# setup for DRL test
+nActions = 11
+alpha = 200
+nepochs = 20
+
+# define some filters to save simulation time using fmu
+measurement_names = ['time','TRoo','TOut','PTot','hvac.uFan','hvac.fanSup.m_flow_in', 'senTSetRooCoo.y', 'CO2Roo']
+
 ##########################################
 ##          Baseline Simulation
 ## =========================================
@@ -25,6 +37,8 @@ baseline = load_fmu('SingleZoneDamperControlBaseline.fmu')
 options = baseline.simulate_options()
 options['ncp'] = 5000.
 options['initialize'] = True
+options['result_handling'] = 'memory'
+options['filter'] = measurement_names
 
 ## construct optimal input for fmu
 res_base = baseline.simulate(start_time = ts,
@@ -36,7 +50,7 @@ res_base = baseline.simulate(start_time = ts,
 ## =============================================
 
 # read optimal control inputs
-with open('u_opt.json') as f:
+with open('./mpc/u_opt.json') as f:
   opt = json.load(f)
 
 t_opt = opt['t_opt']
@@ -50,9 +64,10 @@ hvac = load_fmu('SingleZoneDamperControl.fmu')
 
 ## fmu settings
 options = hvac.simulate_options()
-options['ncp'] = 500.
+options['ncp'] = 100.
 options['initialize'] = True
 options['result_handling'] = 'memory'
+options['filter'] = measurement_names
 res_mpc = []
 
 # main loop - do step
@@ -77,17 +92,17 @@ while t < te:
 ##              DRL final run
 ##===========================================================
 # get actions from the last epoch
-actions= np.load('history_Action.npy')
-u_opt = np.array(actions[-1,:,0])/10.
+actions= np.load('./dqn/history_Action.npy')
+u_opt = np.array(actions[-1,:,0])/float(nActions)
 print u_opt
-
 
 ## fmu settings
 hvac.reset()
 options = hvac.simulate_options()
-options['ncp'] = 500.
+options['ncp'] = 100.
 options['initialize'] = True
 options['result_handling'] = 'memory'
+options['filter'] = measurement_names
 res_drl = []
 
 ## construct optimal input for fmu
@@ -108,13 +123,11 @@ while t < te:
     i += 1
     options['initialize'] = False
 
-
 ################################################################
 ##           Compare MPC/DRL with Baseline
 ## =============================================================
 
 # read measurements
-measurement_names = ['time','TRoo','TOut','PTot','hvac.uFan','hvac.fanSup.m_flow_in', 'senTSetRooCoo.y', 'CO2Roo']
 measurement_mpc = {}
 measurement_base = {}
 measurement_drl = {}
@@ -206,11 +219,107 @@ def interpolate_dataframe(df,new_index):
 
 measurement_base = pd.DataFrame(measurement_base,index=measurement_base['time'])
 measurement_mpc = pd.DataFrame(measurement_mpc,index=measurement_mpc['time'])
+measurement_drl = pd.DataFrame(measurement_drl,index=measurement_drl['time'])
 
 tim_intp = np.arange(ts,te,dt)
-measurement_base_intp = interpolate_dataframe(measurement_base[['PTot','TRoo']],tim_intp)
-measurement_mpc_intp = interpolate_dataframe(measurement_mpc[['PTot','TRoo']],tim_intp)
+measurement_base = interpolate_dataframe(measurement_base[['PTot','TRoo']],tim_intp)
+measurement_mpc = interpolate_dataframe(measurement_mpc[['PTot','TRoo']],tim_intp)
+measurement_drl = interpolate_dataframe(measurement_drl[['PTot','TRoo']],tim_intp)
 
+#measurement_base.to_csv('measurement_base.csv')
+#measurement_mpc.to_csv('measurement_mpc.csv')
+#measurement_drl.to_csv('measurement_drl.csv')
 
-measurement_base_intp.to_csv('measurement_base.csv')
-measurement_mpc_intp.to_csv('measurement_mpc.csv')
+def get_rewards(Ptot,TZone,price_tou,alpha):
+    n= len(Ptot)
+    energy_cost = []
+    penalty = []
+
+    alpha_up = alpha
+    alpha_low = alpha
+
+    for i in range(n):
+        # assume 1 step is 15 minutes and data starts from hour 0
+        hindex = (i%(nsteps_h*24))//nsteps_h
+        power=Ptot[i]
+        price = price_tou[hindex]
+        # the power should divide by 1000
+        energy_cost.append(power/1000./nsteps_h*price)
+
+        # zone temperature penalty
+        number_zone = 1
+
+        # zone temperature bounds - need check with the high-fidelty model
+        T_upper = np.array([30.0 for j in range(24)])
+        T_upper[7:19] = 26.0
+        T_lower = np.array([12.0 for j in range(24)])
+        T_lower[7:19] = 22.0
+
+        overshoot = []
+        undershoot = []
+        for k in range(number_zone):
+            overshoot.append(np.array([float((TZone[i] -273.15) - T_upper[hindex]), 0.0]).max())
+            undershoot.append(np.array([float(T_lower[hindex] - (TZone[i]-273.15)), 0.0]).max())
+
+        penalty.append(alpha_up*sum(np.array(overshoot)) + alpha_low*sum(np.array(undershoot)))
+    
+    # sum up for rewards
+
+    return -np.array([energy_cost,penalty]).transpose()
+
+#### get rewards
+#================================================================================
+rewards_base = get_rewards(measurement_base['PTot'].values,measurement_base['TRoo'].values,price_tou,alpha)
+rewards_mpc = get_rewards(measurement_mpc['PTot'].values,measurement_mpc['TRoo'].values,price_tou,alpha)
+
+rewards_base = pd.DataFrame(rewards_base,columns=[['ene_cost','penalty']])
+rewards_base['sum'] = rewards_base.sum(axis=1)
+rewards_mpc = pd.DataFrame(rewards_mpc,columns=[['ene_cost','penalty']])
+rewards_mpc['sum'] = rewards_mpc.sum(axis=1)
+
+# get rewards - DRL - we can either read from training results or 
+# recalculate using the method for mpc and baseline (very time consuming for multi-epoch training)
+rewards_drl_hist = np.load('./dqn/history_Reward.npy')
+rewards_drl = []
+# for zone 1
+for epoch in range(nepochs):
+    for step in range(nsteps_h*24*nday):
+        rewards_drl.append(list(rewards_drl_hist[epoch,step,0,:,0]))
+
+rewards_drl = pd.DataFrame(np.array(rewards_drl),columns=[['ene_cost','penalty']])
+rewards_drl['sum'] = rewards_drl.sum(axis=1)
+
+# plot rewards with moving windows - epoch-by-epoch
+moving = nday*24*3600.//dt 
+rewards_moving_base = rewards_base['sum'].groupby(rewards_base.index//moving).sum()
+rewards_moving_mpc = rewards_mpc['sum'].groupby(rewards_mpc.index//moving).sum()
+rewards_moving_drl = rewards_drl['sum'].groupby(rewards_drl.index//moving).sum()
+
+plt.figure(figsize=(9,6))
+plt.plot(list(rewards_moving_base.values)*nepochs,'b-',label='RBC')
+plt.plot(list(rewards_moving_mpc.values)*nepochs,'b--',label='MPC')
+plt.plot(rewards_moving_drl['sum'],'r--',label='DQN')
+plt.ylabel('rewards')
+plt.xlabel('epoch')
+plt.grid(True)
+plt.legend()
+plt.savefig('rewards.pdf')
+plt.savefig('rewards.png')
+
+rewards_drl_last = rewards_drl.tail(96*7)
+# The following codes are only for comparing occupied control performance
+#===========================================================================
+#flag = np.logical_or(rewards_drl_last.index%96//4<7,rewards_drl_last.index%96//4>=19)
+#rewards_drl_last.loc[flag,'ene_cost'] = 0
+#print rewards_drl_last['ene_cost'].sum()
+
+# save total energy cost, violations etc
+comparison={'base':{'energy_cost':list(rewards_base['ene_cost'].sum()),
+                    'temp_violation':list(rewards_base['penalty'].sum())},
+            'mpc':{'energy_cost':list(rewards_mpc['ene_cost'].sum()),
+                    'temp_violation':list(rewards_mpc['penalty'].sum())},
+            'drl':{'energy_cost':list(rewards_drl_last['ene_cost'].sum()),
+                    'temp_violation':list(rewards_drl_last['penalty'].sum())}
+                    }
+with open('comparison.json', 'w') as outfile:
+    json.dump(comparison, outfile)
