@@ -19,8 +19,8 @@ dt = 15*60.
 nsteps_h = int(3600//dt)
 
 # setup for DRL test
-nActions = 11
-alpha = 200
+nActions = 101
+alpha = 0.01
 nepochs = 20
 
 # define some filters to save simulation time using fmu
@@ -288,7 +288,7 @@ for epoch in range(nepochs):
 
 rewards_drl = pd.DataFrame(np.array(rewards_drl),columns=[['ene_cost','penalty']])
 rewards_drl['sum'] = rewards_drl.sum(axis=1)
-
+print rewards_drl
 # plot rewards with moving windows - epoch-by-epoch
 moving = nday*24*3600.//dt 
 rewards_moving_base = rewards_base['sum'].groupby(rewards_base.index//moving).sum()
