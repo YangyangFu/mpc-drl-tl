@@ -48,7 +48,7 @@ class SingleZoneTemperatureEnv(object):
 
         :return: Discrete action space of size 37, 37-levels of temperature control [12,30]oC with an increment of 0.5 oC.
         """
-        return spaces.Discrete(37)
+        return spaces.Discrete(self.nActions)
 
     def _get_observation_space(self):
         """
@@ -83,7 +83,7 @@ class SingleZoneTemperatureEnv(object):
         :return: next (resulting) state
         """
         # 0 - temperature setpoints: 
-        action = list(np.array(np.array(action)*0.5 + 12 + 273.15).flatten(-1))
+        action = list(np.array(np.array(action)*(30.-12.)/(self.nAction-1) + 12 + 273.15).flatten(-1))
 
         return super(SingleZoneTemperatureEnv,self).step(action)
     
@@ -114,7 +114,7 @@ class SingleZoneTemperatureEnv(object):
         # temperture upper and lower bound
         T_upper = [30.0 for i in range(24)] # upper bound for unoccuppied: cooling
         T_lower = [12.0 for i in range(24)] # lower bound for unoccuppied: heating 
-        T_upper[7:19] = [24.0]*12 # upper bound for occuppied: cooling 
+        T_upper[7:19] = [26.0]*12 # upper bound for occuppied: cooling 
         T_lower[7:19] = [22.0]*12 # lower bound for occuppied: heating
         
         # control period:
@@ -262,7 +262,8 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
                  fmu_result_handling='memory',
                  fmu_result_ncp=100.,
                  filter_flag=True,
-                 alpha = 0.01):
+                 alpha = 0.01,
+                 nActions = 37):
 
         logger.setLevel(log_level)
 
@@ -274,6 +275,7 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
         
         # experiment parameters
         self.alpha = alpha # Positive: penalty coefficients for temperature violation in reward function 
+        self.nActions = nActions # Integer: number of actions for one control variable (level of damper position)
 
         # others
         self.viewer = None
