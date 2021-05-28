@@ -83,7 +83,7 @@ class SingleZoneTemperatureEnv(object):
         :return: next (resulting) state
         """
         # 0 - temperature setpoints: 
-        action = list(np.array(np.array(action)*(30.-12.)/(self.nAction-1) + 12 + 273.15).flatten(-1))
+        action = list(np.array(np.array(action)*(30.-12.)/(self.nActions-1) + 12 + 273.15).flatten(-1))
 
         return super(SingleZoneTemperatureEnv,self).step(action)
     
