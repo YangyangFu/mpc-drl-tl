@@ -59,7 +59,7 @@ def regul_state(state):
     state1[10] /= 100.0
     return state1
 
-def model_simulation(folder, path):
+def model_simulation(folder, path,alpha):
     tim_env = 0.0
     tim_ctl = 0.0
     tim_learn = 0.0
@@ -72,7 +72,8 @@ def model_simulation(folder, path):
     simulation_start_time = 212*24*3600.0
     log_level = 7
     num_eps = training_epochs
-    alpha = 200
+    alpha = alpha
+    nActions = 37 # actions from [12, 30] oC
 
     env = gym.make(env_name,
                    mass_flow_nor = mass_flow_nor,
@@ -81,7 +82,8 @@ def model_simulation(folder, path):
                    simulation_start_time = simulation_start_time,
                    time_step = time_step,
                    log_level = log_level,
-                   alpha = alpha)
+                   alpha = alpha,
+                   nActions = nActions)
                  
     num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
@@ -109,16 +111,16 @@ def model_simulation(folder, path):
         state = regul_state(state)
         
         for step in range(max_number_of_steps):
-            tim_begin = time.time()
-            action = agent.policy(state)
-            tim_end = time.time()
-            tim_ctl += tim_begin - tim_end
+            # get hour index: 0-23
+            h = int(step//(3600./time_step))%24
+            if h>=occ_start and h<=occ_end: # activate DRL
+                action = agent.policy(state)
+            else:
+                action = nActions-1
+
             print("Action is: "+str(action))
 
-            tim_begin = time.time()
             observation, reward, done, _ = env.step(action)
-            tim_end = time.time()
-            tim_env += tim_begin - tim_end
 
             #cur_time = env.start
             cur_time, Z_T, Env_T, Solar_R, power, Env_T1, Env_T2, Env_T3, Solar_R1, Solar_R2, Solar_R3 = observation
@@ -153,25 +155,34 @@ def model_simulation(folder, path):
 
 
 if __name__ == "__main__":
-    
-    start = time.time()
-    folder = "dqn_experiments_results"
-    if not os.path.exists(folder):
-        os.mkdir(folder)
-    tim_env, tim_learn, tim_ctl = model_simulation(folder, './'+folder)
-    end = time.time()
-    print("tim_env, tim_learn, tim_ctl = ", -tim_env, -tim_learn, -tim_ctl)
-    print("Total execution time {:.2f} seconds".format(end-start))
-    
-    
-    history_Z_T = np.load("./"+folder+"/history_Z_T.npy")
-    history_Env_T = np.load("./"+folder+"/history_Env_T.npy")
-    history_Action = np.load("./"+folder+"/history_Action.npy")
+    epochs = [20, 50]
+    alphas = [0.01, 0.1, 1, 10, 100, 1000]
 
-    #plot_one_action_ep(num_zone = 1, history_Z_T = history_Z_T, history_Env_T = history_Env_T, history_action = history_Action, ep = 1, fig_path_name = "./"+folder+"/DQN_simulation.png")
-    plot_one_ep(num_zone = 1, history_Z_T = history_Z_T, history_Env_T = history_Env_T, ep = 1, fig_path_name = "./"+folder+"/DQN_simulation.png")
-    getViolation(num_zone = 1, ep = 1, history_Z_T = history_Z_T, delCtrl=15*60.0, num_days = 7)
-    
+    for epoch in epochs:
+        for alpha in alphas:
+            training_epochs = epoch
+            alpha = alpha
+            occ_start=7
+            occ_end=19
 
-    #history_Reward = np.load("./"+folder+"/history_Reward.npy")
-    #print(history_Reward[2][912][0])
+            start = time.time()
+            folder = "dqn_results_"+'epoch_'+str(int(training_epochs))+'_a_'+str(alpha)
+            if not os.path.exists(folder):
+                os.mkdir(folder)
+            tim_env, tim_learn, tim_ctl = model_simulation(folder, './'+folder,alpha)
+            end = time.time()
+            print("tim_env, tim_learn, tim_ctl = ", -tim_env, -tim_learn, -tim_ctl)
+            print("Total execution time {:.2f} seconds".format(end-start))
+            
+            
+            history_Z_T = np.load("./"+folder+"/history_Z_T.npy")
+            history_Env_T = np.load("./"+folder+"/history_Env_T.npy")
+            history_Action = np.load("./"+folder+"/history_Action.npy")
+
+            #plot_one_action_ep(num_zone = 1, history_Z_T = history_Z_T, history_Env_T = history_Env_T, history_action = history_Action, ep = 1, fig_path_name = "./"+folder+"/DQN_simulation.png")
+            plot_one_ep(num_zone = 1, history_Z_T = history_Z_T, history_Env_T = history_Env_T, ep = 1, fig_path_name = "./"+folder+"/DQN_simulation.png")
+            getViolation(num_zone = 1, ep = 1, history_Z_T = history_Z_T, delCtrl=15*60.0, num_days = 7)
+            
+
+            #history_Reward = np.load("./"+folder+"/history_Reward.npy")
+            #print(history_Reward[2][912][0])
