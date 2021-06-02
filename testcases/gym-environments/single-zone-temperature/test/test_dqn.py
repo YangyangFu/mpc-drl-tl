@@ -155,8 +155,9 @@ def model_simulation(folder, path,alpha):
 
 
 if __name__ == "__main__":
-    epochs = [20, 50]
-    alphas = [0.01, 0.1, 1, 10, 100, 1000]
+    epochs = [50]
+    alphas = [1000]
+    #alphas = [10, 100, 1000]
 
     for epoch in epochs:
         for alpha in alphas:
