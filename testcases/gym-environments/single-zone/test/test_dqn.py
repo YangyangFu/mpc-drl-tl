@@ -157,7 +157,7 @@ if __name__ == "__main__":
     folder = "dqn_experiments_results"
     if not os.path.exists(folder):
         os.mkdir(folder)
-    #tim_env, tim_learn, tim_ctl = model_simulation(folder, './'+folder)
+    tim_env, tim_learn, tim_ctl = model_simulation(folder, './'+folder)
     #end = time.time()
     #print("tim_env, tim_learn, tim_ctl = ", -tim_env, -tim_learn, -tim_ctl)
     #print("Total execution time {:.2f} seconds".format(end-start))
