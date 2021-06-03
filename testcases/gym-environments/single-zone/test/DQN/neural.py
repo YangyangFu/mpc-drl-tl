@@ -80,17 +80,3 @@ class NeuralNet(nn.Module):
             print('Model restored from file: %s' % path)
         except:
              print('error when restoring variables!')
-
-    # display neural network information
-    def show(self):
-        print('Neural Network')
-        print('----------------------------------------')
-        print('number of layers:   '+str(self.num_layers))
-        print('layout:')
-        layout = ''
-        for nl in range(self.num_layers-1):
-            layout = layout + str(self.layers[nl])
-            layout = layout + '-----'
-        layout = layout + str(self.layers[self.num_layers-1])
-        print(layout)
-        print('----------------------------------------')
