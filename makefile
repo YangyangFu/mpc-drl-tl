@@ -4,7 +4,7 @@ IMA_NAME_D = mpcdrl_d
 DOCKERFILE_CPU_PY2 = Dockerfile_CPU_PY2
 DOCKERFILE_GPU_PY2 = Dockerfile_GPU_PY2
 DOCKERFILE_CPU_PY3 = Dockerfile_CPU_PY3
-DOCKERFILE_CPU_PY3 = Dockerfile_CPU_PY3
+DOCKERFILE_GPU_PY3 = Dockerfile_GPU_PY3
 
 build_cpu_py2:
 	docker build -f ${DOCKERFILE_CPU_PY2} --no-cache --rm -t ${IMA_NAME} .
