@@ -7,4 +7,5 @@ docker run^
 	  -v %CD%:/mnt/shared^
 	  -i^
       -t^
-	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/test_singlezone.py"
+	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/test_mpc.py"
+
