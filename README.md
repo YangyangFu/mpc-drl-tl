@@ -20,8 +20,10 @@ After installing the required software, execute the following steps to build and
 1. go to folder `MPC-DRL-TL`, and open a terminal. Make sure `Dockerfile_XXX` and `makefile` are in current folder
 2. build a local docker image from the provided `Dockerfile_XXX` by typing in the terminal
    
-            make build_cpu           ------- for CPU version pytorch
-            make build_gpu           ------- for GPU version pytorch
+            make build_cpu_py2           ------- for CPU version pytorch in Python 2
+            make build_gpu_py2           ------- for GPU version pytorch in Python 2
+            make build_cpu_py3           ------- for CPU version pytorch in Python 3
+            make build_gpu_py3           ------- for GPU version pytorch in Python 3
 3. check if the docker image is successfully built on your local computer. Type
 
             docker image ls
