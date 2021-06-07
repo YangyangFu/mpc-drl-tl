@@ -23,8 +23,6 @@ from neural import NeuralNet
 from agent import Agent
 
 
-training_epochs = 20
-
 def raw_agent(path):
     explore_high = 1.0
     explore_low = 0.1
