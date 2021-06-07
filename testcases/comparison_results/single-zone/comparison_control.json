@@ -1,1 +1,0 @@
-{"base": {"temp_violation": [-37150.718794454166], "energy_cost": [-640.4891635949223]}, "mpc": {"temp_violation": [-30852.88695791518], "energy_cost": [-341.5775126225494]}, "drl": {"temp_violation": [-43833.38475296863], "energy_cost": [-1067.4273065476195]}}

@@ -22,15 +22,12 @@ from memory import Memory
 from neural import NeuralNet
 from agent import Agent
 
-
-training_epochs = 20
-
-def raw_agent(path):
+def raw_agent(path,training_epochs):
     explore_high = 1.0
     explore_low = 0.1
     num_ctr_step = 24*7 #2976 # one month
     explore_decay = (explore_high-explore_low)/(num_ctr_step*training_epochs*1.0)
-    agent = Agent(layout=[11,50,100,200,400,11],
+    agent = Agent(layout=[11,50,100,200,400,101],
             batch=48,
             explore=explore_high,
             explore_l=explore_low,
@@ -59,7 +56,7 @@ def regul_state(state):
     state1[10] /= 100.0
     return state1
 
-def model_simulation(folder, path):
+def model_simulation(folder, path,alpha):
     tim_env = 0.0
     tim_ctl = 0.0
     tim_learn = 0.0
@@ -72,8 +69,9 @@ def model_simulation(folder, path):
     simulation_start_time = 212*24*3600.0
     log_level = 7
     num_eps = training_epochs
-    alpha = 200
-    
+    alpha = alpha
+    nActions = 101
+
     env = gym.make(env_name,
                    mass_flow_nor = mass_flow_nor,
                    weather_file = weather_file_path,
@@ -81,13 +79,14 @@ def model_simulation(folder, path):
                    simulation_start_time = simulation_start_time,
                    time_step = time_step,
                    log_level = log_level,
-                   alpha = alpha)
+                   alpha = alpha,
+                   nActions = nActions)
                  
     num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
     #n_outputs = env.observation_space.shape[0]
     
-    agent = raw_agent(path)
+    agent = raw_agent(path,num_eps)
     agent.initialize(path)
     print('DRL agent created!')
     
@@ -109,15 +108,14 @@ def model_simulation(folder, path):
         state = regul_state(state)
         
         for step in range(max_number_of_steps):
-            tim_begin = time.time()
-            action = agent.policy(state)
-            tim_end = time.time()
-            tim_ctl += tim_begin - tim_end
-            
-            tim_begin = time.time()
+            # get hour index: 0-23
+            h = int(step//(3600./time_step))%24
+            if h>=occ_start and h<=occ_end: # activate DRL
+                action = agent.policy(state)
+            else:
+                action = 0
+
             observation, reward, done, _ = env.step(action)
-            tim_end = time.time()
-            tim_env += tim_begin - tim_end
 
             #cur_time = env.start
             cur_time, Z_T, Env_T, Solar_R, power, Env_T1, Env_T2, Env_T3, Solar_R1, Solar_R2, Solar_R3 = observation
@@ -130,11 +128,9 @@ def model_simulation(folder, path):
             state_prime = [cur_time, Z_T, Env_T, Solar_R, power, Env_T1, Env_T2, Env_T3, Solar_R1, Solar_R2, Solar_R3]
             state_prime = regul_state(state_prime)
             
-            tim_begin = time.time()
+            #if h>=occ_start and h<=occ_end: # activate DRL
             agent.learning(state,action,reward,state_prime)
-            tim_end = time.time()
-            tim_learn += tim_begin - tim_end
-            
+
             history_Z_T[ep].append([Z_T])
             history_Env_T[ep].append(Env_T)
             history_Action[ep].append([action])
@@ -152,17 +148,20 @@ def model_simulation(folder, path):
 
 
 if __name__ == "__main__":
+    training_epochs = 20
+    alpha = 200
+    occ_start=7
+    occ_end=19
     
-    #start = time.time()
-    folder = "dqn_experiments_results"
+    start = time.time()
+    folder = "dqn_results_"+'epoch_'+str(int(training_epochs))+'_a_'+str(alpha)
     if not os.path.exists(folder):
         os.mkdir(folder)
-    tim_env, tim_learn, tim_ctl = model_simulation(folder, './'+folder)
-    #end = time.time()
-    #print("tim_env, tim_learn, tim_ctl = ", -tim_env, -tim_learn, -tim_ctl)
-    #print("Total execution time {:.2f} seconds".format(end-start))
-    
-    
+    tim_env, tim_learn, tim_ctl = model_simulation(folder, './'+folder,alpha)
+    end = time.time()
+    print("tim_env, tim_learn, tim_ctl = ", -tim_env, -tim_learn, -tim_ctl)
+    print("Total execution time {:.2f} seconds".format(end-start))
+   
     history_Z_T = np.load("./"+folder+"/history_Z_T.npy")
     history_Env_T = np.load("./"+folder+"/history_Env_T.npy")
     history_Action = np.load("./"+folder+"/history_Action.npy")

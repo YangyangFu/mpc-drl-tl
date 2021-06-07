@@ -173,7 +173,8 @@ def run_ql_experiments(n_experiments=1,
                 simulation_start_time=simulation_start_time,
                 time_step=time_step,
                 log_level=log_level,
-                alpha=0.01)
+                alpha=0.01,
+                nActions=37)
         
     for i in range(n_experiments):
         trained_agent, episodes_length, exec_time = train_qlearning(env,
