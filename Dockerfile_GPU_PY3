@@ -64,12 +64,18 @@ RUN pip install DerApproximator
 RUN cd $HOME/github && git clone https://github.com/YangyangFu/pyipopt.git && ls -l
 RUN cd $HOME/github/pyipopt && python setup.py build && python setup.py install
 
-### ====================================================================================
-### Install other dependencies
+#### ====================================================================================
+### Install DRL-related
 # Install python package to read epw file
 RUN pip install pvlib 
 # Install scikit learn for nonlinear system identification
 RUN pip install -U scikit-learn
+
+#### =====================================================================================
+### Install DRL algorithm - tianshou with the latest development in github
+#
+WORKDIR $HOME
+RUN cd $HOME/github && pip install git+https://github.com/thu-ml/tianshou.git@master --upgrade
 
 ### =======================================================================================
 ### intall customized gym environment into docker: install a building control environment
