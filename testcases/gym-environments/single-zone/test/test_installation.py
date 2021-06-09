@@ -1,5 +1,6 @@
 import gym
 import gym_singlezone_jmodelica
+import tianshou as ts
 
 env = gym.make("JModelicaCSSingleZoneEnv-v0",
                 mass_flow_nor=0.75,
@@ -19,3 +20,4 @@ print(states)
 print(env.tau, env.simulation_start_time)
 print(env._get_action_space(),env.nActions)
 print(env.alpha)
+print(ts.__version__)
