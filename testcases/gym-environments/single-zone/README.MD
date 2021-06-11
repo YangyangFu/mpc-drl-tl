@@ -1,1 +1,8 @@
-Tutorials for using Modelica models as gym environment, and perform reinforcement learning.
+# Single Zone Fan Speed Control Environment
+This DRL environment is to control the fan speed of a fan-coil unit system for minimizing energy costs based on a TOU price while maintaining comfortable indoor thermal environment.
+
+  - `v0`: this is a version for a customized DQN trainer.
+  
+  - `v1`: this is a version for connecting with tianshou DRL library
+    - enable user-specific rewards calculation based on energy costs and temperature violations at each time step
+    - fix the inconsistency of shapes between observation spaces and states in `v0`
