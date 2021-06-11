@@ -3,6 +3,8 @@ from __future__ import absolute_import, division
 
 import gym
 import gym_singlezone_temperature
+from gym import envs
+print(envs.registry.all())
 
 env = gym.make("JModelicaCSSingleZoneTemperatureEnv-v0",
                 mass_flow_nor=[0.75],

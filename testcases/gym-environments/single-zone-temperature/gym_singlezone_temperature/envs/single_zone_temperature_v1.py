@@ -68,8 +68,8 @@ class SingleZoneTemperatureEnv(object):
         """
         # open gym requires an observation space during initialization
 
-        high = np.array([273.15+30, 273.15+40,2000, 10000,273.15+40,273.15+40,273.15+40,2000,2000,2000])
-        low = np.array([273.15+12, 273.15+0,0, 0, 273.15+0,273.15+0,273.15+0,0,0,0])
+        high = np.array([86400., 273.15+30, 273.15+40,2000, 10000,273.15+40,273.15+40,273.15+40,2000,2000,2000])
+        low = np.array([0., 273.15+12, 273.15+0,0, 0, 273.15+0,273.15+0,273.15+0,0,0,0])
         return spaces.Box(low, high)
 
     # OpenAI Gym API implementation
@@ -144,7 +144,12 @@ class SingleZoneTemperatureEnv(object):
         for k in range(num_zone):
             cost.append(- ZPower[k]/1000. * delCtrl * p_g[t_pre])
         
-        return [cost, penalty]
+        if self.rf:
+            rewards=self.rf(cost, penalty)
+        else:
+            rewards=np.sum(np.array([cost, penalty]))
+
+        return rewards
 
 
     def get_state(self, result):
@@ -174,6 +179,7 @@ class SingleZoneTemperatureEnv(object):
         state_list = [result.final(k) for k in model_outputs]
 
         predictor_list = self.predictor(self.npre_step)
+        state_list[0] = int(state_list[0]) % 86400
 
         return tuple(state_list+predictor_list) 
 
@@ -263,7 +269,8 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
                  fmu_result_ncp=100.,
                  filter_flag=True,
                  alpha = 0.01,
-                 nActions = 37):
+                 nActions = 37,
+                 rf=None):
 
         logger.setLevel(log_level)
 
@@ -277,6 +284,9 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
         self.alpha = alpha # Positive: penalty coefficients for temperature violation in reward function 
         self.nActions = nActions # Integer: number of actions for one control variable (level of damper position)
 
+        # customized reward return
+        self.rf = rf # this is an external function
+        
         # others
         self.viewer = None
         self.display = None

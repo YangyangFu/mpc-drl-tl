@@ -14,7 +14,7 @@ from tianshou.env import SubprocVectorEnv
 from tianshou.trainer import offpolicy_trainer
 from tianshou.data import Collector, VectorReplayBuffer
 import torch.nn as nn
-import gym_singlezone_jmodelica
+import gym_singlezone_temperature
 import gym
 
 
