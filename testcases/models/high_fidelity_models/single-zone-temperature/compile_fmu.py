@@ -5,7 +5,8 @@ This module compiles Modelica models into fmu models.
 @ Yangyang Fu, yangyang.fu@tamu.edu
 
 """
-
+from __future__ import print_function
+from __future__ import absolute_import, division
 
 from pymodelica import compile_fmu
 # DEFINE MODEL

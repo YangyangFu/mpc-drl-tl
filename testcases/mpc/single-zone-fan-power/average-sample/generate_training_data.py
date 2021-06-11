@@ -2,6 +2,8 @@
 """
 this script is to test the simulation of compiled fmu
 """
+from __future__ import print_function
+from __future__ import absolute_import, division
 # import numerical package
 #from pymodelica import compile_fmu
 from pyfmi import load_fmu
@@ -51,7 +53,6 @@ spe_sig = excite_fan(time_arr)
 
 # input
 input_names = fmu.get_model_variables(causality=2).keys()
-print input_names
 
 input_trac = np.transpose(np.vstack((time_arr.flatten(),spe_sig.flatten())))
 input_object = (input_names,input_trac)

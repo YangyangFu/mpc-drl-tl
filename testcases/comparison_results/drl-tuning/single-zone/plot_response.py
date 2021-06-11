@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import absolute_import, division
+
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -95,7 +98,7 @@ while t < te:
 dqn_case = './dqn/dqn_results_epoch_'+str(nepochs)+'_a_'+str(alpha)
 actions= np.load(dqn_case+'/history_Action.npy')
 u_opt = np.array(actions[-1,:,0])/float(nActions-1)
-print u_opt
+print (u_opt)
 
 ## fmu settings
 hvac.reset()
@@ -289,7 +292,7 @@ for epoch in range(nepochs):
 
 rewards_drl = pd.DataFrame(np.array(rewards_drl),columns=[['ene_cost','penalty']])
 rewards_drl['sum'] = rewards_drl.sum(axis=1)
-print rewards_drl
+print (rewards_drl)
 # plot rewards with moving windows - epoch-by-epoch
 moving = nday*24*3600.//dt 
 rewards_moving_base = rewards_base['sum'].groupby(rewards_base.index//moving).sum()

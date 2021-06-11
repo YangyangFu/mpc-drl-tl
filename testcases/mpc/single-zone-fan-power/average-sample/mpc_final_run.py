@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import absolute_import, division
+
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -42,9 +45,6 @@ with open('u_opt.json') as f:
 t_opt = opt['t_opt']
 u_opt = opt['u_opt']
 
-print len(t_opt)
-print len(u_opt)
-
 ### 1- Load virtual building model
 mpc = load_fmu('SingleZoneDamperControl.fmu')
 
@@ -56,7 +56,7 @@ options['initialize'] = True
 ## construct optimal input for fmu
 u_traj = np.transpose(np.vstack((t_opt,u_opt)))
 input_object = ("uFan",u_traj)
-print u_traj
+
 res_mpc = mpc.simulate(start_time = ts,
                     final_time = te, 
                     options = options,

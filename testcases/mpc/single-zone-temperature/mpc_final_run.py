@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import absolute_import, division
+
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -114,7 +117,7 @@ def interpolate_dataframe(df,new_index):
 
 measurement_mpc = pd.DataFrame(measurement_mpc,index=measurement_mpc['time'])
 measurement_mpc = interpolate_dataframe(measurement_mpc,tim)
-print measurement_mpc
+print (measurement_mpc)
 
 xticks=np.arange(ts,te,12*3600)
 xticks_label = np.arange(0,24*nday,12)

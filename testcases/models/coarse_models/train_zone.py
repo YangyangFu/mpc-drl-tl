@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import absolute_import, division
+
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
@@ -23,7 +26,7 @@ data=pd.concat([data,Tz_his],axis=1)
 data.dropna(inplace=True)
 #data.to_csv('prepared_data_tzone.csv')
 
-print data
+print (data)
 # split training and testing
 ratio = 0.8
 n_train = int(ratio*len(data))
@@ -62,8 +65,8 @@ def func_TZone(x,alpha1,alpha2,alpha3,alpha4,beta,gamma):
     Toa = x[:,l+1]
     params = {'alpha':alpha, 'beta':beta, 'gamma':gamma}
     y = predict(zone,Tz_his, mz, Toa, params)
-    print y
-    print y.shape
+    print (y)
+    print (y.shape)
     return y
 
 # represent data in np.array
