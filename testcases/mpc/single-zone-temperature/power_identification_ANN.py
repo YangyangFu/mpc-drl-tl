@@ -1,4 +1,6 @@
-from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import, division
+
 import time
 import numpy as np
 import sklearn
@@ -49,7 +51,6 @@ data=pd.concat([data,var_his,var2_his],axis=1)
 data.dropna(inplace=True)
 data.to_csv('prepared_data_power.csv')
 
-print data
 #X= data[[var2_name+'_1',var2_name+'_2',var2_name+'_3',var2_name+'_4','T_roo','T_set','T_oa','h']].values
 X= data[[var_name+'_1',var_name+'_2',var_name+'_3',var_name+'_4',var2_name+'_1',var2_name+'_2',var2_name+'_3',var2_name+'_4','T_roo','T_set','T_oa','h']].values
 y= data['P_coo'].values
@@ -57,9 +58,6 @@ y= data['P_coo'].values
 # split traing and testing data
 X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2)
-
-print X_train
-print y_train
 
 # #############################################################################
 # Fit regression model

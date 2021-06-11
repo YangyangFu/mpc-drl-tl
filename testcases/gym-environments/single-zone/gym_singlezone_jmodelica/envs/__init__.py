@@ -1,1 +1,2 @@
-from gym_singlezone_jmodelica.envs.single_zone_env import JModelicaCSSingleZoneEnv
+from gym_singlezone_jmodelica.envs import single_zone_env_v0
+from gym_singlezone_jmodelica.envs import single_zone_env_v1

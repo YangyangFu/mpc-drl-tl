@@ -71,6 +71,12 @@ RUN pip install pvlib
 # Install scikit learn for nonlinear system identification
 RUN pip install -U scikit-learn
 
+#### =====================================================================================
+### Install DRL algorithm - tianshou with the latest development in github
+#
+WORKDIR $HOME
+RUN cd $HOME/github && pip install git+https://github.com/thu-ml/tianshou.git@master --upgrade
+
 ### =======================================================================================
 ### intall customized gym environment into docker: install a building control environment
 # install single zone damper control environment

@@ -11,4 +11,4 @@ def zone_temperature(Tz_his, mz, Toa):
     
     return np.maximum(273.15+14,np.minimum(y,273.15+35))
 
-print zone_temperature([288.386, 288.388, 288.39, 288.393], 0.75, 290.353)
+print (zone_temperature([288.386, 288.388, 288.39, 288.393], 0.75, 290.353))

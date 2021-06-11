@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import absolute_import, division
+
 import numpy as np
 from coarse_models import Zone
 
@@ -15,4 +18,4 @@ Tnext = zone1.predict(Tz_his_meas = T_his_meas,
                 Tz_his_pred = T_his_pred,
                 mz = mz,
                 Toa = Toa)
-print Tnext
+print (Tnext)
