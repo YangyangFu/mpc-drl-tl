@@ -1,3 +1,6 @@
+from __future__ import print_function, unicode_literals
+from __future__ import absolute_import, division
+
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -31,7 +34,7 @@ nepochs = 20
 # get actions from the last epoch
 actions= np.load('./dqn/history_Action.npy')
 u_opt = np.array(actions[-1,:,0])/float(nActions)
-print u_opt
+print (u_opt)
 
 ## fmu settings
 hvac = load_fmu('SingleZoneDamperControl1.fmu')

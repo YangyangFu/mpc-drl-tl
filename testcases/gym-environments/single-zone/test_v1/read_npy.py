@@ -1,3 +1,6 @@
+from __future__ import print_function, unicode_literals
+from __future__ import absolute_import, division
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
