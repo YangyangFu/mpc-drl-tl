@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import absolute_import, division
+
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
@@ -54,10 +57,9 @@ data.dropna(inplace=True)
 data.to_csv('prepared_data_power.csv')
 """
 
-print data
+
 # split training and testing
 data_train = data.iloc[:int(20*24*4),:]
-print data_train
 data_test = data.iloc[20*24*4:-1,:]
 
 # fit a zone temperature model
@@ -71,8 +73,6 @@ def func_P(x,alpha1,alpha2,alpha3):
 x_train = data_train['mass_flow'].values
 y_train = data_train['P_tot'].values
 
-print x_train
-print y_train
 popt,pcov = curve_fit(func_P,x_train,y_train)
 ypred_train = func_P(x_train,*popt)
 

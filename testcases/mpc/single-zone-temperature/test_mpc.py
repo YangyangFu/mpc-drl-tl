@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import absolute_import, division
+
 import numpy as np
 import pandas as pd
 import json
@@ -172,8 +175,6 @@ while ts<end:
         case.set_time(ts)
         case.set_measurement(measurement)
         case.set_states(states) 
-        print "\nstate 1"
-        print case.states   
         case.set_predictor(predictor)
         # call optimizer
         optimum = case.optimize()
@@ -203,15 +204,9 @@ while ts<end:
 
     # get measurement
     measurement = get_measurement(res,measurement_names)
-    print measurement
+
     # update MPC model inputs
-    print "\nstate 2"
-    print case.states
-    print "\nstate 3"    
-    print states
     states = get_states(states,measurement)
-    print "\nstate 4"
-    print states
     # online MPC model calibration if applied - NOT IMPLEMENTED
     # update parameter_zones and parameters_power - NOT IMPLEMENTED
     
