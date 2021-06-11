@@ -145,8 +145,12 @@ class SingleZoneEnv(object):
         for k in range(num_zone):
             cost.append(- ZPower[k]/1000. * delCtrl * p_g[t_pre])
         
-        return [cost, penalty]
+        if self.rf:
+            rewards=self.rf(cost, penalty)
+        else:
+            rewards=np.sum(np.array([cost, penalty]))
 
+        return rewards
 
     def get_state(self, result):
         """
@@ -266,7 +270,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
                  filter_flag=True,
                  alpha=0.01,
                  nActions=11,
-                 rf=rf):
+                 rf=None):
 
         logger.setLevel(log_level)
 
