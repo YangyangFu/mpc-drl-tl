@@ -115,7 +115,7 @@ te_warm = ts + 4*3600
 
 ### 2- Initialize MPC case 
 dt = 15*60.
-PH = 8
+PH = 4
 CH = 1
 with open('TZone.json') as f:
   parameters_zone = json.load(f)
@@ -129,7 +129,7 @@ measurement_ini = {}
 # states at current time for MPC model - this should be customized based on mpc design
 lag_Tz = 4 # 4-step lag - should be identified for MPC model
 lag_PTot = 4 # 4-step lag - should be idetified for mpc model
-Tz_ini = 273.15+20
+Tz_ini = 273.15+30
 P_ini = 0.0
 states_ini = {'Tz_his_t':[Tz_ini]*lag_Tz,
             'P_his_t':[P_ini]*lag_PTot} # initial states used for MPC models
@@ -145,9 +145,12 @@ Toa_year = read_temperature(weather_file,dt)
 predictor['Toa'] = get_Toa(ts,dt,PH,Toa_year)
 
 ### 3- MPC Control Loop
-uTSet_ini = 273.15+24
+# occupancy
+occ_start=6
+occ_end = 19
+# initialize setpoint
+uTSet_ini = 273.15+30
 # initialize fan speed for warmup setup
-uTSet = uTSet_ini
 states = states_ini
 measurement = measurement_ini
 # initialize mpc case 
@@ -159,7 +162,9 @@ case = mpc_case(PH=PH,
                 parameters_power = parameters_power,
                 measurement = measurement,
                 states = states,
-                predictor = predictor)
+                predictor = predictor,
+                occ_start=occ_start,
+                occ_end=occ_end)
 # initialize all results
 u_opt=[]
 t_opt=[]
@@ -168,9 +173,10 @@ while ts<end:
     
     te = ts+dt*CH
     t_opt.append(ts)
-
+    h = int((ts % 86400)/3600)  # hour index 0~23
+    u_opt_ph=[uTSet_ini]*PH
     ### generate control action from MPC
-    if ts>=te_warm: # activate mpc after warmup
+    if h>=occ_start-2 and h<=occ_end+1: # activate mpc after warmup
         # update mpc case
         case.set_time(ts)
         case.set_measurement(measurement)
@@ -182,15 +188,15 @@ while ts<end:
         # get objective and design variables
         f_opt_ph = optimum['objective']
         u_opt_ph = optimum['variable']
-        
-        # get the control action for the control horizon
-        u_opt_ch = u_opt_ph[0]
+    
+    # get the control action for the control horizon
+    u_opt_ch = u_opt_ph[0]
 
-        # update setpoitns 
-        uTSet = u_opt_ch
+    # update setpoitns 
+    uTSet = u_opt_ch
 
-        # update start points for optimizer using previous optimum value
-        case.set_u_start(u_opt_ph)
+    # update start points for optimizer using previous optimum value
+    case.set_u_start(u_opt_ph)
     ### advance building simulation by one step
     u_traj = np.transpose(np.vstack(([ts,te],[uTSet, uTSet])))
     input_object = ("TSetCoo",u_traj)

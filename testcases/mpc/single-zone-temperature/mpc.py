@@ -13,7 +13,7 @@ from openopt import GLP
 from sklearn.externals import joblib
 
 class mpc_case():
-    def __init__(self,PH,CH,time,dt,parameters_zone, parameters_power,measurement,states,predictor):
+    def __init__(self,PH,CH,time,dt,parameters_zone, parameters_power,measurement,states,predictor,occ_start,occ_end):
 
         self.PH=PH # prediction horizon
         self.CH=CH # control horizon
@@ -33,8 +33,8 @@ class mpc_case():
         self.Tz_his_t = []
 
         self.number_zone = 1
-        self.occ_start = 6 # occupancy starts
-        self.occ_end = 19 # occupancy ends
+        self.occ_start = occ_start # occupancy starts
+        self.occ_end = occ_end # occupancy ends
 
         # initialize optimiztion
         #self.optimization_model=self.get_optimization_model() # pyomo object

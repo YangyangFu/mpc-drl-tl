@@ -51,6 +51,7 @@ data=pd.concat([data,var_his,var2_his],axis=1)
 data.dropna(inplace=True)
 data.to_csv('prepared_data_power.csv')
 
+#X= data[[var2_name+'_1',var2_name+'_2',var2_name+'_3',var2_name+'_4','T_roo','T_set','T_oa','h']].values
 X= data[[var_name+'_1',var_name+'_2',var_name+'_3',var_name+'_4',var2_name+'_1',var2_name+'_2',var2_name+'_3',var2_name+'_4','T_roo','T_set','T_oa','h']].values
 y= data['P_coo'].values
 
@@ -66,7 +67,7 @@ scaler = StandardScaler().fit(X_train)
 # Dimension reduction
 
 # Second, create a ANN estimator
-ann = MLPRegressor(solver='lbfgs',alpha=0.001)
+ann = MLPRegressor(solver='lbfgs',alpha=0.001,hidden_layer_sizes=(200,))
 
 # Third, create steps
 steps = [('normalize',scaler),('reg',ann)]
@@ -88,28 +89,35 @@ print("ANN complexity and bandwidth selected and model fitted in %.3f s"
       % ann_fit)
 
 t0 = time.time()
-y_ann = estimator.predict(X_test)
+y_ann_test = estimator.predict(X_test)
 ann_predict = time.time() - t0
 print("ANN prediction for %d inputs in %.3f s"
       % (X_test.shape[0], ann_predict))
 # #############################################################################
 # train  
+y_ann_train = estimator.predict(X_train)
 
-
-# Look at the accuracy
-r2 = r2_score(y_test,y_ann)
-mse = mean_squared_error(y_test,y_ann)
+# Look at the accuracy for testing data
 def nrmse(y,ypred):
       mse = mean_squared_error(y,ypred)
       return np.sqrt(np.sum(mse))/np.mean(y+1e-06)
+r2_test = r2_score(y_test,y_ann_test)
+mse_test = mean_squared_error(y_test,y_ann_test)
+nr_mse_test = nrmse(y_test, y_ann_test)
+accuracy_test = {'r2':r2_test,'mse':mse_test, 'nrmse':nr_mse_test}
 
-nr_mse = nrmse(y_test, y_ann)
-accuracy = {'r2':r2,'mse':mse, 'nrmse':nr_mse}
+# Look at the accuracy for traing data
+r2_train = r2_score(y_train,y_ann_train)
+mse_train = mean_squared_error(y_train,y_ann_train)
+nr_mse_train = nrmse(y_train, y_ann_train)
+accuracy_train = {'r2':r2_train,'mse':mse_train, 'nrmse':nr_mse_train}
+
+accuracy={'train':accuracy_train,'test':accuracy_test}
 
 with open('powerANN.json', 'w') as json_file:
       json.dump(accuracy,json_file)
 
-plt.scatter(y_test, y_ann, c='b',label='Power')
+plt.scatter(y_test, y_ann_test, c='b',label='Power')
 plt.xlabel('Measurement [W]')
 plt.ylabel('Prediction [W]')
 plt.xlim([0,10000])
@@ -120,12 +128,12 @@ plt.savefig('power-scatter.pdf')
 plt.figure()
 plt.subplot(211)
 plt.plot(y_test,'b-',lw=0.5,label='Target')
-plt.plot(y_ann,'r--',lw=0.5,markevery=0.05,marker='o',markersize=2,label='ANN')
+plt.plot(y_ann_test,'r--',lw=0.5,markevery=0.05,marker='o',markersize=2,label='ANN')
 plt.ylabel('Power [W]')
 plt.legend()
 
 plt.subplot(212)
-plt.plot(y_ann-y_test, 'r-', lw=0.5, label='ANN')
+plt.plot(y_ann_test-y_test, 'r-', lw=0.5, label='ANN')
 plt.ylabel('Error (W)')
 plt.legend()
 

@@ -24,7 +24,7 @@ nsteps_h = int(3600//dt)
 # setup for DRL test
 nActions = 37
 alpha = 1000
-nepochs = 50
+nepochs = 20
 
 # define some filters to save simulation time using fmu
 measurement_names = ['time','TRoo','TOut','PTot','hvac.uFan','hvac.fanSup.m_flow_in', 'senTSetRooCoo.y', 'CO2Roo']

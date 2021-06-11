@@ -1,1 +1,1 @@
-{"base": {"temp_violation": [-1842.5551798603237], "energy_cost": [-21.261637242270872]}, "mpc": {"temp_violation": [-2019.4015358731394], "energy_cost": [-24.406073625905258]}, "drl": {"temp_violation": [-2703.652093191383], "energy_cost": [-24.081587892853676]}}
+{"base": {"temp_violation": [-1842.5551798603237], "energy_cost": [-21.261637242270872]}, "mpc": {"temp_violation": [-1798.8750937926911], "energy_cost": [-18.97138589406701]}, "drl": {"temp_violation": [-2703.652093191383], "energy_cost": [-24.081587892853676]}}
