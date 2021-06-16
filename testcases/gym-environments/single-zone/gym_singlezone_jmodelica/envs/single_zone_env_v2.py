@@ -16,9 +16,9 @@ from modelicagym.environment import FMI2CSEnv, FMI1CSEnv
 
 logger = logging.getLogger(__name__)
 
-class SingleZoneTemperatureEnv(object):
+class SingleZoneEnv(object):
     """
-    Class extracting common logic for JModelica and Dymola environments for single zone temperature control experiments.
+    Class extracting common logic for JModelica and Dymola environments for CartPole experiments.
     Allows to avoid code duplication.
     Implements all methods for connection to the OpenAI Gym as an environment.
 
@@ -34,7 +34,7 @@ class SingleZoneTemperatureEnv(object):
         1      Zone temperature                              273.15 + 12    273.15 + 30
         2      Outdoor temperature                           273.15 + 0     273.15 + 40
         3      Solar radiation                               0              1200
-        4      Total power                                   0              5000
+        4      Total power                                   0              1000
         5      Outdoor temperature prediction at next 1 step 273.15 + 0     273.15 + 40
         6      Outdoor temperature prediction at next 2 step 273.15 + 0     273.15 + 40
         7      Outdoor temperature prediction at next 3 step 273.15 + 0     273.15 + 40
@@ -45,7 +45,7 @@ class SingleZoneTemperatureEnv(object):
     Actions:
         Type: Box(1)
         Num    Action           Min         Max
-        0      Zone setpoint    18          30
+        0      Fan speed        0           1
     Reward:
          Sum of energy costs and zone temperature violations
 
@@ -72,9 +72,15 @@ class SingleZoneTemperatureEnv(object):
         Internal logic that is utilized by parent classes.
         Returns action space according to OpenAI Gym API requirements
 
-        :return: Discrete action space of size 37, 37-levels of temperature control [12,30]oC with an increment of 0.5 oC.
+        :return: Continuous action space, normalized fan speed from [0-1]
         """
-        return spaces.Discrete(self.nActions)
+        action_space=spaces.Box(
+                low = self.min_action,
+                high = self.max_action,
+                shape=(1,),
+                dtype=np.float32
+                )
+        return action_space
 
     def _get_observation_space(self):
         """
@@ -94,8 +100,8 @@ class SingleZoneTemperatureEnv(object):
         """
         # open gym requires an observation space during initialization
 
-        high = np.array([273.15+30, 273.15+40,2000, 10000,273.15+40,273.15+40,273.15+40,2000,2000,2000])
-        low = np.array([273.15+12, 273.15+0,0, 0, 273.15+0,273.15+0,273.15+0,0,0,0])
+        high = np.array([86400., 273.15+30, 273.15+40,1200., 1000.,273.15+40,273.15+40,273.15+40,1200.,1200.,1200.])
+        low = np.array([0., 273.15+12, 273.15+0,0., 0., 273.15+0,273.15+0,273.15+0,0.,0.,0.])
         return spaces.Box(low, high)
 
     # OpenAI Gym API implementation
@@ -105,13 +111,14 @@ class SingleZoneTemperatureEnv(object):
         in the current state perform given action to move to the next action.
         Applies force of the defined magnitude in one of two directions, depending on the action parameter sign.
 
-        :param action: alias of an action [0-36] to be performed. 
+        :param action: alias of an action [0-10] to be performed. 
         :return: next (resulting) state
         """
-        # 0 - temperature setpoints: 
-        action = list(np.array(np.array(action)*(30.-12.)/(self.nActions-1) + 12 + 273.15).flatten(-1))
-
-        return super(SingleZoneTemperatureEnv,self).step(action)
+        # 0 - max flow: 
+        #mass_flow_nor = self.mass_flow_nor # norminal flowrate: kg/s 
+        action = np.array(action)
+        action = [action]
+        return super(SingleZoneEnv,self).step(action)
     
     def _reward_policy(self):
         """
@@ -155,7 +162,7 @@ class SingleZoneTemperatureEnv(object):
         #calculate penalty for each zone
         overshoot = []
         undershoot = []
-        penalty = [] #temperature violation penalty for each zone
+        penalty = [] #temperature violation for each zone
         cost = [] # erengy cost for each zone
         alpha_up = self.alpha
         alpha_low = self.alpha
@@ -170,8 +177,12 @@ class SingleZoneTemperatureEnv(object):
         for k in range(num_zone):
             cost.append(- ZPower[k]/1000. * delCtrl * p_g[t_pre])
         
-        return [cost, penalty]
+        if self.rf:
+            rewards=self.rf(cost, penalty)
+        else:
+            rewards=np.sum(np.array([cost, penalty]))
 
+        return rewards
 
     def get_state(self, result):
         """
@@ -201,6 +212,7 @@ class SingleZoneTemperatureEnv(object):
 
         predictor_list = self.predictor(self.npre_step)
 
+        state_list[0] = int(state_list[0]) % 86400
         return tuple(state_list+predictor_list) 
 
     def predictor(self,n):
@@ -266,7 +278,7 @@ class SingleZoneTemperatureEnv(object):
         return self.render(close=True)
 
 
-class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
+class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
     """
     Wrapper class for creation of cart-pole environment using JModelica-compiled FMU (FMI standard v.2.0).
 
@@ -288,8 +300,10 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
                  fmu_result_handling='memory',
                  fmu_result_ncp=100.,
                  filter_flag=True,
-                 alpha = 0.01,
-                 nActions = 37):
+                 alpha=0.01,
+                 min_action=0.,
+                 max_action=1.,
+                 rf=None):
 
         logger.setLevel(log_level)
 
@@ -301,14 +315,18 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
         
         # experiment parameters
         self.alpha = alpha # Positive: penalty coefficients for temperature violation in reward function 
-        self.nActions = nActions # Integer: number of actions for one control variable (level of damper position)
+        self.min_action = min_action # scalor for 1-dimensional action space, np.array for multi-dimensional action space
+        self.max_action = max_action # scalor for 1-dimensional action space, np.array for multi-dimensional action space
+
+        # customized reward return
+        self.rf = rf # this is an external function
 
         # others
         self.viewer = None
         self.display = None
 
         config = {
-            'model_input_names': ['TSetCoo'],
+            'model_input_names': ['uFan'],
             'model_output_names': ['time','TRoo','TOut','GHI','PTot'],
             'model_parameters': {},
             'time_step': time_step,
@@ -317,7 +335,7 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
             'filter_flag':filter_flag 
         }
 
-        super(JModelicaCSSingleZoneTemperatureEnv,self).__init__("./SingleZoneTemperature.fmu",
+        super(JModelicaCSSingleZoneEnv,self).__init__("./SingleZoneVAV.fmu",
                          config, log_level=log_level,
                          simulation_start_time=simulation_start_time)
        # location of fmu is set to current working directory

@@ -72,9 +72,15 @@ class SingleZoneTemperatureEnv(object):
         Internal logic that is utilized by parent classes.
         Returns action space according to OpenAI Gym API requirements
 
-        :return: Discrete action space of size 37, 37-levels of temperature control [12,30]oC with an increment of 0.5 oC.
+        :return: Continuous action space for temperature setpoints.
         """
-        return spaces.Discrete(self.nActions)
+        action_space=spaces.Box(
+                low = self.min_action,
+                high = self.max_action,
+                shape=(1,),
+                dtype=np.float32
+                )
+        return action_space
 
     def _get_observation_space(self):
         """
@@ -94,8 +100,8 @@ class SingleZoneTemperatureEnv(object):
         """
         # open gym requires an observation space during initialization
 
-        high = np.array([273.15+30, 273.15+40,2000, 10000,273.15+40,273.15+40,273.15+40,2000,2000,2000])
-        low = np.array([273.15+12, 273.15+0,0, 0, 273.15+0,273.15+0,273.15+0,0,0,0])
+        high = np.array([86400., 273.15+30, 273.15+40,1200., 5000.,273.15+40,273.15+40,273.15+40,1200.,1200.,1200.])
+        low = np.array([0., 273.15+12, 273.15+0,0., 0., 273.15+0,273.15+0,273.15+0,0.,0.,0.])
         return spaces.Box(low, high)
 
     # OpenAI Gym API implementation
@@ -105,11 +111,10 @@ class SingleZoneTemperatureEnv(object):
         in the current state perform given action to move to the next action.
         Applies force of the defined magnitude in one of two directions, depending on the action parameter sign.
 
-        :param action: alias of an action [0-36] to be performed. 
+        :param action: temperature setpoint in K. 
         :return: next (resulting) state
         """
-        # 0 - temperature setpoints: 
-        action = list(np.array(np.array(action)*(30.-12.)/(self.nActions-1) + 12 + 273.15).flatten(-1))
+        action = list((np.array(action)+ 273.15).flatten(-1))
 
         return super(SingleZoneTemperatureEnv,self).step(action)
     
@@ -170,7 +175,12 @@ class SingleZoneTemperatureEnv(object):
         for k in range(num_zone):
             cost.append(- ZPower[k]/1000. * delCtrl * p_g[t_pre])
         
-        return [cost, penalty]
+        if self.rf:
+            rewards=self.rf(cost, penalty)
+        else:
+            rewards=np.sum(np.array([cost, penalty]))
+
+        return rewards
 
 
     def get_state(self, result):
@@ -200,6 +210,7 @@ class SingleZoneTemperatureEnv(object):
         state_list = [result.final(k) for k in model_outputs]
 
         predictor_list = self.predictor(self.npre_step)
+        state_list[0] = int(state_list[0]) % 86400
 
         return tuple(state_list+predictor_list) 
 
@@ -289,7 +300,9 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
                  fmu_result_ncp=100.,
                  filter_flag=True,
                  alpha = 0.01,
-                 nActions = 37):
+                 min_action = 18.,
+                 max_action = 30.,
+                 rf=None):
 
         logger.setLevel(log_level)
 
@@ -301,8 +314,12 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
         
         # experiment parameters
         self.alpha = alpha # Positive: penalty coefficients for temperature violation in reward function 
-        self.nActions = nActions # Integer: number of actions for one control variable (level of damper position)
-
+        self.min_action = min_action # scalor for 1-dimensional action space, np.array for multi-dimensional action space
+        self.max_action = max_action # scalor for 1-dimensional action space, np.array for multi-dimensional action space
+        
+        # customized reward return
+        self.rf = rf # this is an external function
+        
         # others
         self.viewer = None
         self.display = None
