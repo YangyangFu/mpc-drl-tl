@@ -1,4 +1,4 @@
-exec docker run --runtime=nvidia -e NVIDIA_DRIVER_CAPABILITIES=compute,utility -e NVIDIA_VISIBLE_DEVICES=1\
+exec docker run --runtime=nvidia -e NVIDIA_DRIVER_CAPABILITIES=compute,utility -e NVIDIA_VISIBLE_DEVICES=4\
       --user=root \
 	  --detach=false \
 	  -e DISPLAY=${DISPLAY} \
