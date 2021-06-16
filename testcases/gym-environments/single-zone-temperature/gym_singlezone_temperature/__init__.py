@@ -20,3 +20,9 @@ register(
     entry_point='gym_singlezone_temperature.envs.single_zone_temperature_v1:JModelicaCSSingleZoneTemperatureEnv',
     kwargs = config
 )
+
+register(
+    id='JModelicaCSSingleZoneTemperatureEnv-v2',
+    entry_point='gym_singlezone_temperature.envs.single_zone_temperature_v2:JModelicaCSSingleZoneTemperatureEnv',
+    kwargs = config
+)

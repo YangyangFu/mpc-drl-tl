@@ -22,6 +22,32 @@ class SingleZoneTemperatureEnv(object):
     Allows to avoid code duplication.
     Implements all methods for connection to the OpenAI Gym as an environment.
 
+    Description:
+        The agent (a fan coil unit system) is controlled to minimize energy cost while maintaining the zone thermal comfort. 
+        For any given state the agent may choose to operate the fan at a different speed.
+    Reference:
+        None
+    Observation:
+        Type: Box(11)
+        Num    Observation                                   Min            Max
+        0      Time                                          0              86400
+        1      Zone temperature                              273.15 + 12    273.15 + 30
+        2      Outdoor temperature                           273.15 + 0     273.15 + 40
+        3      Solar radiation                               0              1200
+        4      Total power                                   0              5000
+        5      Outdoor temperature prediction at next 1 step 273.15 + 0     273.15 + 40
+        6      Outdoor temperature prediction at next 2 step 273.15 + 0     273.15 + 40
+        7      Outdoor temperature prediction at next 3 step 273.15 + 0     273.15 + 40
+        8      Solar radiation prediction at next 1 step     0              1200
+        9      Solar radiation prediction at next 2 step     0              1200
+        10     Solar radiation prediction at next 3 step     0              1200
+
+    Actions:
+        Type: Box(1)
+        Num    Action           Min         Max
+        0      Zone setpoint    18          30
+    Reward:
+         Sum of energy costs and zone temperature violations
 
     """
 
