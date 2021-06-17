@@ -77,6 +77,10 @@ RUN pip install -U scikit-learn
 WORKDIR $HOME
 RUN cd $HOME/github && pip install git+https://github.com/thu-ml/tianshou.git@master --upgrade
 
+### Install DRL algorithm - StableBaseline3 in case tianshou is not working
+WORKDIR $HOME
+RUN pip install stable-baselines3
+
 ### =======================================================================================
 ### intall customized gym environment into docker: install a building control environment
 # install single zone damper control environment
