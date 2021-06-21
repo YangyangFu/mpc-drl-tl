@@ -19,7 +19,7 @@ from tianshou.policy import SACPolicy
 from tianshou.utils.net.continuous import ActorProb, Critic
 import time
 
-def get_args():
+def get_args(alpha, folder):
     time_step = 15*60.0
     num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
@@ -60,7 +60,7 @@ def get_args():
 
     parser.add_argument('--logdir', type=str, default='log')
     
-    parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--device', type=str, default='cpu') # or 'cuda'
     parser.add_argument('--frames-stack', type=int, default=1)
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',

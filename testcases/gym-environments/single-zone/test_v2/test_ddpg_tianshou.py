@@ -18,7 +18,7 @@ from tianshou.utils.net.continuous import Actor, Critic
 from tianshou.data import Collector, ReplayBuffer, VectorReplayBuffer
 import time
 
-def get_args():
+def get_args(alpha,folder):
     time_step = 15*60.0
     num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
@@ -58,7 +58,7 @@ def get_args():
 
     parser.add_argument('--logdir', type=str, default='log')
     
-    parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--device', type=str, default='cpu') # or 'cuda'
     parser.add_argument('--frames-stack', type=int, default=1)
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',
@@ -69,8 +69,6 @@ def get_args():
 
     parser.add_argument('--rew-norm', action="store_true", default=False)
 
-
-
     return parser.parse_args()
 
 
@@ -80,7 +78,7 @@ def make_building_env(args):
     npre_step = 3
     simulation_start_time = 212*24*3600.0
     log_level = 7
-    alpha = arg.alpha
+    alpha = args.alpha
 
     env = gym.make(args.task,
                    mass_flow_nor = mass_flow_nor,
