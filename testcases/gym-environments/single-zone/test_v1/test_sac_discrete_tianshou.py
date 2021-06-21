@@ -19,7 +19,7 @@ from tianshou.policy import DiscreteSACPolicy
 from tianshou.utils.net.discrete import Actor, Critic
 import time
 
-def get_args():
+def get_args(alpha,folder):
     time_step = 15*60.0
     num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
@@ -27,6 +27,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-v1")
     parser.add_argument('--time-step', type=float, default=time_step)
+    parser.add_argument('--alpha', type=float, default=alpha)
     parser.add_argument('--seed', type=int, default=0)
 
     parser.add_argument('--eps-test', type=float, default=0.005)
@@ -64,7 +65,7 @@ def get_args():
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',
                         help='watch the play of pre-trained policy only')
-    parser.add_argument('--save-buffer-name', type=str, default='./experiments_results/his')
+    parser.add_argument('--save-buffer-name', type=str, default=folder)
 
     parser.add_argument('--test-only', type=bool, default=False)
 
@@ -80,8 +81,8 @@ def make_building_env(args):
     mass_flow_nor = [0.75]
     npre_step = 3
     simulation_start_time = 212*24*3600.0
-    log_level = 7
-    alpha = 300
+    log_level = 0
+    alpha = args.alpha
     nActions = 10
 
     env = gym.make(args.task,
@@ -201,7 +202,7 @@ def offpolicy_trainer_1(
 
     return 1
 
-def test_sac_discrete(args=get_args()):
+def test_sac_discrete(args):
     tim_env = 0.0
     tim_ctl = 0.0
     tim_learn = 0.0
@@ -358,9 +359,15 @@ def test_sac_discrete(args=get_args()):
         watch()
 
 if __name__ == '__main__':
+
+    alpha=300.
+    folder='./sac_results_'+str(int(alpha))
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+
     start = time.time()
     print("Begin time {}".format(start))
-    test_sac_discrete(get_args())
+    test_sac_discrete(get_args(alpha, folder))
 
     end = time.time()
     print("Total execution time {:.2f} seconds".format(end-start))
