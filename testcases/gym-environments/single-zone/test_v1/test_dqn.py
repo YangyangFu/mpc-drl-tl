@@ -1,6 +1,3 @@
-from __future__ import print_function, unicode_literals
-from __future__ import absolute_import, division
-
 import os
 import torch
 import pprint
@@ -18,7 +15,7 @@ import gym_singlezone_jmodelica
 import gym
 
 
-def get_args():
+def get_args(alpha,folder):
     time_step = 15*60.0
     num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
@@ -26,6 +23,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-v1")
     parser.add_argument('--time-step', type=float, default=time_step)
+    parser.add_argument('--alpha', type=float, default=alpha)
     parser.add_argument('--seed', type=int, default=0)
 
     parser.add_argument('--eps-test', type=float, default=0.005)
@@ -51,12 +49,12 @@ def get_args():
 
     parser.add_argument('--logdir', type=str, default='log')
     
-    parser.add_argument('--device', type=str, default='cpu')# or 'cuda'
+    parser.add_argument('--device', type=str, default='cpu')#cuda
     parser.add_argument('--frames-stack', type=int, default=1)
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',
                         help='watch the play of pre-trained policy only')
-    parser.add_argument('--save-buffer-name', type=str, default='./experiments_results/his')
+    parser.add_argument('--save-buffer-name', type=str, default=folder)
 
     parser.add_argument('--test-only', type=bool, default=False)
 
@@ -79,15 +77,15 @@ def rf(cost,penalty):
     else:
         clipped_target = target
 
-    return clipped_target    
+    return clipped_target   
 
 def make_building_env(args):
     weather_file_path = "./USA_CA_Riverside.Muni.AP.722869_TMY3.epw"
     mass_flow_nor = [0.75]
     npre_step = 3
     simulation_start_time = 212*24*3600.0
-    log_level = 7
-    alpha = 100
+    log_level = 0
+    alpha = args.alpha
     nActions = 11
 
     env = gym.make(args.task,
@@ -121,6 +119,7 @@ class Net(nn.Module):
         logits = self.model(obs.view(batch, -1))
         return logits, state
 
+        
 import time
 import tqdm
 import warnings
@@ -165,10 +164,7 @@ def offpolicy_trainer_1(
     train_collector.reset_stat()
     test_collector.reset_stat()
     test_in_train = test_in_train and train_collector.policy == policy
-    #test_result = test_episode(policy, test_collector, test_fn, start_epoch,
-    #                           episode_per_test, logger, env_step, reward_metric)
-    best_epoch = start_epoch
-    best_reward, best_reward_std = -99999999, -1#test_result["rew"], test_result["rew_std"]
+
 
     for epoch in range(1 + start_epoch, 1 + max_epoch):
         # train
@@ -226,32 +222,13 @@ def offpolicy_trainer_1(
         
         if save_fn:
             save_fn(policy)
-        '''
-        print("Setup test envs ...")
-        policy.eval()
-        
-        test_collector.reset_stat()
-        eps_test = 0.005
-        policy.set_eps(eps_test)
-        print("Testing agent ...")
-        
-                
-        
-        test_result = test_collector.collect(n_step=step_per_epoch)
-        
 
-        rew = test_result["rews"].mean()
-        '''
-        best_reward, best_reward_std = 1, 1
-        #print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
+    return 1
 
-    return 1#gather_info(start_time, train_collector, test_collector, best_reward, best_reward_std)
-
-def test_dqn(args=get_args()):
+def test_dqn(args):
     tim_env = 0.0
     tim_ctl = 0.0
     tim_learn = 0.0
-    
     env = make_building_env(args)
 
     args.state_shape = env.observation_space.shape or env.observation_space.n
@@ -273,8 +250,8 @@ def test_dqn(args=get_args()):
     test_envs.seed(args.seed)
 
     # define model
-    
-    net = Net(args.state_shape[0], args.action_shape, args.device).to(args.device)
+    print(args.state_shape)
+    net = Net(args.state_shape, args.action_shape, args.device).to(args.device)
     optim = torch.optim.Adam(net.parameters(), lr=args.lr)
     
     # define policy
@@ -333,7 +310,7 @@ def test_dqn(args=get_args()):
 
     def test_fn(epoch, env_step):
         policy.set_eps(args.eps_test)
-
+    
     # watch agent's performance
     def watch():
         print("Setup test envs ...")
@@ -350,13 +327,14 @@ def test_dqn(args=get_args()):
         result = collector.collect(n_step=args.step_per_epoch)
         #buffer.save_hdf5(args.save_buffer_name)
         
-        np.save(args.save_buffer_name+'_act.npy', buffer._meta.__dict__['act'])
-        np.save(args.save_buffer_name+'_obs.npy', buffer._meta.__dict__['obs'])
-        np.save(args.save_buffer_name+'_rew.npy', buffer._meta.__dict__['rew'])
+        np.save(args.save_buffer_name+'/his_act.npy', buffer._meta.__dict__['act'])
+        np.save(args.save_buffer_name+'/his_obs.npy', buffer._meta.__dict__['obs'])
+        np.save(args.save_buffer_name+'/his_rew.npy', buffer._meta.__dict__['rew'])
         #print(buffer._meta.__dict__.keys())
-        rew = result["rews"].mean()
-        print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
+        #rew = result["rews"].mean()
+        #print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
     
+
     if not args.test_only:
         # test train_collector and start filling replay buffer
         train_collector.collect(n_step=args.batch_size * args.training_num)
@@ -382,7 +360,7 @@ def test_dqn(args=get_args()):
         #pprint.pprint(result)
 
         watch()
-      
+    
     if args.test_only:
         policy.load_state_dict(torch.load(args.resume_path, map_location=args.device))
         print("Loaded agent from: ", os.path.join(log_path, 'policy.pth'))
@@ -410,4 +388,8 @@ if __name__ == '__main__':
     import sys
     print("Python version")
     print (sys.version)
-    test_dqn(get_args())
+    alpha=100.
+    folder='./dqn_results_'+str(int(alpha))
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+    test_dqn(args=get_args(alpha, folder))

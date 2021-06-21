@@ -90,4 +90,4 @@ if __name__ == '__main__':
         action, _states = model.predict(obs)
         obs, rewards, dones, info = env.step(action)
         #env.render()
-print("\n stablebaseline3 is successfully installed ! \n")
+    print("\n stablebaseline3 is successfully installed ! \n")
