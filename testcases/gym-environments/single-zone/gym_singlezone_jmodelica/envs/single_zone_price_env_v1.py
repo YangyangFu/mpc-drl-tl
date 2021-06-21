@@ -118,17 +118,6 @@ class SingleZoneEnv(object):
 
         :return:, list with 2 elements: energy costs and temperature violations
         """
-        #grid price
-        if not self.p_g:
-            self.p_g = [0.0640, 0.0640, 0.0640, 0.0640, 
-                0.0640, 0.0640, 0.0640, 0.0640, 
-                0.1391, 0.1391, 0.1391, 0.1391, 
-                0.3548, 0.3548, 0.3548, 0.3548, 
-                0.3548, 0.3548, 0.1391, 0.1391, 
-                0.1391, 0.1391, 0.1391, 0.0640]
-        
-        assert len(self.p_g)==24, "Daily hourly energy price should be provided!!!"
-
         # two parts: energy cost + temperature deviations
         # minimization problem: negative
         states = self.state
@@ -344,8 +333,17 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         # customized reward return
         self.rf = rf # this is an external function        
         # customized hourly TOU energy price
-        self.p_g = p_g
-        
+        if not p_g:
+            self.p_g = [0.0640, 0.0640, 0.0640, 0.0640, 
+                0.0640, 0.0640, 0.0640, 0.0640, 
+                0.1391, 0.1391, 0.1391, 0.1391, 
+                0.3548, 0.3548, 0.3548, 0.3548, 
+                0.3548, 0.3548, 0.1391, 0.1391, 
+                0.1391, 0.1391, 0.1391, 0.0640]
+        else:
+            self.p_g = p_g           
+        assert len(self.p_g)==24, "Daily hourly energy price should be provided!!!"
+
         # others
         self.viewer = None
         self.display = None

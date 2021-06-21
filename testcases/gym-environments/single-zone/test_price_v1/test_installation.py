@@ -4,10 +4,9 @@ from __future__ import absolute_import, division
 import gym
 import gym_singlezone_jmodelica
 import tianshou as ts
-from gym import envs
-print(envs.registry.all())
-"""
-env = gym.make("JModelicaCSSingleZoneEnv-v1_1",
+print(ts.__version__)
+
+env = gym.make("JModelicaCSSingleZoneEnv-price-v1",
                 mass_flow_nor=0.75,
                 weather_file='USA_CA_Riverside.Muni.AP.722869_TMY3.epw',
                 npre_step=3,
@@ -25,4 +24,4 @@ print(states)
 print(env.tau, env.simulation_start_time)
 print(env._get_action_space(),env.nActions)
 print(env.alpha)
-print("JModelicaCSSingleZoneEnv-v1_1 is successfully installed!!" )"""
+print("JModelicaCSSingleZoneEnv-price-v1 is successfully installed!!" )
