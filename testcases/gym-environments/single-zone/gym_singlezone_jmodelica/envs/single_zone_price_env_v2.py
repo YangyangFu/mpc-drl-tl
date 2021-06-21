@@ -47,12 +47,9 @@ class SingleZoneEnv(object):
         14     Energy price at next 3 step                   0.064          0.3548
     
     Actions:
-        Type: Discret(nActions)
-        Num         Action           
-        0           Fan off
-        ...
-        ...
-        nAction-1   Fan on at full speed
+        Type: Box(1)
+        Num    Action           Min         Max
+        0      Fan speed        0           1
     Reward:
          Sum of energy costs and zone temperature violations
 
@@ -79,21 +76,36 @@ class SingleZoneEnv(object):
         Internal logic that is utilized by parent classes.
         Returns action space according to OpenAI Gym API requirements
 
-        :return: Discrete action space of size n, n-levels of mass flowrate from [0,1] with an increment of 1/(n-1)
+        :return: Continuous action space, normalized fan speed from [0-1]
         """
-        return spaces.Discrete(self.nActions)
+        action_space=spaces.Box(
+                low = self.min_action,
+                high = self.max_action,
+                shape=(1,),
+                dtype=np.float32
+                )
+        return action_space
 
     def _get_observation_space(self):
         """
         Internal logic that is utilized by parent classes.
         Returns observation space according to OpenAI Gym API requirements
-                 
+        
+        The designed observation space for each zone is 
+        0. current time stamp
+        1. zone temperatures for single or multiple zones; in K
+        2. outdoor temperature; in K 
+        3. solar radiation
+        4. total power
+        5-7. outdoor temperature in future 3 steps; in K
+        8-10. solar radiation in future 3 steps
+            
         :return: Box state space with specified lower and upper bounds for state variables.
         """
         # open gym requires an observation space during initialization
 
-        high = np.array([86400., 273.15+30, 273.15+40,1200., 1000.,0.3548, 273.15+40,273.15+40,273.15+40,1200.,1200.,1200.,0.3548,0.3548,0.3548])
-        low = np.array([0., 273.15+12, 273.15+0,0., 0., 0.064, 273.15+0,273.15+0,273.15+0,0.,0.,0.,0.064,0.064,0.064])
+        high = np.array([86400., 273.15+30, 273.15+40,1200., 1000.,273.15+40,273.15+40,273.15+40,1200.,1200.,1200.])
+        low = np.array([0., 273.15+12, 273.15+0,0., 0., 273.15+0,273.15+0,273.15+0,0.,0.,0.])
         return spaces.Box(low, high)
 
     # OpenAI Gym API implementation
@@ -109,7 +121,7 @@ class SingleZoneEnv(object):
         # 0 - max flow: 
         #mass_flow_nor = self.mass_flow_nor # norminal flowrate: kg/s 
         action = np.array(action)
-        action = [action/float(self.nActions)]
+        action = [action]
         return super(SingleZoneEnv,self).step(action)
     
     def _reward_policy(self):
@@ -118,6 +130,7 @@ class SingleZoneEnv(object):
 
         :return:, list with 2 elements: energy costs and temperature violations
         """
+
         # two parts: energy cost + temperature deviations
         # minimization problem: negative
         states = self.state
@@ -144,7 +157,6 @@ class SingleZoneEnv(object):
         # control period:
         delCtrl = self.tau/3600.0 #may be better to set a variable in initial
         
-        # get hour index
         t = int(time)
         t = int((t%86400)/3600) # hour index 0~23
 
@@ -180,13 +192,6 @@ class SingleZoneEnv(object):
 
         :return: Values of model outputs as tuple in order specified in `model_outputs` attribute and 
         predicted weather data from existing weather file
-        0. current time stamp                
-        1. zone temperatures for single or multiple zones; in K
-        2. outdoor temperature; in K 
-        3. solar radiation
-        4. total power
-        5-7. outdoor temperature in future 3 steps; in K
-        8-10. solar radiation in future 3 steps
 
         This module is used to override defaulted "get_state" function that 
         only gets states from simulation results.
@@ -314,7 +319,8 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
                  fmu_result_ncp=100.,
                  filter_flag=True,
                  alpha=0.01,
-                 nActions=11,
+                 min_action=0.,
+                 max_action=1.,
                  rf=None,
                  p_g=None):
 
@@ -328,10 +334,11 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         
         # experiment parameters
         self.alpha = alpha # Positive: penalty coefficients for temperature violation in reward function 
-        self.nActions = nActions # Integer: number of actions for one control variable (level of damper position)
+        self.min_action = min_action # scalor for 1-dimensional action space, np.array for multi-dimensional action space
+        self.max_action = max_action # scalor for 1-dimensional action space, np.array for multi-dimensional action space
 
         # customized reward return
-        self.rf = rf # this is an external function        
+        self.rf = rf # this is an external function
         # customized hourly TOU energy price
         if not p_g:
             self.p_g = [0.0640, 0.0640, 0.0640, 0.0640, 
