@@ -1,0 +1,20 @@
+name: mpcdrl-py38
+channels:
+  - pytorch
+  - dglteam
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.8
+  - pip
+  - gym
+  - git
+  - flask
+  - pandas
+  - pyfmi
+  - numpy
+  - casadi
+  - scikit-learn
+  - pip:
+    - git+https://github.com/YangyangFu/modelicagym.git
+    - pvlib 
