@@ -22,6 +22,12 @@ register(
 )
 
 register(
+    id='JModelicaCSSingleZoneEnv-v1.1',
+    entry_point='gym_singlezone_jmodelica.envs.single_zone_env_v1.1:JModelicaCSSingleZoneEnv',
+    kwargs = config
+)
+
+register(
     id='JModelicaCSSingleZoneEnv-v2',
     entry_point='gym_singlezone_jmodelica.envs.single_zone_env_v2:JModelicaCSSingleZoneEnv',
     kwargs = config
