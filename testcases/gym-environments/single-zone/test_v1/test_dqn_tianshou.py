@@ -34,9 +34,9 @@ def get_args():
     parser.add_argument('--gamma', type=float, default=0.99)
 
     parser.add_argument('--n-step', type=int, default=1)
-    parser.add_argument('--target-update-freq', type=int, default=40)
+    parser.add_argument('--target-update-freq', type=int, default=100)
 
-    parser.add_argument('--epoch', type=int, default=40)
+    parser.add_argument('--epoch', type=int, default=100)
 
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--step-per-collect', type=int, default=1)
@@ -48,7 +48,7 @@ def get_args():
 
     parser.add_argument('--logdir', type=str, default='log')
     
-    parser.add_argument('--device', type=str, default='cpu')#cuda
+    parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--frames-stack', type=int, default=1)
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',
@@ -67,7 +67,7 @@ def make_building_env(args):
     npre_step = 3
     simulation_start_time = 212*24*3600.0
     log_level = 7
-    alpha = 100
+    alpha = 500
     nActions = 10
 
     env = gym.make(args.task,
@@ -150,6 +150,7 @@ def offpolicy_trainer_1(
     for epoch in range(1 + start_epoch, 1 + max_epoch):
         # train
         policy.train()
+        train_collector.reset_env()
         with tqdm.tqdm(
             total=step_per_epoch, desc=f"Epoch #{epoch}", **tqdm_config
         ) as t:
@@ -251,8 +252,7 @@ def test_dqn(args=get_args()):
     # replay buffer: `save_last_obs` and `stack_num` can be removed together
     # when you have enough RAM
     buffer = VectorReplayBuffer(
-        args.buffer_size, buffer_num=len(train_envs), ignore_obs_next=True,
-        save_only_last_obs=False, stack_num=args.frames_stack)
+        args.buffer_size, buffer_num=len(train_envs), ignore_obs_next=True)
 
     # collector
     train_collector = Collector(policy, train_envs, buffer, exploration_noise=False)
@@ -261,8 +261,7 @@ def test_dqn(args=get_args()):
 
 
     buffer_test = VectorReplayBuffer(
-        args.step_per_epoch+100, buffer_num=len(test_envs), ignore_obs_next=True,
-        save_only_last_obs=False, stack_num=args.frames_stack)
+        args.step_per_epoch+100, buffer_num=len(test_envs), ignore_obs_next=True)
     
     test_collector = Collector(policy, test_envs, buffer_test, exploration_noise=False)
 
