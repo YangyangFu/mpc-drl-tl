@@ -57,14 +57,14 @@ def get_args():
     parser.add_argument('--training-num', type=int, default=1)
     parser.add_argument('--test-num', type=int, default=1)
 
-    parser.add_argument('--logdir', type=str, default='log')
+    parser.add_argument('--logdir', type=str, default='log_sac_dis')
     
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--frames-stack', type=int, default=1)
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',
                         help='watch the play of pre-trained policy only')
-    parser.add_argument('--save-buffer-name', type=str, default='./experiments_results/his')
+    parser.add_argument('--save-buffer-name', type=str, default='./experiments_results_sac_dis/his')
 
     parser.add_argument('--test-only', type=bool, default=False)
 
@@ -144,6 +144,7 @@ def offpolicy_trainer_1(
     for epoch in range(1 + start_epoch, 1 + max_epoch):
         # train
         policy.train()
+        train_collector.reset_env()
         with tqdm.tqdm(
             total=step_per_epoch, desc=f"Epoch #{epoch}", **tqdm_config
         ) as t:
