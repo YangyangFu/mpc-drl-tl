@@ -138,7 +138,7 @@ def model_simulation(folder, path,alpha):
             history_Action[ep].append([action])
             history_Reward[ep].append([reward])
             
-            if done or step == max_number_of_steps - 1:
+            if done:
                 break
             state = state_prime
             
