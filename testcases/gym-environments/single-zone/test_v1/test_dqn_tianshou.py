@@ -15,7 +15,7 @@ import gym_singlezone_jmodelica
 import gym
 
 
-def get_args():
+def get_args(alpha, folder):
     time_step = 15*60.0
     num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
@@ -23,6 +23,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-v1")
     parser.add_argument('--time-step', type=float, default=time_step)
+    parser.add_argument('--alpha', type=float, default=alpha)
     parser.add_argument('--seed', type=int, default=0)
 
     parser.add_argument('--eps-test', type=float, default=0.005)
@@ -53,7 +54,7 @@ def get_args():
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',
                         help='watch the play of pre-trained policy only')
-    parser.add_argument('--save-buffer-name', type=str, default='./experiments_results/his')
+    parser.add_argument('--save-buffer-name', type=str, default=folder)
 
     parser.add_argument('--test-only', type=bool, default=False)
 
@@ -67,7 +68,7 @@ def make_building_env(args):
     npre_step = 3
     simulation_start_time = 212*24*3600.0
     log_level = 7
-    alpha = 500
+    alpha = args.alpha
     nActions = 10
 
     env = gym.make(args.task,
@@ -209,7 +210,7 @@ def offpolicy_trainer_1(
 
     return 1
 
-def test_dqn(args=get_args()):
+def test_dqn(args):
     tim_env = 0.0
     tim_ctl = 0.0
     tim_learn = 0.0
@@ -317,9 +318,9 @@ def test_dqn(args=get_args()):
         result = collector.collect(n_step=args.step_per_epoch)
         #buffer.save_hdf5(args.save_buffer_name)
         
-        np.save(args.save_buffer_name+'_act.npy', buffer._meta.__dict__['act'])
-        np.save(args.save_buffer_name+'_obs.npy', buffer._meta.__dict__['obs'])
-        np.save(args.save_buffer_name+'_rew.npy', buffer._meta.__dict__['rew'])
+        np.save(args.save_buffer_name+'/his_act.npy', buffer._meta.__dict__['act'])
+        np.save(args.save_buffer_name+'/his_obs.npy', buffer._meta.__dict__['obs'])
+        np.save(args.save_buffer_name+'/his_rew.npy', buffer._meta.__dict__['rew'])
         #print(buffer._meta.__dict__.keys())
         rew = result["rews"].mean()
         print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
@@ -380,4 +381,8 @@ if __name__ == '__main__':
     import sys
     print("Python version")
     print (sys.version)
-    test_dqn(get_args())
+    alpha=100.
+    folder='./dqn_results_'+str(int(alpha))
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+    test_dqn(args=get_args(alpha, folder))

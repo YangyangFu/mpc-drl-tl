@@ -18,7 +18,7 @@ from tianshou.utils.net.continuous import Actor, Critic
 from tianshou.data import Collector, ReplayBuffer, VectorReplayBuffer
 import time
 
-def get_args():
+def get_args(alpha,folder):
     time_step = 15*60.0
     num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
@@ -26,6 +26,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-v2")
     parser.add_argument('--time-step', type=float, default=time_step)
+    parser.add_argument('--alpha', type=float, default=alpha)
     parser.add_argument('--seed', type=int, default=0)
 
     parser.add_argument('--eps-test', type=float, default=0.005)
@@ -57,18 +58,16 @@ def get_args():
 
     parser.add_argument('--logdir', type=str, default='log')
     
-    parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--device', type=str, default='cpu') # or 'cuda'
     parser.add_argument('--frames-stack', type=int, default=1)
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',
                         help='watch the play of pre-trained policy only')
-    parser.add_argument('--save-buffer-name', type=str, default='./experiments_results/his')
+    parser.add_argument('--save-buffer-name', type=str, default=folder)
 
     parser.add_argument('--test-only', type=bool, default=False)
 
     parser.add_argument('--rew-norm', action="store_true", default=False)
-
-
 
     return parser.parse_args()
 
@@ -79,7 +78,7 @@ def make_building_env(args):
     npre_step = 3
     simulation_start_time = 212*24*3600.0
     log_level = 7
-    alpha = 300
+    alpha = args.alpha
 
     env = gym.make(args.task,
                    mass_flow_nor = mass_flow_nor,
@@ -197,7 +196,7 @@ def offpolicy_trainer_1(
 
     return 1
 
-def test_ddpg(args=get_args()):
+def test_ddpg(args):
     tim_env = 0.0
     tim_ctl = 0.0
     tim_learn = 0.0
@@ -299,9 +298,9 @@ def test_ddpg(args=get_args()):
         result = collector.collect(n_step=args.step_per_epoch)
         #buffer.save_hdf5(args.save_buffer_name)
         
-        np.save(args.save_buffer_name+'_act.npy', buffer._meta.__dict__['act'])
-        np.save(args.save_buffer_name+'_obs.npy', buffer._meta.__dict__['obs'])
-        np.save(args.save_buffer_name+'_rew.npy', buffer._meta.__dict__['rew'])
+        np.save(args.save_buffer_name+'/his_act.npy', buffer._meta.__dict__['act'])
+        np.save(args.save_buffer_name+'/his_obs.npy', buffer._meta.__dict__['obs'])
+        np.save(args.save_buffer_name+'/his_rew.npy', buffer._meta.__dict__['rew'])
         #print(buffer._meta.__dict__.keys())
         rew = result["rews"].mean()
         print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
@@ -342,9 +341,16 @@ def test_ddpg(args=get_args()):
         watch()
 
 if __name__ == '__main__':
+
+    alpha=300.
+    folder='./ddpg_results_'+str(int(alpha))
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+
     start = time.time()
     print("Begin time {}".format(start))
-    test_ddpg(get_args())
+    test_ddpg(get_args(alpha, folder))
 
     end = time.time()
     print("Total execution time {:.2f} seconds".format(end-start))
+
