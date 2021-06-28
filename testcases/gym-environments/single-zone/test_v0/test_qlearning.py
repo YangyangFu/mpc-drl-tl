@@ -92,7 +92,7 @@ def train_qlearning(singlezone_env, max_number_of_steps=500, n_episodes=4, visua
             rew = reward[0][0]+reward[1][0]
             action = learner.learn_observation(state_prime, rew)
             print (action)
-            if done or step == max_number_of_steps - 1:
+            if done 
                 episode_lengths = np.append(episode_lengths, int(step + 1))
                 break
     end = time.time()
@@ -146,14 +146,16 @@ def _get_state_index(state_bins):
         state += state_bin*4**i
     return state
 
-def run_ql_experiments(n_experiments=1,
-                       n_episodes=10,
+def run_ql_experiments(n_experiments=n_experiments,
+                       n_episodes=n_episodes,
                        visualize=False,
-                        mass_flow_nor=[0.75],
-                        weather_file='USA_CA_Riverside.Muni.AP.722869_TMY3.epw',
-                        npre_step=3,
-                        simulation_start_time=212*3600*24,
-                        time_step=15*60.,
+                        mass_flow_nor=mass_flow_nor,
+                        weather_file=weater_file,
+                        npre_step=npre_step,
+                        simulation_start_time=simulation_start_time,
+                        simulation_end_time=simulation_end_time,
+                        time_step=time_step,
+                        max_number_of_steps=max_number_of_steps,
                         log_level=7):
 
 #   from gym.envs.registration import register
@@ -170,6 +172,7 @@ def run_ql_experiments(n_experiments=1,
                 weather_file=weather_file,
                 npre_step=npre_step,
                 simulation_start_time=simulation_start_time,
+                simulation_end_time=simulation_end_time,
                 time_step=time_step,
                 log_level=log_level,
                 alpha=0.01,
@@ -177,6 +180,7 @@ def run_ql_experiments(n_experiments=1,
         
     for i in range(n_experiments):
         trained_agent, episodes_length, exec_time = train_qlearning(env,
+                                                                    max_number_of_steps=max_number_of_steps,
                                                                     n_episodes=n_episodes,
                                                                     visualize=visualize)
         trained_agent_s.append(trained_agent)
@@ -196,10 +200,12 @@ def run_experiment_with_result_files(folder,
                         visualize=False,
                         mass_flow_nor=[0.75],
                         weather_file='USA_CA_Riverside.Muni.AP.722869_TMY3.epw',
-                        npre_step=3,
-                        simulation_start_time=212*3600*24,
-                        time_step=15*60.,
-                        log_level=7):
+                        npre_step=npre_step,
+                        simulation_start_time=simulation_start_time,
+                        simulation_end_time=simulation_end_time,
+                        time_step=time_step,
+                        max_number_of_steps = max_number_of_steps,
+                        log_level=log_level):
     """
     Runs experiments with the given configuration and writes episodes length of all experiment as one file
     and execution times of experiments as another.
@@ -226,7 +232,9 @@ def run_experiment_with_result_files(folder,
                                                         weather_file=weather_file,
                                                         npre_step=npre_step,
                                                         simulation_start_time=simulation_start_time,
+                                                        simulation_end_time=simulation_end_time
                                                         time_step=time_step,
+                                                        max_number_of_steps=max_number_of_steps,
                                                         log_level=log_level)
     print(episodes_lengths)
     n =experiment_file_name_prefix + "episodes_lengths.csv"
@@ -252,6 +260,10 @@ if __name__ == "__main__":
     if not os.path.exists(folder):
         os.mkdir(folder)
 
+    time_step=15*60.
+    max_number_of_steps = 96
+    simulation_start_time=212*3600.*24
+    simulation_end_time = simulation_start_time + max_number_of_steps*time_step
     # following experiments rake significant amount of time, so it is advised to run only one of them at once
     run_experiment_with_result_files(folder,
                                         n_experiments=1,
@@ -260,8 +272,10 @@ if __name__ == "__main__":
                                         mass_flow_nor=[0.75],
                                         weather_file='USA_CA_Riverside.Muni.AP.722869_TMY3.epw',
                                         npre_step=3,
-                                        simulation_start_time=212*3600*24.,
-                                        time_step=15*60.,
+                                        simulation_start_time=simulation_start_time,
+                                        simulation_end_time=simulation_end_time,
+                                        time_step=time_step,
+                                        max_number_of_steps = max_number_of_steps,
                                         log_level=7)
 
     end = time.time()
