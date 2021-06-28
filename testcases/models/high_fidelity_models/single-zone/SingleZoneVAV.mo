@@ -482,8 +482,9 @@ First implementation.
             -10},{-116,-10},{-116,-70},{-102,-70}}, color={0,0,127}));
     connect(oveTSetRooHea.y, senTSetRooHea.u) annotation (Line(points={{-119,30},
             {-116,30},{-116,50},{-102,50}}, color={0,0,127}));
-    connect(zon.CO2, CO2RooAir.u) annotation (Line(points={{81,-4},{100,-4},{100,-30},
-            {118,-30}}, color={0,0,127}));
+    connect(zon.CO2, CO2RooAir.u) annotation (Line(points={{81,-4},{100,-4},{
+            100,-30},{118,-30}},
+                        color={0,0,127}));
     connect(TRooAir.y, TRoo)
       annotation (Line(points={{141,0},{170,0}}, color={0,0,127}));
     connect(CO2RooAir.y, CO2Roo)
@@ -695,6 +696,9 @@ First implementation.
       endTime=212*24*3600 + 6*3600 + 15*60,
       maximum=1)
       annotation (Placement(transformation(extent={{-60,100},{-40,120}})));
+    Buildings.Controls.SetPoints.OccupancySchedule occSch
+      "Occupancy schedule"
+      annotation (Placement(transformation(extent={{-138,70},{-118,90}})));
   equation
     connect(weaDat.weaBus, weaBus) annotation (Line(
         points={{-140,130},{-108,130}},
@@ -797,6 +801,8 @@ First implementation.
             -50,18},{-42,18}}, color={235,0,0}));
     connect(uExt.y, extAtt.uFau) annotation (Line(points={{-79,90},{-44,90},{
             -44,38},{-90,38},{-90,36},{-82,36}}, color={0,0,127}));
+    connect(occSch.occupied, con.uOcc) annotation (Line(points={{-117,74},{-110,
+            74},{-110,9},{-104,9}}, color={255,0,255}));
     annotation (
       experiment(
         StartTime=18316800,
