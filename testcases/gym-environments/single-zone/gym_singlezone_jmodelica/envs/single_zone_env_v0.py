@@ -67,6 +67,9 @@ class SingleZoneEnv(object):
 
         """
         done = False
+        stop_time = self.stop # get current time after do_step
+        if stop_time >= self.simulation_end_time:
+            done = True
 
         return done
 
@@ -287,6 +290,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
                  weather_file,
                  npre_step,
                  simulation_start_time,
+                 simulation_end_time,
                  time_step,
                  log_level,
                  fmu_result_handling='memory',
@@ -301,6 +305,10 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         self.mass_flow_nor = mass_flow_nor 
         self.weather_file = weather_file 
         self.npre_step = npre_step 
+
+        # virtual environment simulation period
+        self.simulation_end_time = simulation_end_time
+
         # state bounds if any
         
         # experiment parameters
