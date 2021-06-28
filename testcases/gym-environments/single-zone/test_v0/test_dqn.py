@@ -72,20 +72,22 @@ def model_simulation(folder, path,alpha):
     alpha = alpha
     nActions = 101
 
+    num_of_days = 7#31
+    max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
+    simulation_end_time = simulation_start_time + max_number_of_steps*time_step
+
     env = gym.make(env_name,
                    mass_flow_nor = mass_flow_nor,
                    weather_file = weather_file_path,
                    npre_step = npre_step,
                    simulation_start_time = simulation_start_time,
+                   simulation_end_time = simulation_end_time,
                    time_step = time_step,
                    log_level = log_level,
                    alpha = alpha,
                    nActions = nActions)
-                 
-    num_of_days = 7#31
-    max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
-    #n_outputs = env.observation_space.shape[0]
-    
+
+    #n_outputs = env.observation_space.shape[0]    
     agent = raw_agent(path,num_eps)
     agent.initialize(path)
     print('DRL agent created!')
