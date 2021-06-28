@@ -58,7 +58,7 @@ def get_args(alpha,folder):
     parser.add_argument('--training-num', type=int, default=1)
     parser.add_argument('--test-num', type=int, default=1)
 
-    parser.add_argument('--logdir', type=str, default='log')
+    parser.add_argument('--logdir', type=str, default='log_sac_dis')
     
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--frames-stack', type=int, default=1)
@@ -145,6 +145,7 @@ def offpolicy_trainer_1(
     for epoch in range(1 + start_epoch, 1 + max_epoch):
         # train
         policy.train()
+        train_collector.reset_env()
         with tqdm.tqdm(
             total=step_per_epoch, desc=f"Epoch #{epoch}", **tqdm_config
         ) as t:
