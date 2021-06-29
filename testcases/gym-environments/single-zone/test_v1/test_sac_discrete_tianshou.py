@@ -42,7 +42,7 @@ def get_args(alpha,folder):
     parser.add_argument('--alpha-lr', type=float, default=3e-4)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--tau', type=float, default=0.005)
-    parser.add_argument('--alpha', type=float, default=0.05)
+#    parser.add_argument('--alpha', type=float, default=0.05)
     parser.add_argument('--auto-alpha', action="store_true", default=False)
 
 
@@ -60,7 +60,7 @@ def get_args(alpha,folder):
 
     parser.add_argument('--logdir', type=str, default='log_sac_dis')
     
-    parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--device', type=str, default='cpu')
     parser.add_argument('--frames-stack', type=int, default=1)
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',
@@ -81,6 +81,7 @@ def make_building_env(args):
     mass_flow_nor = [0.75]
     npre_step = 3
     simulation_start_time = 212*24*3600.0
+    simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
     log_level = 0
     alpha = args.alpha
     nActions = 10
@@ -90,6 +91,7 @@ def make_building_env(args):
                    weather_file = weather_file_path,
                    npre_step = npre_step,
                    simulation_start_time = simulation_start_time,
+                   simulation_end_time = simulation_end_time,
                    time_step = args.time_step,
                    log_level = log_level,
                    alpha = alpha,
@@ -361,8 +363,8 @@ def test_sac_discrete(args):
 
 if __name__ == '__main__':
 
-    alpha=300.
-    folder='./sac_results_'+str(int(alpha))
+    alpha=0.05
+    folder='./sac_results_'+str(alpha)
     if not os.path.exists(folder):
         os.mkdir(folder)
 

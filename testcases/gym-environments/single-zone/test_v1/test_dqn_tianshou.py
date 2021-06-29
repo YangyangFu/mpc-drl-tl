@@ -67,6 +67,7 @@ def make_building_env(args):
     mass_flow_nor = [0.75]
     npre_step = 3
     simulation_start_time = 212*24*3600.0
+    simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
     log_level = 7
     alpha = args.alpha
     nActions = 10
@@ -76,6 +77,7 @@ def make_building_env(args):
                    weather_file = weather_file_path,
                    npre_step = npre_step,
                    simulation_start_time = simulation_start_time,
+                   simulation_end_time = simulation_end_time,
                    time_step = args.time_step,
                    log_level = log_level,
                    alpha = alpha,

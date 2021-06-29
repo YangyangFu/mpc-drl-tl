@@ -64,6 +64,9 @@ class SingleZoneEnv(object):
 
         """
         done = False
+        stop_time = self.stop # get current time after do_step
+        if stop_time >= self.simulation_end_time:
+            done = True
 
         return done
 
@@ -100,8 +103,8 @@ class SingleZoneEnv(object):
         """
         # open gym requires an observation space during initialization
 
-        high = np.array([86400., 273.15+30, 273.15+40,1200., 1000.,273.15+40,273.15+40,273.15+40,1200.,1200.,1200.])
-        low = np.array([0., 273.15+12, 273.15+0,0., 0., 273.15+0,273.15+0,273.15+0,0.,0.,0.])
+        high = np.array([86400.,273.15+30, 273.15+40,1200., 1000.]+[273.15+40]*self.npre_step+[1200.]*self.npre_step)
+        low = np.array([0.,273.15+12, 273.15+0,0, 0]+[273.15+0]*self.npre_step+[0.0]*self.npre_step)
         return spaces.Box(low, high)
 
     # OpenAI Gym API implementation
@@ -295,6 +298,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
                  weather_file,
                  npre_step,
                  simulation_start_time,
+                 simulation_end_time,
                  time_step,
                  log_level,
                  fmu_result_handling='memory',
@@ -311,6 +315,10 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         self.mass_flow_nor = mass_flow_nor 
         self.weather_file = weather_file 
         self.npre_step = npre_step 
+
+        # virtual environment simulation period
+        self.simulation_end_time = simulation_end_time
+        
         # state bounds if any
         
         # experiment parameters

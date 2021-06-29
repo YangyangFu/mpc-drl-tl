@@ -18,7 +18,7 @@ from tianshou.utils.net.continuous import Actor, Critic
 from tianshou.data import Collector, ReplayBuffer, VectorReplayBuffer
 import time
 
-def get_args(alpha,folder):
+def get_args(folder):
     time_step = 15*60.0
     num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
@@ -26,7 +26,7 @@ def get_args(alpha,folder):
     parser = argparse.ArgumentParser()
     parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-v2")
     parser.add_argument('--time-step', type=float, default=time_step)
-    parser.add_argument('--alpha', type=float, default=alpha)
+    parser.add_argument('--alpha', type=float, default=0.05)
     parser.add_argument('--seed', type=int, default=0)
 
     parser.add_argument('--eps-test', type=float, default=0.005)
@@ -77,6 +77,7 @@ def make_building_env(args):
     mass_flow_nor = [0.75]
     npre_step = 3
     simulation_start_time = 212*24*3600.0
+    simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
     log_level = 7
     alpha = args.alpha
 
@@ -85,6 +86,7 @@ def make_building_env(args):
                    weather_file = weather_file_path,
                    npre_step = npre_step,
                    simulation_start_time = simulation_start_time,
+                   simulation_end_time = simulation_end_time,
                    time_step = args.time_step,
                    log_level = log_level,
                    alpha = alpha)
@@ -342,14 +344,13 @@ def test_ddpg(args):
 
 if __name__ == '__main__':
 
-    alpha=300.
-    folder='./ddpg_results_'+str(int(alpha))
+    folder='./ddpg_results'
     if not os.path.exists(folder):
         os.mkdir(folder)
 
     start = time.time()
     print("Begin time {}".format(start))
-    test_ddpg(get_args(alpha, folder))
+    test_ddpg(get_args(folder))
 
     end = time.time()
     print("Total execution time {:.2f} seconds".format(end-start))
