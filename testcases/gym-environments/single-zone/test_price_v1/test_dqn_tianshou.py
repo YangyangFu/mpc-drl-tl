@@ -15,7 +15,7 @@ import gym_singlezone_jmodelica
 import gym
 
 
-def get_args(alpha,folder):
+def get_args(folder):
     time_step = 15*60.0
     num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
@@ -23,7 +23,7 @@ def get_args(alpha,folder):
     parser = argparse.ArgumentParser()
     parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-price-v1")
     parser.add_argument('--time-step', type=float, default=time_step)
-    parser.add_argument('--alpha', type=float, default=alpha)
+    parser.add_argument('--alpha', type=float, default=1)
     parser.add_argument('--seed', type=int, default=0)
 
     parser.add_argument('--eps-test', type=float, default=0.005)
@@ -67,6 +67,7 @@ def make_building_env(args):
     mass_flow_nor = [0.75]
     npre_step = 3
     simulation_start_time = 212*24*3600.0
+    simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
     log_level = 7
     alpha = args.alpha
     nActions = 10
@@ -76,6 +77,7 @@ def make_building_env(args):
                    weather_file = weather_file_path,
                    npre_step = npre_step,
                    simulation_start_time = simulation_start_time,
+                   simulation_end_time = simulation_end_time,
                    time_step = args.time_step,
                    log_level = log_level,
                    alpha = alpha,
@@ -382,8 +384,7 @@ if __name__ == '__main__':
     import sys
     print("Python version")
     print (sys.version)
-    alpha=100.
-    folder='./dqn_results_'+str(int(alpha))
+    folder='./dqn_results'
     if not os.path.exists(folder):
         os.mkdir(folder)
-    test_dqn(args=get_args(alpha, folder))
+    test_dqn(args=get_args(folder))
