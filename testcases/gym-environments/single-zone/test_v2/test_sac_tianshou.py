@@ -33,7 +33,7 @@ def get_args(folder):
     parser.add_argument('--eps-train', type=float, default=1.)
     parser.add_argument('--eps-train-final', type=float, default=0.05)
     
-    parser.add_argument('--hidden-sizes', type=int, nargs='*', default=[256,256,256])
+    parser.add_argument('--hidden-sizes', type=int, nargs='*', default=[256,256,256,256])
 
     parser.add_argument('--buffer-size', type=int, default=20000)
     parser.add_argument('--actor-lr', type=float, default=1e-4)
@@ -47,7 +47,7 @@ def get_args(folder):
 
     parser.add_argument('--n-step', type=int, default=1)
 
-    parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--epoch', type=int, default=500)
 
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--step-per-collect', type=int, default=1)
@@ -57,9 +57,9 @@ def get_args(folder):
     parser.add_argument('--training-num', type=int, default=1)
     parser.add_argument('--test-num', type=int, default=1)
 
-    parser.add_argument('--logdir', type=str, default='log')
+    parser.add_argument('--logdir', type=str, default='log_sac')
     
-    parser.add_argument('--device', type=str, default='cpu') # or 'cuda'
+    parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--frames-stack', type=int, default=1)
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',
@@ -82,7 +82,29 @@ def make_building_env(args):
     simulation_start_time = 212*24*3600.0
     simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
     log_level = 0
-    alpha = args.alpha
+    alpha = 1
+
+    def rw_func(cost, penalty):
+        if ( not hasattr(rw_func,'x')  ):
+            rw_func.x = 0
+            rw_func.y = 0
+
+        #print(cost, penalty)
+        #res = cost + penalty
+        cost = cost[0]
+        penalty = penalty[0]
+
+        if rw_func.x > cost:
+            rw_func.x = cost
+        if rw_func.y > penalty:
+            rw_func.y = penalty
+
+        print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
+        #res = penalty * 10.0
+        #res = penalty * 300.0 + cost*1e4
+        res = penalty * 500.0 + cost*5e4
+        
+        return res
 
     env = gym.make(args.task,
                    mass_flow_nor = mass_flow_nor,
@@ -92,7 +114,8 @@ def make_building_env(args):
                    simulation_end_time = simulation_end_time,
                    time_step = args.time_step,
                    log_level = log_level,
-                   alpha = alpha)
+                   alpha = alpha,
+                   rf = rw_func)
     return env
 
         
@@ -144,6 +167,7 @@ def offpolicy_trainer_1(
     for epoch in range(1 + start_epoch, 1 + max_epoch):
         # train
         policy.train()
+        train_collector.reset_env()
         with tqdm.tqdm(
             total=step_per_epoch, desc=f"Epoch #{epoch}", **tqdm_config
         ) as t:
@@ -201,7 +225,7 @@ def offpolicy_trainer_1(
 
     return 1
 
-def test_sac(args):
+def test_sac(args=get_args()):
     tim_env = 0.0
     tim_ctl = 0.0
     tim_learn = 0.0
@@ -361,7 +385,6 @@ def test_sac(args):
         watch()
 
 if __name__ == '__main__':
-
     folder='./sac_results'
     if not os.path.exists(folder):
         os.mkdir(folder)
