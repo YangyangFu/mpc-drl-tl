@@ -64,6 +64,9 @@ class SingleZoneTemperatureEnv(object):
 
         """
         done = False
+        stop_time = self.stop # get current time after do_step
+        if stop_time >= self.simulation_end_time:
+            done = True
 
         return done
 
@@ -94,8 +97,8 @@ class SingleZoneTemperatureEnv(object):
         """
         # open gym requires an observation space during initialization
 
-        high = np.array([86400., 273.15+30, 273.15+40,2000, 10000,273.15+40,273.15+40,273.15+40,2000,2000,2000])
-        low = np.array([0., 273.15+12, 273.15+0,0, 0, 273.15+0,273.15+0,273.15+0,0,0,0])
+        high = np.array([86400., 273.15+30, 273.15+40,1200., 5000.]+[273.15+40]*self.npre_step+[1200.]*self.npre_step)
+        low = np.array([0., 273.15+12, 273.15+0,0, 0]+[273.15+0]*self.npre_step+[0.0]*self.npre_step)
         return spaces.Box(low, high)
 
     # OpenAI Gym API implementation
@@ -146,9 +149,7 @@ class SingleZoneTemperatureEnv(object):
         # control period:
         delCtrl = self.tau/3600.0 #may be better to set a variable in initial
         
-        #grid price
-        p_g = [0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.0640, 0.1391, 0.1391, 0.1391, 0.1391, 0.3548, 0.3548, 0.3548, 0.3548, 0.3548, 0.3548, 0.1391, 0.1391, 0.1391, 0.1391, 0.1391, 0.0640]
-        
+        #get hour index
         t = int(time)
         t = int((t%86400)/3600) # hour index 0~23
 
@@ -168,7 +169,7 @@ class SingleZoneTemperatureEnv(object):
         t_pre = int((t_pre%86400)/3600) # hour index 0~23
         
         for k in range(num_zone):
-            cost.append(- ZPower[k]/1000. * delCtrl * p_g[t_pre])
+            cost.append(- ZPower[k]/1000. * delCtrl * self.p_g[t_pre])
         
         if self.rf:
             rewards=self.rf(cost, penalty)
@@ -289,6 +290,7 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
                  weather_file,
                  npre_step,
                  simulation_start_time,
+                 simulation_end_time,
                  time_step,
                  log_level,
                  fmu_result_handling='memory',
@@ -296,7 +298,8 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
                  filter_flag=True,
                  alpha = 0.01,
                  nActions = 37,
-                 rf=None):
+                 rf=None,
+                 p_g=None):
 
         logger.setLevel(log_level)
 
@@ -304,6 +307,10 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
         self.mass_flow_nor = mass_flow_nor 
         self.weather_file = weather_file 
         self.npre_step = npre_step 
+
+        # virtual environment simulation period
+        self.simulation_end_time = simulation_end_time
+        
         # state bounds if any
         
         # experiment parameters
@@ -312,6 +319,17 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
 
         # customized reward return
         self.rf = rf # this is an external function
+        # customized hourly TOU energy price
+        if not p_g:
+            self.p_g = [0.0640, 0.0640, 0.0640, 0.0640, 
+                0.0640, 0.0640, 0.0640, 0.0640, 
+                0.1391, 0.1391, 0.1391, 0.1391, 
+                0.3548, 0.3548, 0.3548, 0.3548, 
+                0.3548, 0.3548, 0.1391, 0.1391, 
+                0.1391, 0.1391, 0.1391, 0.0640]
+        else:
+            self.p_g = p_g           
+        assert len(self.p_g)==24, "Daily hourly energy price should be provided!!!"
         
         # others
         self.viewer = None
