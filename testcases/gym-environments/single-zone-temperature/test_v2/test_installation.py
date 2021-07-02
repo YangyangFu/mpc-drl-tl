@@ -8,14 +8,15 @@ from gym import envs
 env = gym.make("JModelicaCSSingleZoneTemperatureEnv-v2",
                 mass_flow_nor=[0.75],
                 weather_file='USA_CA_Riverside.Muni.AP.722869_TMY3.epw',
-                npre_step=3,
+                npre_step=4,
                 simulation_start_time=3600*24,
+                simulation_end_time=3600*24*2,
                 time_step=15*60.,
                 log_level=7,
                 fmu_result_handling='memory',
                 fmu_result_ncp=100.,
                 filter_flag=True,
-                alpha=200,
+                alpha=1,
                 min_action=12.,
                 max_action=30.,)
 states = env.reset()

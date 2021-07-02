@@ -225,7 +225,7 @@ def offpolicy_trainer_1(
 
     return 1
 
-def test_sac(args=get_args()):
+def test_sac(args):
     tim_env = 0.0
     tim_ctl = 0.0
     tim_learn = 0.0
@@ -385,6 +385,7 @@ def test_sac(args=get_args()):
         watch()
 
 if __name__ == '__main__':
+
     folder='./sac_results'
     if not os.path.exists(folder):
         os.mkdir(folder)

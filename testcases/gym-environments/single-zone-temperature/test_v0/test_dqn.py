@@ -73,20 +73,21 @@ def model_simulation(folder, path,alpha):
     alpha = alpha
     nActions = 37 # actions from [12, 30] oC
 
+    num_of_days = 7#31
+    max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
+    simulation_end_time = simulation_start_time + max_number_of_steps*time_step
+
     env = gym.make(env_name,
                    mass_flow_nor = mass_flow_nor,
                    weather_file = weather_file_path,
                    npre_step = npre_step,
                    simulation_start_time = simulation_start_time,
+                   simulation_end_time = simulation_end_time,
                    time_step = time_step,
                    log_level = log_level,
                    alpha = alpha,
                    nActions = nActions)
                  
-    num_of_days = 7#31
-    max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
-    #n_outputs = env.observation_space.shape[0]
-    
     agent = raw_agent(path)
     agent.initialize(path)
     print('DRL agent created!')
@@ -141,7 +142,7 @@ def model_simulation(folder, path,alpha):
             history_Action[ep].append([action])
             history_Reward[ep].append([reward])
             
-            if done or step == max_number_of_steps - 1:
+            if done:
                 break
             state = state_prime
             

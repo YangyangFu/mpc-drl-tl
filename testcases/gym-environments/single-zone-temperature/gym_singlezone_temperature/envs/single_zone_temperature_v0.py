@@ -64,6 +64,9 @@ class SingleZoneTemperatureEnv(object):
 
         """
         done = False
+        stop_time = self.stop # get current time after do_step
+        if stop_time >= self.simulation_end_time:
+            done = True
 
         return done
 
@@ -72,7 +75,7 @@ class SingleZoneTemperatureEnv(object):
         Internal logic that is utilized by parent classes.
         Returns action space according to OpenAI Gym API requirements
 
-        :return: Discrete action space of size 37, 37-levels of temperature control [12,30]oC with an increment of 0.5 oC.
+        :return: Discrete action space. If nActions = 37, then 37-levels of temperature control [12,30]oC with an increment of 0.5 oC.
         """
         return spaces.Discrete(self.nActions)
 
@@ -94,8 +97,8 @@ class SingleZoneTemperatureEnv(object):
         """
         # open gym requires an observation space during initialization
 
-        high = np.array([273.15+30, 273.15+40,2000, 10000,273.15+40,273.15+40,273.15+40,2000,2000,2000])
-        low = np.array([273.15+12, 273.15+0,0, 0, 273.15+0,273.15+0,273.15+0,0,0,0])
+        high = np.array([273.15+30, 273.15+40,1200., 5000.]+[273.15+40]*self.npre_step+[1200.]*self.npre_step)
+        low = np.array([273.15+12, 273.15+0,0, 0]+[273.15+0]*self.npre_step+[0.0]*self.npre_step)
         return spaces.Box(low, high)
 
     # OpenAI Gym API implementation
@@ -283,6 +286,7 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
                  weather_file,
                  npre_step,
                  simulation_start_time,
+                 simulation_end_time,
                  time_step,
                  log_level,
                  fmu_result_handling='memory',
@@ -297,6 +301,10 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
         self.mass_flow_nor = mass_flow_nor 
         self.weather_file = weather_file 
         self.npre_step = npre_step 
+
+        # virtual environment simulation period
+        self.simulation_end_time = simulation_end_time
+        
         # state bounds if any
         
         # experiment parameters
