@@ -78,4 +78,4 @@ build
 
 # ignore out file
 *.out
-*log
+*log*

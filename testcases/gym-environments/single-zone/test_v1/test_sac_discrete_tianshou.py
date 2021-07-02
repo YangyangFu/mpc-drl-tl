@@ -19,7 +19,7 @@ from tianshou.policy import DiscreteSACPolicy
 from tianshou.utils.net.discrete import Actor, Critic
 import time
 
-def get_args(alpha,folder):
+def get_args(folder):
     time_step = 15*60.0
     num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
@@ -27,7 +27,6 @@ def get_args(alpha,folder):
     parser = argparse.ArgumentParser()
     parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-v1")
     parser.add_argument('--time-step', type=float, default=time_step)
-    parser.add_argument('--alpha', type=float, default=alpha)
     parser.add_argument('--seed', type=int, default=0)
 
     parser.add_argument('--eps-test', type=float, default=0.005)
@@ -42,7 +41,7 @@ def get_args(alpha,folder):
     parser.add_argument('--alpha-lr', type=float, default=3e-4)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--tau', type=float, default=0.005)
-#    parser.add_argument('--alpha', type=float, default=0.05)
+    parser.add_argument('--alpha', type=float, default=0.05)
     parser.add_argument('--auto-alpha', action="store_true", default=False)
 
 
@@ -83,8 +82,8 @@ def make_building_env(args):
     simulation_start_time = 212*24*3600.0
     simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
     log_level = 0
-    alpha = args.alpha
-    nActions = 10
+    alpha = 1
+    nActions = 51
 
     env = gym.make(args.task,
                    mass_flow_nor = mass_flow_nor,
@@ -363,14 +362,13 @@ def test_sac_discrete(args):
 
 if __name__ == '__main__':
 
-    alpha=0.05
-    folder='./sac_results_'+str(alpha)
+    folder='./sac_results'
     if not os.path.exists(folder):
         os.mkdir(folder)
 
     start = time.time()
     print("Begin time {}".format(start))
-    test_sac_discrete(get_args(alpha, folder))
+    test_sac_discrete(get_args(folder))
 
     end = time.time()
     print("Total execution time {:.2f} seconds".format(end-start))

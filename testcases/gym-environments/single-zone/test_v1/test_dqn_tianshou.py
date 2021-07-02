@@ -15,7 +15,7 @@ import gym_singlezone_jmodelica
 import gym
 
 
-def get_args(alpha, folder):
+def get_args(folder="experiment_results"):
     time_step = 15*60.0
     num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
@@ -23,7 +23,6 @@ def get_args(alpha, folder):
     parser = argparse.ArgumentParser()
     parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-v1")
     parser.add_argument('--time-step', type=float, default=time_step)
-    parser.add_argument('--alpha', type=float, default=alpha)
     parser.add_argument('--seed', type=int, default=0)
 
     parser.add_argument('--eps-test', type=float, default=0.005)
@@ -31,25 +30,25 @@ def get_args(alpha, folder):
     parser.add_argument('--eps-train-final', type=float, default=0.05)
 
     parser.add_argument('--buffer-size', type=int, default=50000)
-    parser.add_argument('--lr', type=float, default=0.0003)
+    parser.add_argument('--lr', type=float, default=0.0003)#0.0003!!!!!!!!!!!!!!!!!!!!!
     parser.add_argument('--gamma', type=float, default=0.99)
 
     parser.add_argument('--n-step', type=int, default=1)
     parser.add_argument('--target-update-freq', type=int, default=100)
 
-    parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--epoch', type=int, default=300)
 
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--step-per-collect', type=int, default=1)
     parser.add_argument('--update-per-step', type=float, default=1)
-    parser.add_argument('--batch-size', type=int, default=64)
+    parser.add_argument('--batch-size', type=int, default=128)
 
-    parser.add_argument('--training-num', type=int, default=4)
+    parser.add_argument('--training-num', type=int, default=1)
     parser.add_argument('--test-num', type=int, default=1)
 
     parser.add_argument('--logdir', type=str, default='log')
     
-    parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--device', type=str, default='cpu')
     parser.add_argument('--frames-stack', type=int, default=1)
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',
@@ -69,8 +68,30 @@ def make_building_env(args):
     simulation_start_time = 212*24*3600.0
     simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
     log_level = 7
-    alpha = args.alpha
-    nActions = 10
+    alpha = 1
+    nActions = 51
+
+    def rw_func(cost, penalty):
+        if ( not hasattr(rw_func,'x')  ):
+            rw_func.x = 0
+            rw_func.y = 0
+
+        #print(cost, penalty)
+        #res = cost + penalty
+        cost = cost[0]
+        penalty = penalty[0]
+
+        if rw_func.x > cost:
+            rw_func.x = cost
+        if rw_func.y > penalty:
+            rw_func.y = penalty
+
+        print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
+        #res = penalty * 10.0
+        #res = penalty * 300.0 + cost*1e4
+        res = penalty * 500.0 + cost*5e4
+        
+        return res
 
     env = gym.make(args.task,
                    mass_flow_nor = mass_flow_nor,
@@ -81,7 +102,8 @@ def make_building_env(args):
                    time_step = args.time_step,
                    log_level = log_level,
                    alpha = alpha,
-                   nActions = nActions)
+                   nActions = nActions,
+                   rf = rw_func)
     return env
 
 class Net(nn.Module):
@@ -91,7 +113,7 @@ class Net(nn.Module):
             nn.Linear(np.prod(state_shape), 256), nn.ReLU(inplace=True),
             nn.Linear(256, 256), nn.ReLU(inplace=True),
             nn.Linear(256, 256), nn.ReLU(inplace=True),
-            nn.Linear(256, 256), nn.ReLU(inplace=True),
+            nn.Linear(256, 256), nn.ReLU(inplace=True),#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             nn.Linear(256, np.prod(action_shape))
         ])
         self.device = device
@@ -161,6 +183,7 @@ def offpolicy_trainer_1(
                 if train_fn:
                     train_fn(epoch, env_step)
                 result = train_collector.collect(n_step=step_per_collect)
+                #print(result)
                 if result["n/ep"] > 0 and reward_metric:
                     result["rews"] = reward_metric(result["rews"])
                 env_step += int(result["n/st"])
@@ -176,22 +199,7 @@ def offpolicy_trainer_1(
                     "n/ep": str(int(result["n/ep"])),
                     "n/st": str(int(result["n/st"])),
                 }
-                if result["n/ep"] > 0:
-                    if test_in_train and stop_fn and stop_fn(result["rew"]):
-                        test_result = test_episode(
-                            policy, test_collector, test_fn,
-                            epoch, episode_per_test, logger, env_step)
-                        if stop_fn(test_result["rew"]):
-                            if save_fn:
-                                save_fn(policy)
-                            logger.save_data(
-                                epoch, env_step, gradient_step, save_checkpoint_fn)
-                            t.set_postfix(**data)
-                            return gather_info(
-                                start_time, train_collector, test_collector,
-                                test_result["rew"], test_result["rew_std"])
-                        else:
-                            policy.train()
+
                 for i in range(round(update_per_step * result["n/st"])):
                     gradient_step += 1
                     losses = policy.update(batch_size, train_collector.buffer)
@@ -212,7 +220,7 @@ def offpolicy_trainer_1(
 
     return 1
 
-def test_dqn(args):
+def test_dqn(args=get_args()):
     tim_env = 0.0
     tim_ctl = 0.0
     tim_learn = 0.0
@@ -380,11 +388,8 @@ def test_dqn(args):
     '''
 
 if __name__ == '__main__':
-    import sys
-    print("Python version")
-    print (sys.version)
-    alpha=100.
-    folder='./dqn_results_'+str(int(alpha))
+    folder='./dqn_results'
     if not os.path.exists(folder):
         os.mkdir(folder)
-    test_dqn(args=get_args(alpha, folder))
+    
+    test_dqn(get_args(folder=folder))

@@ -1,6 +1,3 @@
-from __future__ import print_function, unicode_literals
-from __future__ import absolute_import, division
-
 import os
 import torch
 import pprint
@@ -18,7 +15,7 @@ import gym_singlezone_temperature
 import gym
 
 
-def get_args():
+def get_args(folder):
     time_step = 15*60.0
     num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
@@ -37,49 +34,32 @@ def get_args():
     parser.add_argument('--gamma', type=float, default=0.99)
 
     parser.add_argument('--n-step', type=int, default=1)
-    parser.add_argument('--target-update-freq', type=int, default=40)
+    parser.add_argument('--target-update-freq', type=int, default=100)
 
-    parser.add_argument('--epoch', type=int, default=40)
+    parser.add_argument('--epoch', type=int, default=300)
 
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--step-per-collect', type=int, default=1)
-    parser.add_argument('--update-per-step', type=float, default=1)
-    parser.add_argument('--batch-size', type=int, default=64)
+    parser.add_argument('--update-per-step', type=float, default=3)#1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    parser.add_argument('--batch-size', type=int, default=128)
 
-    parser.add_argument('--training-num', type=int, default=4)
+    parser.add_argument('--training-num', type=int, default=1)
     parser.add_argument('--test-num', type=int, default=1)
 
     parser.add_argument('--logdir', type=str, default='log')
     
-    parser.add_argument('--device', type=str, default='cpu')# or 'cuda'
+    parser.add_argument('--device', type=str, default='cpu')
     parser.add_argument('--frames-stack', type=int, default=1)
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',
                         help='watch the play of pre-trained policy only')
-    parser.add_argument('--save-buffer-name', type=str, default='./experiments_results/his')
+    parser.add_argument('--save-buffer-name', type=str, default=folder)
 
     parser.add_argument('--test-only', type=bool, default=False)
 
+
     return parser.parse_args()
 
-# define external reward post-processing function
-def rf(cost,penalty):
-    """An external reward function
-
-    :param cost: energy cost
-    :type cost: list
-    :param penalty: temperature violation penalty
-    :type penalty: list
-    """
-    target = (cost[0] + penalty[0])/800.0
-    if target > 0.0:
-        clipped_target = 0.0
-    elif target < -1.0:
-        clipped_target = -1.0
-    else:
-        clipped_target = target
-
-    return clipped_target    
 
 def make_building_env(args):
     weather_file_path = "./USA_CA_Riverside.Muni.AP.722869_TMY3.epw"
@@ -87,8 +67,30 @@ def make_building_env(args):
     npre_step = 3
     simulation_start_time = 212*24*3600.0
     log_level = 7
-    alpha = 100
+    alpha = 1
     nActions = 37
+    
+    def rw_func(cost, penalty):
+        if ( not hasattr(rw_func,'x')  ):
+            rw_func.x = 0
+            rw_func.y = 0
+
+        #print(cost, penalty)
+        #res = cost + penalty
+        cost = cost[0]
+        penalty = penalty[0]
+
+        if rw_func.x > cost:
+            rw_func.x = cost
+        if rw_func.y > penalty:
+            rw_func.y = penalty
+
+        print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
+        #res = penalty * 10.0
+        #res = penalty * 300.0 + cost*1e4
+        res = penalty * 500.0 + cost*5e3
+        
+        return res
 
     env = gym.make(args.task,
                    mass_flow_nor = mass_flow_nor,
@@ -99,7 +101,7 @@ def make_building_env(args):
                    log_level = log_level,
                    alpha = alpha,
                    nActions = nActions,
-                   rf=rf)
+                   rf = rw_func)
     return env
 
 class Net(nn.Module):
@@ -109,7 +111,7 @@ class Net(nn.Module):
             nn.Linear(np.prod(state_shape), 256), nn.ReLU(inplace=True),
             nn.Linear(256, 256), nn.ReLU(inplace=True),
             nn.Linear(256, 256), nn.ReLU(inplace=True),
-            nn.Linear(256, 256), nn.ReLU(inplace=True),
+            nn.Linear(256, 256), nn.ReLU(inplace=True),#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             nn.Linear(256, np.prod(action_shape))
         ])
         self.device = device
@@ -121,6 +123,7 @@ class Net(nn.Module):
         logits = self.model(obs.view(batch, -1))
         return logits, state
 
+        
 import time
 import tqdm
 import warnings
@@ -165,14 +168,12 @@ def offpolicy_trainer_1(
     train_collector.reset_stat()
     test_collector.reset_stat()
     test_in_train = test_in_train and train_collector.policy == policy
-    #test_result = test_episode(policy, test_collector, test_fn, start_epoch,
-    #                           episode_per_test, logger, env_step, reward_metric)
-    best_epoch = start_epoch
-    best_reward, best_reward_std = -99999999, -1#test_result["rew"], test_result["rew_std"]
+
 
     for epoch in range(1 + start_epoch, 1 + max_epoch):
         # train
         policy.train()
+        train_collector.reset_env()
         with tqdm.tqdm(
             total=step_per_epoch, desc=f"Epoch #{epoch}", **tqdm_config
         ) as t:
@@ -180,6 +181,7 @@ def offpolicy_trainer_1(
                 if train_fn:
                     train_fn(epoch, env_step)
                 result = train_collector.collect(n_step=step_per_collect)
+                #print(result)
                 if result["n/ep"] > 0 and reward_metric:
                     result["rews"] = reward_metric(result["rews"])
                 env_step += int(result["n/st"])
@@ -195,22 +197,7 @@ def offpolicy_trainer_1(
                     "n/ep": str(int(result["n/ep"])),
                     "n/st": str(int(result["n/st"])),
                 }
-                if result["n/ep"] > 0:
-                    if test_in_train and stop_fn and stop_fn(result["rew"]):
-                        test_result = test_episode(
-                            policy, test_collector, test_fn,
-                            epoch, episode_per_test, logger, env_step)
-                        if stop_fn(test_result["rew"]):
-                            if save_fn:
-                                save_fn(policy)
-                            logger.save_data(
-                                epoch, env_step, gradient_step, save_checkpoint_fn)
-                            t.set_postfix(**data)
-                            return gather_info(
-                                start_time, train_collector, test_collector,
-                                test_result["rew"], test_result["rew_std"])
-                        else:
-                            policy.train()
+
                 for i in range(round(update_per_step * result["n/st"])):
                     gradient_step += 1
                     losses = policy.update(batch_size, train_collector.buffer)
@@ -226,31 +213,17 @@ def offpolicy_trainer_1(
         
         if save_fn:
             save_fn(policy)
-        '''
-        print("Setup test envs ...")
-        policy.eval()
-        
-        test_collector.reset_stat()
-        eps_test = 0.005
-        policy.set_eps(eps_test)
-        print("Testing agent ...")
-        
-                
-        
-        test_result = test_collector.collect(n_step=step_per_epoch)
+
         
 
-        rew = test_result["rews"].mean()
-        '''
-        best_reward, best_reward_std = 1, 1
-        #print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
+    return 1
 
-    return 1#gather_info(start_time, train_collector, test_collector, best_reward, best_reward_std)
-
-def test_dqn(args=get_args()):
+def test_dqn(args):
     tim_env = 0.0
     tim_ctl = 0.0
     tim_learn = 0.0
+    
+
     
     env = make_building_env(args)
 
@@ -272,9 +245,10 @@ def test_dqn(args=get_args()):
     train_envs.seed(args.seed)
     test_envs.seed(args.seed)
 
+
     # define model
-    
-    net = Net(args.state_shape[0], args.action_shape, args.device).to(args.device)
+    print(args.state_shape)
+    net = Net(args.state_shape, args.action_shape, args.device).to(args.device)
     optim = torch.optim.Adam(net.parameters(), lr=args.lr)
     
     # define policy
@@ -287,15 +261,16 @@ def test_dqn(args=get_args()):
     # replay buffer: `save_last_obs` and `stack_num` can be removed together
     # when you have enough RAM
     buffer = VectorReplayBuffer(
-        args.buffer_size, buffer_num=len(train_envs), ignore_obs_next=True,
-        save_only_last_obs=False, stack_num=args.frames_stack)
+        args.buffer_size, buffer_num=len(train_envs), ignore_obs_next=True)
 
     # collector
     train_collector = Collector(policy, train_envs, buffer, exploration_noise=False)
 
+
+
+
     buffer_test = VectorReplayBuffer(
-        args.step_per_epoch+100, buffer_num=len(test_envs), ignore_obs_next=True,
-        save_only_last_obs=False, stack_num=args.frames_stack)
+        args.step_per_epoch+100, buffer_num=len(test_envs), ignore_obs_next=True)
     
     test_collector = Collector(policy, test_envs, buffer_test, exploration_noise=False)
 
@@ -334,6 +309,7 @@ def test_dqn(args=get_args()):
     def test_fn(epoch, env_step):
         policy.set_eps(args.eps_test)
 
+    
     # watch agent's performance
     def watch():
         print("Setup test envs ...")
@@ -350,13 +326,14 @@ def test_dqn(args=get_args()):
         result = collector.collect(n_step=args.step_per_epoch)
         #buffer.save_hdf5(args.save_buffer_name)
         
-        np.save(args.save_buffer_name+'_act.npy', buffer._meta.__dict__['act'])
-        np.save(args.save_buffer_name+'_obs.npy', buffer._meta.__dict__['obs'])
-        np.save(args.save_buffer_name+'_rew.npy', buffer._meta.__dict__['rew'])
+        np.save(args.save_buffer_name+'/his_act.npy', buffer._meta.__dict__['act'])
+        np.save(args.save_buffer_name+'/his_obs.npy', buffer._meta.__dict__['obs'])
+        np.save(args.save_buffer_name+'/his_rew.npy', buffer._meta.__dict__['rew'])
         #print(buffer._meta.__dict__.keys())
         rew = result["rews"].mean()
         print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
     
+
     if not args.test_only:
         # test train_collector and start filling replay buffer
         train_collector.collect(n_step=args.batch_size * args.training_num)
@@ -382,7 +359,9 @@ def test_dqn(args=get_args()):
         #pprint.pprint(result)
 
         watch()
-      
+    
+
+    
     if args.test_only:
         policy.load_state_dict(torch.load(args.resume_path, map_location=args.device))
         print("Loaded agent from: ", os.path.join(log_path, 'policy.pth'))
@@ -407,7 +386,8 @@ def test_dqn(args=get_args()):
     '''
 
 if __name__ == '__main__':
-    import sys
-    print("Python version")
-    print (sys.version)
-    test_dqn(get_args())
+    folder='./dqn_results'
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+    
+    test_dqn(get_args(folder=folder))
