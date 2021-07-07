@@ -30,7 +30,9 @@ After installing the required software, execute the following steps to build and
     
     If you see a repository with an image name `mpcdrl` from the output, the docker image `mpcdrl` is sucessfully built.
 
-### Test Tutorials
+## Testing
+
+### Test Modelica Opengym interface
 Next step is to test if the docker image can be used for development by running a tutorial example.
 
 1. go to the tutoral folder: `gym-tutorial/test` by typing:
@@ -48,3 +50,41 @@ Next step is to test if the docker image can be used for development by running 
             run.bat
 
     The above shell scripts call the docker environment to run the local reinforcement learning experiments as defined in `test_cart_pole_q_learner.py`. The whole run will last around 60 seconds.
+
+### Test Model Predictive Control
+This is to test the developed model predictive control (MPC) testcases. 
+
+1. go to the testcase folders
+    
+    ```
+    cd testcases/mpc/single-zone-temperature
+    ```
+2. run MPC testcase
+
+  For Linux or MacOS, type
+  
+    bash test_mpc.sh
+
+    
+  For windows OS, type
+  
+    test_mpc.bat
+ 
+ ### Test Deep Reinforcement Learning Control 
+This is to test the developed deep reinforcment learning (DRL) control testcases. 
+
+1. go to the testcase folders
+    
+    ```
+    cd mpc-drl-tl/testcases/gym-environments/single-zone-temperature/test_v1
+    ```
+2. run DRL testcase
+
+  For Linux or MacOS, type
+  
+    bash test_dqn_tianshou.sh
+    
+  For windows OS, type
+  
+    test_dqn_tianshou.bat
+ 
