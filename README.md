@@ -61,15 +61,15 @@ This is to test the developed model predictive control (MPC) testcases.
     ```
 2. run MPC testcase
 
-  For Linux or MacOS, type
-  
-    bash test_mpc.sh
+    For Linux or MacOS, type
+      ```
+      bash test_mpc.sh
+      ```
 
-    
-  For windows OS, type
-  
-    test_mpc.bat
- 
+    For windows OS, type
+      ```
+      test_mpc.bat
+      ```
  ### Test Deep Reinforcement Learning Control 
 This is to test the developed deep reinforcment learning (DRL) control testcases. 
 
@@ -80,11 +80,11 @@ This is to test the developed deep reinforcment learning (DRL) control testcases
     ```
 2. run DRL testcase
 
-  For Linux or MacOS, type
-  
-    bash test_dqn_tianshou.sh
-    
-  For windows OS, type
-  
-    test_dqn_tianshou.bat
- 
+    For Linux or MacOS, type
+      ```
+      bash test_dqn_tianshou.sh
+      ```
+    For windows OS, type
+      ```
+      test_dqn_tianshou.bat
+      ```
