@@ -688,7 +688,7 @@ First implementation.
     FaultInjection.Utilities.InsertionTypes.Variables.SignalCorruption.External
       extAtt(faultMode=faultMode)
       annotation (Placement(transformation(extent={{-80,20},{-60,40}})));
-    Modelica.Blocks.Sources.Constant uExt(k=1)
+    Modelica.Blocks.Sources.Constant uExt(k=0)
       annotation (Placement(transformation(extent={{-100,80},{-80,100}})));
     FaultInjection.Utilities.InsertionTypes.Generic.faultMode faultMode(
       active=false,
@@ -699,6 +699,8 @@ First implementation.
     Buildings.Controls.SetPoints.OccupancySchedule occSch
       "Occupancy schedule"
       annotation (Placement(transformation(extent={{-138,70},{-118,90}})));
+    Modelica.Blocks.Sources.Constant uHea(k=0)
+      annotation (Placement(transformation(extent={{-60,-80},{-40,-60}})));
   equation
     connect(weaDat.weaBus, weaBus) annotation (Line(
         points={{-140,130},{-108,130}},
@@ -708,8 +710,6 @@ First implementation.
         index=1,
         extent={{6,3},{6,3}}));
 
-    connect(con.yHea, hvac.uHea) annotation (Line(points={{-79,6},{-56,6},{-56,
-            12},{-42,12}},             color={0,0,127}));
     connect(con.yCooCoiVal, hvac.uCooVal) annotation (Line(points={{-79,0},{-54,0},
             {-54,5},{-42,5}},             color={0,0,127}));
     connect(con.yOutAirFra, hvac.uEco) annotation (Line(points={{-79,3},{-50,3},{
@@ -797,12 +797,14 @@ First implementation.
       annotation (Line(points={{-159,-10},{-142,-10}}, color={0,0,127}));
     connect(con.yFan, extAtt.u) annotation (Line(points={{-79,9},{-72,9},{-72,
             18},{-94,18},{-94,30},{-82,30}}, color={0,0,127}));
-    connect(extAtt.y, hvac.uFan) annotation (Line(points={{-59,30},{-50,30},{
-            -50,18},{-42,18}}, color={235,0,0}));
     connect(uExt.y, extAtt.uFau) annotation (Line(points={{-79,90},{-44,90},{
             -44,38},{-90,38},{-90,36},{-82,36}}, color={0,0,127}));
-    connect(occSch.occupied, con.uOcc) annotation (Line(points={{-117,74},{-110,
-            74},{-110,9},{-104,9}}, color={255,0,255}));
+    connect(occSch.occupied, con.uOcc) annotation (Line(points={{-117,74},{-110,74},
+            {-110,9},{-104,9}}, color={255,0,255}));
+    connect(uHea.y, hvac.uHea) annotation (Line(points={{-39,-70},{-14,-70},{
+            -14,-28},{-50,-28},{-50,12},{-42,12}}, color={0,0,127}));
+    connect(extAtt.y, hvac.uFan) annotation (Line(points={{-59,30},{-50,30},{
+            -50,18},{-42,18}}, color={235,0,0}));
     annotation (
       experiment(
         StartTime=18316800,
