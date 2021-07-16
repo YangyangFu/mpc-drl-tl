@@ -47,7 +47,7 @@ def get_args(folder):
 
     parser.add_argument('--n-step', type=int, default=1)
 
-    parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--epoch', type=int, default=300)
 
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--step-per-collect', type=int, default=1)
@@ -81,9 +81,31 @@ def make_building_env(args):
     npre_step = 3
     simulation_start_time = 212*24*3600.0
     simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
-    log_level = 0
+    log_level = 7
     alpha = 1
     nActions = 51
+
+    def rw_func(cost, penalty):
+        if ( not hasattr(rw_func,'x')  ):
+            rw_func.x = 0
+            rw_func.y = 0
+
+        #print(cost, penalty)
+        #res = cost + penalty
+        cost = cost[0]
+        penalty = penalty[0]
+
+        if rw_func.x > cost:
+            rw_func.x = cost
+        if rw_func.y > penalty:
+            rw_func.y = penalty
+
+        print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
+        #res = penalty * 10.0
+        #res = penalty * 300.0 + cost*1e4
+        res = penalty * 500.0 + cost*5e4
+        
+        return res
 
     env = gym.make(args.task,
                    mass_flow_nor = mass_flow_nor,
@@ -94,9 +116,9 @@ def make_building_env(args):
                    time_step = args.time_step,
                    log_level = log_level,
                    alpha = alpha,
-                   nActions = nActions)
+                   nActions = nActions,
+                   rf = rw_func)
     return env
-
         
 import time
 import tqdm
