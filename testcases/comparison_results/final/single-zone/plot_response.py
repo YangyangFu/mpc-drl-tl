@@ -24,7 +24,7 @@ nsteps_h = int(3600//dt)
 # setup for DRL test
 nActions = 51
 alpha = 1
-nepochs = 300
+nepochs = 500
 
 # define some filters to save simulation time using fmu
 measurement_names = ['time','TRoo','TOut','PTot','hvac.uFan','hvac.fanSup.m_flow_in', 'senTSetRooCoo.y', 'CO2Roo']
@@ -127,6 +127,42 @@ while t < te:
     i += 1
     options['initialize'] = False
 
+###############################################################
+##              DRL final run: Discrete: v1-sac
+##===========================================================
+# get actions from the last epoch
+v1_sac_case = './v1-sac'
+actions= np.load(v1_sac_case+'/his_act.npy')
+u_opt = np.array(actions[-1,:-1])/float(nActions-1)
+print (u_opt)
+
+## fmu settings
+hvac.reset()
+options = hvac.simulate_options()
+options['ncp'] = 100.
+options['initialize'] = True
+options['result_handling'] = 'memory'
+options['filter'] = measurement_names
+res_sac_v1 = []
+
+## construct optimal input for fmu
+# main loop - do step
+t = ts
+i = 0
+while t < te:
+    u = u_opt[i]
+    u_traj = np.transpose(np.vstack(([t,t+dt],[u,u])))
+    input_object = ("uFan",u_traj)
+    ires = hvac.simulate(start_time = t,
+                final_time = t+dt, 
+                options = options,
+                input = input_object)
+    res_sac_v1.append(ires)
+
+    t += dt 
+    i += 1
+    options['initialize'] = False
+
 ################################################################
 ##           Compare MPC/DRL with Baseline
 ## =============================================================
@@ -135,6 +171,7 @@ while t < te:
 measurement_mpc = {}
 measurement_base = {}
 measurement_dqn_v1 = {}
+measurement_sac_v1 = {}
 
 for name in measurement_names:
     measurement_base[name] = res_base[name]
@@ -148,6 +185,11 @@ for name in measurement_names:
     for ires in res_dqn_v1:
       value_name_dqn_v1 += list(ires[name])
     measurement_dqn_v1[name] = np.array(value_name_dqn_v1)
+    # get sac_v1 results
+    value_name_sac_v1=[]
+    for ires in res_sac_v1:
+      value_name_sac_v1 += list(ires[name])
+    measurement_sac_v1[name] = np.array(value_name_sac_v1)
 
 ## simulate baseline
 occ_start = 7
@@ -182,6 +224,7 @@ plt.subplot(412)
 plt.plot(measurement_base['time'], measurement_base['hvac.uFan'],'b-',label='Baseline')
 plt.plot(measurement_mpc['time'], measurement_mpc['hvac.uFan'],'b--',label='MPC')
 plt.plot(measurement_dqn_v1['time'], measurement_dqn_v1['hvac.uFan'],'r--',label='DQN')
+plt.plot(measurement_sac_v1['time'], measurement_sac_v1['hvac.uFan'],'y--',label='SAC')
 plt.grid(True)
 plt.xticks(xticks,[])
 plt.legend()
@@ -191,6 +234,7 @@ plt.subplot(413)
 plt.plot(measurement_base['time'], measurement_base['TRoo']-273.15,'b-',label='Baseline')
 plt.plot(measurement_mpc['time'],  measurement_mpc['TRoo']-273.15,'b--',label='MPC')
 plt.plot(measurement_dqn_v1['time'],  measurement_dqn_v1['TRoo']-273.15,'r--',label='DQN')
+plt.plot(measurement_sac_v1['time'],  measurement_sac_v1['TRoo']-273.15,'y--',label='SAC')
 plt.plot(tim,T_upper, 'g-.', lw=1,label='Bounds')
 plt.plot(tim,T_lower, 'g-.', lw=1)
 plt.grid(True)
@@ -202,6 +246,7 @@ plt.subplot(414)
 plt.plot(measurement_base['time'], measurement_base['PTot'],'b-',label='Baseline')
 plt.plot(measurement_mpc['time'], measurement_mpc['PTot'],'b--',label='MPC')
 plt.plot(measurement_dqn_v1['time'], measurement_dqn_v1['PTot'],'r--',label='DQN')
+plt.plot(measurement_sac_v1['time'], measurement_sac_v1['PTot'],'y--',label='SAC')
 plt.grid(True)
 plt.xticks(xticks,xticks_label)
 plt.ylabel('Total [W]')
@@ -223,15 +268,19 @@ def interpolate_dataframe(df,new_index):
 measurement_base = pd.DataFrame(measurement_base,index=measurement_base['time'])
 measurement_mpc = pd.DataFrame(measurement_mpc,index=measurement_mpc['time'])
 measurement_dqn_v1 = pd.DataFrame(measurement_dqn_v1,index=measurement_dqn_v1['time'])
+measurement_sac_v1 = pd.DataFrame(measurement_sac_v1,index=measurement_sac_v1['time'])
 
 tim_intp = np.arange(ts,te,dt)
 measurement_base = interpolate_dataframe(measurement_base[['PTot','TRoo']],tim_intp)
 measurement_mpc = interpolate_dataframe(measurement_mpc[['PTot','TRoo']],tim_intp)
 measurement_dqn_v1 = interpolate_dataframe(measurement_dqn_v1[['PTot','TRoo']],tim_intp)
+measurement_sac_v1 = interpolate_dataframe(measurement_sac_v1[['PTot','TRoo']],tim_intp)
 
 #measurement_base.to_csv('measurement_base.csv')
 #measurement_mpc.to_csv('measurement_mpc.csv')
 #measurement_dqn_v1.to_csv('measurement_dqn_v1.csv')
+#measurement_sac_v1.to_csv('measurement_sac_v1.csv')
+
 def rw_func(cost, penalty):
     if ( not hasattr(rw_func,'x')  ):
         rw_func.x = 0
@@ -245,7 +294,7 @@ def rw_func(cost, penalty):
     if rw_func.y > penalty:
         rw_func.y = penalty
 
-    print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
+    #print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
     #res = penalty * 10.0
     #res = penalty * 300.0 + cost*1e4
     res = penalty * 500.0 + cost*5e4
@@ -309,16 +358,28 @@ for epoch in range(nepochs):
 rewards_dqn_v1 = pd.DataFrame(np.array(rewards_dqn_v1),columns=['rewards'])
 print (rewards_dqn_v1)
 
+
+rewards_sac_v1_hist = np.load(v1_sac_case+'/his_rew.npy')
+rewards_sac_v1 = []
+# for zone 1
+for epoch in range(nepochs):
+    rewards_sac_v1 += list(rewards_sac_v1_hist[epoch,:-1])
+
+rewards_sac_v1 = pd.DataFrame(np.array(rewards_sac_v1),columns=['rewards'])
+print (rewards_sac_v1)
+
 # plot rewards with moving windows - epoch-by-epoch
 moving = nday*24*3600.//dt 
 rewards_moving_base = rewards_base['rewards'].groupby(rewards_base.index//moving).sum()
 rewards_moving_mpc = rewards_mpc['rewards'].groupby(rewards_mpc.index//moving).sum()
 rewards_moving_dqn_v1 = rewards_dqn_v1['rewards'].groupby(rewards_dqn_v1.index//moving).sum()
+rewards_moving_sac_v1 = rewards_sac_v1['rewards'].groupby(rewards_sac_v1.index//moving).sum()
 
 plt.figure(figsize=(9,6))
 plt.plot(list(rewards_moving_base.values)*nepochs,'b-',label='RBC')
 plt.plot(list(rewards_moving_mpc.values)*nepochs,'b--',label='MPC')
-plt.plot(rewards_moving_dqn_v1.values,'r--',label='DQN')
+plt.plot(rewards_moving_dqn_v1.values,'r--',lw=1,label='DQN')
+plt.plot(rewards_moving_sac_v1.values,'y--',lw=1,label='SAC')
 plt.ylabel('rewards')
 plt.xlabel('epoch')
 plt.grid(True)
@@ -337,12 +398,17 @@ plt.savefig('rewards_epoch.png')
 rewards_dqn_v1_last = get_rewards(measurement_dqn_v1['PTot'].values,measurement_dqn_v1['TRoo'].values,price_tou,alpha)
 rewards_dqn_v1_last = pd.DataFrame(rewards_dqn_v1_last,columns=[['ene_cost','penalty','rewards']])
 
+rewards_sac_v1_last = get_rewards(measurement_sac_v1['PTot'].values,measurement_sac_v1['TRoo'].values,price_tou,alpha)
+rewards_sac_v1_last = pd.DataFrame(rewards_sac_v1_last,columns=[['ene_cost','penalty','rewards']])
+
 comparison={'base':{'energy_cost':list(rewards_base['ene_cost'].sum()),
                     'temp_violation':list(rewards_base['penalty'].sum())},
             'mpc':{'energy_cost':list(rewards_mpc['ene_cost'].sum()),
                     'temp_violation':list(rewards_mpc['penalty'].sum())},
-            'dqn_v1':{'energy_cost':list(rewards_dqn_v1_last['ene_cost'].sum()),
-                    'temp_violation':list(rewards_dqn_v1_last['penalty'].sum())}
+            'dqn':{'energy_cost':list(rewards_dqn_v1_last['ene_cost'].sum()),
+                    'temp_violation':list(rewards_dqn_v1_last['penalty'].sum())},
+            'sac':{'energy_cost':list(rewards_sac_v1_last['ene_cost'].sum()),
+                    'temp_violation':list(rewards_sac_v1_last['penalty'].sum())}
                     }
 with open('comparison_epoch.json', 'w') as outfile:
     json.dump(comparison, outfile)
