@@ -22,7 +22,7 @@ dt = 15*60.
 nsteps_h = int(3600//dt)
 
 # setup for DRL test
-nActions = 51
+nActions = 37
 alpha = 1
 nepochs = 500
 
@@ -121,7 +121,7 @@ while t < te:
                 final_time = t+dt, 
                 options = options,
                 input = input_object)
-    res_drl.append(ires)
+    res_dqn_v1.append(ires)
 
     t += dt 
     i += 1
@@ -157,7 +157,7 @@ while t < te:
                 final_time = t+dt, 
                 options = options,
                 input = input_object)
-    res_drl.append(ires)
+    res_sac_v1.append(ires)
 
     t += dt 
     i += 1
@@ -221,14 +221,15 @@ plt.grid(True)
 plt.ylabel('Price ($/kW)')
 
 plt.subplot(412)
-plt.plot(measurement_base['time'], measurement_base['hvac.uFan'],'b-',label='Baseline')
-plt.plot(measurement_mpc['time'], measurement_mpc['hvac.uFan'],'b--',label='MPC')
-plt.plot(measurement_dqn_v1['time'], measurement_dqn_v1['hvac.uFan'],'r--',label='DQN')
-plt.plot(measurement_sac_v1['time'], measurement_sac_v1['hvac.uFan'],'y--',label='SAC')
+plt.subplot(412)
+plt.plot(measurement_base['time'], measurement_base['senTSetRooCoo.y']-273.15,'b-',label='Baseline')
+plt.plot(measurement_mpc['time'], measurement_mpc['senTSetRooCoo.y']-273.15,'b--',label='MPC')
+plt.plot(measurement_dqn_v1['time'], measurement_dqn_v1['senTSetRooCoo.y']-273.15,'r--',label='DQN')
+plt.plot(measurement_sac_v1['time'], measurement_sac_v1['senTSetRooCoo.y']-273.15,'y--',label='SAC')
 plt.grid(True)
 plt.xticks(xticks,[])
 plt.legend()
-plt.ylabel('Fan Speed')
+plt.ylabel('Cooling Setpoint [C]')
 
 plt.subplot(413)
 plt.plot(measurement_base['time'], measurement_base['TRoo']-273.15,'b-',label='Baseline')
@@ -297,7 +298,7 @@ def rw_func(cost, penalty):
     #print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
     #res = penalty * 10.0
     #res = penalty * 300.0 + cost*1e4
-    res = penalty * 500.0 + cost*5e4
+    res = penalty * 500.0 + cost*5e3
     
     return res
 def get_rewards(Ptot,TZone,price_tou,alpha):
