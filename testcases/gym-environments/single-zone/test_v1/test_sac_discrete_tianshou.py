@@ -47,7 +47,7 @@ def get_args(folder):
 
     parser.add_argument('--n-step', type=int, default=1)
 
-    parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--epoch', type=int, default=10)
 
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--step-per-collect', type=int, default=1)
@@ -81,7 +81,7 @@ def make_building_env(args):
     npre_step = 3
     simulation_start_time = 212*24*3600.0
     simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
-    log_level = 7
+    log_level = 0
     alpha = 1
     nActions = 51
 
@@ -104,6 +104,7 @@ def make_building_env(args):
         #res = penalty * 10.0
         #res = penalty * 300.0 + cost*1e4
         res = penalty * 500.0 + cost*5e4
+        #res = 100*penalty + cost
         
         return res
 
@@ -353,7 +354,7 @@ def test_sac_discrete(args):
         # test train_collector and start filling replay buffer
         train_collector.collect(n_step=args.batch_size * args.training_num)
         # trainer
-        
+
         result = offpolicy_trainer_1(
             policy = policy, train_collector = train_collector, test_collector = test_collector, max_epoch = args.epoch,
             step_per_epoch = args.step_per_epoch, step_per_collect = args.step_per_collect, episode_per_test = args.test_num,
@@ -361,12 +362,14 @@ def test_sac_discrete(args):
             #stop_fn=stop_fn, 
             save_fn=save_fn, logger=logger,
             update_per_step=args.update_per_step, test_in_train=False)
-        '''
 
-        result = offpolicy_trainer_1(
+        '''
+        result = offpolicy_trainer(
             policy = policy, train_collector = train_collector, test_collector = test_collector, max_epoch = 1,
             step_per_epoch = 100, step_per_collect = 1, episode_per_test = 1,
-            batch_size = 64, train_fn=train_fn, test_fn=test_fn,
+            batch_size = 64, 
+            #train_fn=train_fn, 
+            # #test_fn=test_fn,
             #stop_fn=stop_fn, 
             save_fn=save_fn, logger=logger,
             update_per_step=args.update_per_step, test_in_train=False)
