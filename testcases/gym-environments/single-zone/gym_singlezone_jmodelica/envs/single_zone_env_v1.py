@@ -68,7 +68,7 @@ class SingleZoneEnv(object):
         """
         done = False
         stop_time = self.stop # get current time after do_step
-        if stop_time >= self.simulation_end_time:
+        if stop_time > self.simulation_end_time-self.tau:
             done = True
 
         return done
@@ -117,7 +117,7 @@ class SingleZoneEnv(object):
         # 0 - max flow: 
         #mass_flow_nor = self.mass_flow_nor # norminal flowrate: kg/s 
         action = np.array(action)
-        action = [action/float(self.nActions)]
+        action = [action/float(self.nActions-1)]
         return super(SingleZoneEnv,self).step(action)
     
     def _reward_policy(self):
