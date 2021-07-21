@@ -48,7 +48,7 @@ def plot_one_ep(num_zone = 1, history_Z_T = None, history_Env_T = None, fig_path
 
 if __name__ == "__main__":
     l = np.load('./his_obs.npy', allow_pickle=True)
-    l = l[-400,:-1,:]
+    l = l[-1,:-1,:]
     l_indoor = l[:, 1]
     l_outdoor = l[:, 2]
     plot_one_ep(num_zone = 1, history_Z_T = l_indoor, history_Env_T = l_outdoor, fig_path_name = './simulation.png')
