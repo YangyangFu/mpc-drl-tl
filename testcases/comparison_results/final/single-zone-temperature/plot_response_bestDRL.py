@@ -97,7 +97,10 @@ while t < te:
 # get actions from the last epoch
 v1_dqn_case = './v1-dqn'
 actions= np.load(v1_dqn_case+'/his_act.npy')
-u_opt = np.array(actions[-1,:-1])/float(nActions-1)*(30.-12.)+12+273.15
+# find out the actions in the best epoch
+rewards=np.load(v1_dqn_case+'/his_rew.npy')
+epoch_best = rewards[:,:-1].sum(axis=1).argmax()
+u_opt = np.array(actions[epoch_best,:-1])/float(nActions-1)*(30.-12.)+12+273.15
 print (u_opt)
 
 ## fmu settings
@@ -133,7 +136,10 @@ while t < te:
 # get actions from the last epoch
 v1_sac_case = './v1-sac'
 actions= np.load(v1_sac_case+'/his_act.npy')
-u_opt = np.array(actions[-1,:-1])/float(nActions-1)*(30.-12.)+12+273.15
+# find out the actions in the best epoch
+rewards=np.load(v1_dqn_case+'/his_rew.npy')
+epoch_best = rewards[:,:-1].sum(axis=1).argmax()
+u_opt = np.array(actions[epoch_best,:-1])/float(nActions-1)*(30.-12.)+12+273.15
 print (u_opt)
 
 ## fmu settings
@@ -251,8 +257,8 @@ plt.plot(measurement_sac_v1['time'], measurement_sac_v1['PTot'],'y--',label='SAC
 plt.grid(True)
 plt.xticks(xticks,xticks_label)
 plt.ylabel('Total [W]')
-plt.savefig('mpc-drl.pdf')
-plt.savefig('mpc-drl.png')
+plt.savefig('mpc-best-drl.pdf')
+plt.savefig('mpc-best-drl.png')
 
 # save baseline and mpc measurements from simulation
 ## save interpolated measurement data for comparison
@@ -298,7 +304,7 @@ def rw_func(cost, penalty):
     #print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
     #res = penalty * 10.0
     #res = penalty * 300.0 + cost*1e4
-    res = penalty * 500.0 + cost*5e4
+    res = penalty * 500.0 + cost*5e3
     
     return res
 def get_rewards(Ptot,TZone,price_tou,alpha):
@@ -376,19 +382,6 @@ rewards_moving_mpc = rewards_mpc['rewards'].groupby(rewards_mpc.index//moving).s
 rewards_moving_dqn_v1 = rewards_dqn_v1['rewards'].groupby(rewards_dqn_v1.index//moving).sum()
 rewards_moving_sac_v1 = rewards_sac_v1['rewards'].groupby(rewards_sac_v1.index//moving).sum()
 
-plt.figure(figsize=(9,6))
-plt.plot(list(rewards_moving_base.values)*nepochs,'b-',label='RBC')
-plt.plot(list(rewards_moving_mpc.values)*nepochs,'b--',label='MPC')
-plt.plot(rewards_moving_dqn_v1.values,'r--',lw=1,label='DQN')
-plt.plot(rewards_moving_sac_v1.values,'y--',lw=1,label='SAC')
-plt.ylabel('rewards')
-plt.xlabel('epoch')
-plt.grid(True)
-plt.legend()
-plt.savefig('rewards_epoch.pdf')
-plt.savefig('rewards_epoch.png')
-
-
 # The following codes are only for comparing occupied control performance
 #===========================================================================
 #flag = np.logical_or(rewards_dqn_v1_last.index%96//4<7,rewards_dqn_v1_last.index%96//4>=19)
@@ -411,6 +404,5 @@ comparison={'base':{'energy_cost':list(rewards_base['ene_cost'].sum()),
             'sac':{'energy_cost':list(rewards_sac_v1_last['ene_cost'].sum()),
                     'temp_violation':list(rewards_sac_v1_last['penalty'].sum())}
                     }
-with open('comparison_epoch.json', 'w') as outfile:
+with open('comparison_epoch_best.json', 'w') as outfile:
     json.dump(comparison, outfile)
-
