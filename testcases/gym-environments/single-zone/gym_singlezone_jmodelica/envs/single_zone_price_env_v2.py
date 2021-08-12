@@ -69,7 +69,7 @@ class SingleZoneEnv(object):
         """
         done = False
         stop_time = self.stop # get current time after do_step
-        if stop_time >= self.simulation_end_time:
+        if stop_time > self.simulation_end_time-self.tau:
             done = True
             
         return done
