@@ -278,6 +278,27 @@ class SingleZoneEnv(object):
         """
         return self.render(close=True)
 
+    # define a method to get sub-step measurements for model outputs. 
+    # The model outputs are defined by model_output_names.
+    def get_substep_measurement(self):
+        """
+        Get outputs in a smaller step than the control step.
+        The number of substeps are defined as n_substeps. 
+        The step-wise simulation results are interpolated into n_substeps.
+        :return: List of List
+        """
+        model_outputs = self.model_output_names
+
+        time = self.result['time']
+        ns = self.n_substeps
+        dt = (time[-1]-time[0])/ns
+        time_intp = np.arange(time[0], time[-1]+dt, dt)
+
+        substeps_meas_list=[]
+        for output_name in model_outputs:
+            substeps_meas_list.append(list(np.interp(time_intp, time, self.result[output_name])))
+        
+        return substeps_meas_list
 
 class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
     """
@@ -306,7 +327,8 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
                  min_action=0.,
                  max_action=1.,
                  rf=None,
-                 p_g=None):
+                 p_g=None,
+                 n_substeps=1):
 
         logger.setLevel(log_level)
 
@@ -338,6 +360,9 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         else:
             self.p_g = p_g           
         assert len(self.p_g)==24, "Daily hourly energy price should be provided!!!"
+
+        # number of substeps to output
+        self.n_substeps=n_substeps
 
         # others
         self.viewer = None
