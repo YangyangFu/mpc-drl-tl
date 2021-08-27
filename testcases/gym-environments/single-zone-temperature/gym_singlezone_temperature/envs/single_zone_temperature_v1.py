@@ -43,9 +43,13 @@ class SingleZoneTemperatureEnv(object):
         10     Solar radiation prediction at next 3 step     0              1200
 
     Actions:
-        Type: Box(1)
-        Num    Action           Min         Max
-        0      Zone setpoint    18          30
+        Type: Discrete(nActions)
+        Num         Action           
+        0           Minimum Setpoint
+        ...
+        ...
+        nAction-1   Maximum Setpoint
+
     Reward:
          Sum of energy costs and zone temperature violations
 
@@ -112,7 +116,7 @@ class SingleZoneTemperatureEnv(object):
         :return: next (resulting) state
         """
         # 0 - temperature setpoints: 
-        action = list(np.array(np.array(action)*(30.-12.)/(self.nActions-1) + 12 + 273.15).flatten(-1))
+        action = np.array(np.array(action)*(30.-12.)/(self.nActions-1) + 12 + 273.15).tolist()
 
         return super(SingleZoneTemperatureEnv,self).step(action)
     
@@ -272,6 +276,27 @@ class SingleZoneTemperatureEnv(object):
         """
         return self.render(close=True)
 
+    # define a method to get sub-step measurements for model outputs. 
+    # The outputs are defined by model_output_names and model_input_names.
+    def get_substep_measurement(self):
+        """
+        Get outputs in a smaller step than the control step.
+        The number of substeps are defined as n_substeps. 
+        The step-wise simulation results are interpolated into n_substeps.
+        :return: Tuple of List
+        """
+        # following the order as defined in model_output_names
+        substep_measurement_names = self.model_output_names + self.model_input_names
+
+        time = self.result['time'] # get a list of raw time point from modelica simulation results for [t-dt, t].
+        dt = (time[-1]-time[0])/self.n_substeps
+        time_intp = np.arange(time[0], time[-1]+dt, dt)
+
+        substep_measurement=[]
+        for var_name in substep_measurement_names:
+            substep_measurement.append(list(np.interp(time_intp, time, self.result[var_name])))
+        
+        return (substep_measurement_names,substep_measurement)
 
 class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
     """
@@ -299,7 +324,8 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
                  alpha = 0.01,
                  nActions = 37,
                  rf=None,
-                 p_g=None):
+                 p_g=None,
+                 n_substeps=15):
 
         logger.setLevel(log_level)
 
@@ -330,7 +356,10 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
         else:
             self.p_g = p_g           
         assert len(self.p_g)==24, "Daily hourly energy price should be provided!!!"
-        
+
+        # number of substeps to output
+        self.n_substeps=int(n_substeps)
+
         # others
         self.viewer = None
         self.display = None
