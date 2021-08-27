@@ -121,6 +121,7 @@ class SingleZoneEnv(object):
 
         :return:, list with 2 elements: energy costs and temperature violations
         """
+
         # two parts: energy cost + temperature deviations
         # minimization problem: negative
         states = self.state
@@ -147,21 +148,22 @@ class SingleZoneEnv(object):
         # control period:
         delCtrl = self.tau/3600.0 #may be better to set a variable in initial
         
-        # get hour index
+        #get hour index
         t = int(time)
         t = int((t%86400)/3600) # hour index 0~23
 
         #calculate penalty for each zone
         overshoot = []
         undershoot = []
+        max_violation = []
         penalty = [] #temperature violation for each zone
         cost = [] # erengy cost for each zone
-        alpha_up = self.alpha
-        alpha_low = self.alpha
+
         for k in range(num_zone):
             overshoot.append(max(ZTemperature[k] - T_upper[t] , 0.0))
             undershoot.append(max(T_lower[t] - ZTemperature[k] , 0.0))
-            penalty.append(- alpha_up * overshoot[k] - alpha_low * undershoot[k])
+            max_violation.append(-overshoot[k] - undershoot[k])
+            penalty.append(self.alpha*max_violation[k])
         
         t_pre = int(time-self.tau) if time>self.tau else (time+24*60*60.-self.tau)
         t_pre = int((t_pre%86400)/3600) # hour index 0~23
@@ -169,13 +171,18 @@ class SingleZoneEnv(object):
         for k in range(num_zone):
             cost.append(- ZPower[k]/1000. * delCtrl * self.p_g[t_pre])
         
+        # save cost/penalty for customized use - negative
+        self._cost = cost
+        self._max_temperature_violation = max_violation
+
+        # define reward
         if self.rf:
             rewards=self.rf(cost, penalty)
         else:
             rewards=np.sum(np.array([cost, penalty]))
 
         return rewards
-
+        
     def get_state(self, result):
         """
         Extracts the values of model outputs at the end of modeling time interval from simulation result 
@@ -308,6 +315,25 @@ class SingleZoneEnv(object):
         
         return (substep_measurement_names,substep_measurement)
 
+    # get cost 
+    def get_cost(self):
+        """Get energy cost and reward afer reward calculation
+
+        :return: a list of cost for multi-zones
+        :rtype: List
+        """
+        return self._cost
+    
+    # get penalty 
+    def get_temperature_violation(self):
+        """Get energy cost and reward afer reward calculation
+
+        :return: a list of cost for multi-zones
+        :rtype: List
+        """
+        return self._max_temperature_violation
+
+
 class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
     """
     Wrapper class for creation of cart-pole environment using JModelica-compiled FMU (FMI standard v.2.0).
@@ -382,6 +408,10 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
             'fmu_result_ncp':fmu_result_ncp,
             'filter_flag':filter_flag 
         }
+
+        # initialize some metadata 
+        self._cost = []
+        self._max_temperature_violation = []
 
         super(JModelicaCSSingleZoneEnv,self).__init__("./SingleZoneVAV.fmu",
                          config, log_level=log_level,

@@ -35,4 +35,9 @@ print("current step is evenly divided into "+str(env.n_substeps) + " sub-steps!!
 print(substep_measurement_names)
 print(substep_measurement)
 print (len(substep_measurement[0]))
+
+# test cost and penalty
+print("============================")
+print("Cost at current step is "+str(env.get_cost()))
+print("Maximum temperature violation at current step is "+str(env.get_temperature_violation()))
 print("\nJModelicaCSSingleZoneTemperatureEnv-v2 is successfully installed!!" )
