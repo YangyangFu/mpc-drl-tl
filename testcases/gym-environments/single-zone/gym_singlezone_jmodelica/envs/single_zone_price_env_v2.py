@@ -299,26 +299,26 @@ class SingleZoneEnv(object):
         return self.render(close=True)
 
     # define a method to get sub-step measurements for model outputs. 
-    # The model outputs are defined by model_output_names.
+    # The outputs are defined by model_output_names and model_input_names.
     def get_substep_measurement(self):
         """
         Get outputs in a smaller step than the control step.
         The number of substeps are defined as n_substeps. 
         The step-wise simulation results are interpolated into n_substeps.
-        :return: List of List
+        :return: Tuple of List
         """
-        model_outputs = self.model_output_names
+        # following the order as defined in model_output_names
+        substep_measurement_names = self.model_output_names + self.model_input_names
 
-        time = self.result['time']
-        ns = self.n_substeps
-        dt = (time[-1]-time[0])/ns
+        time = self.result['time'] # get a list of raw time point from modelica simulation results for [t-dt, t].
+        dt = (time[-1]-time[0])/self.n_substeps
         time_intp = np.arange(time[0], time[-1]+dt, dt)
 
-        substeps_meas_list=[]
-        for output_name in model_outputs:
-            substeps_meas_list.append(list(np.interp(time_intp, time, self.result[output_name])))
+        substep_measurement=[]
+        for var_name in substep_measurement_names:
+            substep_measurement.append(list(np.interp(time_intp, time, self.result[var_name])))
         
-        return substeps_meas_list
+        return (substep_measurement_names,substep_measurement)
         
 class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
     """
@@ -348,7 +348,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
                  max_action=1.,
                  rf=None,
                  p_g=None,
-                 n_substeps=1):
+                 n_substeps=15):
 
         logger.setLevel(log_level)
 

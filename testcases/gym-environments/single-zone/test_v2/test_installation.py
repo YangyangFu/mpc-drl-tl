@@ -18,7 +18,8 @@ env = gym.make("JModelicaCSSingleZoneEnv-v2",
                 filter_flag=True,
                 alpha=200,
                 min_action=0.,
-                max_action=1.)
+                max_action=1.,
+                n_substeps=15)
 
 states = env.reset()
 n_outputs = env.observation_space.shape[0]
@@ -27,4 +28,12 @@ print(n_outputs)
 print(env.tau, env.simulation_start_time, env.simulation_end_time)
 print(env.alpha)
 print(env.min_action, env.max_action)
-print("JModelicaCSSingleZoneEnv-v2 is successfully installed!!" )
+
+# test substeps
+observation, reward, done, _ = env.step([2])
+substep_measurement_names, substep_measurement=env.get_substep_measurement()
+print("current step is evenly divided into "+str(env.n_substeps) + " sub-steps!!!")
+print(substep_measurement_names)
+print(substep_measurement)
+print (len(substep_measurement[0]))
+print("\nJModelicaCSSingleZoneEnv-v2 is successfully installed!!" )
