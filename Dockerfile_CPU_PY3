@@ -9,61 +9,6 @@ USER root
 # debconf: (TERM is not set, so the dialog frontend is not usable.)
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
-# Install required packages for compiling ipopt
-RUN apt-get update && \
-    apt-get install -y \
-    gcc \
-    g++ \
-    gfortran \
-    patch \
-    wget \
-    pkg-config \
-    liblapack-dev \
-    libmetis-dev && \
-    rm -rf /var/lib/apt/lists/*
-
-### Add an optimization package openopt - a wrapper for ipopt
-# Get Install Ipopt and delete source code after installation
-# IPOPT have different folder structures after 3.13. 
-WORKDIR $HOME
-RUN mkdir $HOME/src
-ENV SRC_DIR $HOME/src
-ENV IPOPT_3_12_13_HOME /usr/local/Ipopt-3.12.13
-
-RUN cd $SRC_DIR && \
-    wget wget -O - http://www.coin-or.org/download/source/Ipopt/Ipopt-3.12.13.tgz | tar xzf - && \
-    cd $SRC_DIR/Ipopt-3.12.13/ThirdParty/Blas && \
-    ./get.Blas && \
-    cd $SRC_DIR/Ipopt-3.12.13/ThirdParty/Lapack && \
-    ./get.Lapack && \
-    cd $SRC_DIR/Ipopt-3.12.13/ThirdParty/ASL && \
-    ./get.ASL && \    
-    cd $SRC_DIR/Ipopt-3.12.13/ThirdParty/Mumps && \
-    ./get.Mumps && \
-    cd $SRC_DIR/Ipopt-3.12.13/ThirdParty/Metis && \
-    ./get.Metis && \
-    mkdir $SRC_DIR/Ipopt-3.12.13/build && \
-    cd $SRC_DIR/Ipopt-3.12.13/build && \
-    cd $SRC_DIR/Ipopt-3.12.13 && \
-    ./configure --prefix=$IPOPT_3_12_13_HOME && \
-    make &&\
-    make install && \
-    rm -rf $SRC_DIR
-
-# specify link file location in linux
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:$IPOPT_3_12_13_HOME:$IPOPT_3_12_13_HOME/lib:$IPOPT_3_12_13_HOME/bin
-ENV PATH $PATH:$LD_LIBRARY_PATH
-
-# install openopt
-RUN pip install openopt
-RUN pip install FuncDesigner
-RUN pip install DerApproximator
-
-# connect ipopt with openopt
-# install ipopt python wrapper
-RUN cd $HOME/github && git clone https://github.com/YangyangFu/pyipopt.git && ls -l
-RUN cd $HOME/github/pyipopt && python setup.py build && python setup.py install
-
 ### ====================================================================================
 ### Install other dependencies
 # Install python package to read epw file
@@ -75,6 +20,7 @@ RUN pip install -U scikit-learn
 ### Install DRL algorithm - tianshou with the latest development in github
 #
 WORKDIR $HOME
+# latest development
 RUN cd $HOME/github && pip install git+https://github.com/thu-ml/tianshou.git@master --upgrade
 
 ### Install DRL algorithm - StableBaseline3 in case tianshou is not working

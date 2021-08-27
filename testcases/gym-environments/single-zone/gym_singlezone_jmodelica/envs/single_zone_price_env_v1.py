@@ -72,7 +72,7 @@ class SingleZoneEnv(object):
         """
         done = False
         stop_time = self.stop # get current time after do_step
-        if stop_time >= self.simulation_end_time:
+        if stop_time > self.simulation_end_time-self.tau:
             done = True
 
         return done
@@ -112,7 +112,7 @@ class SingleZoneEnv(object):
         # 0 - max flow: 
         #mass_flow_nor = self.mass_flow_nor # norminal flowrate: kg/s 
         action = np.array(action)
-        action = [action/float(self.nActions)]
+        action = [action/float(self.nActions-1)]
         return super(SingleZoneEnv,self).step(action)
     
     def _reward_policy(self):
@@ -286,6 +286,27 @@ class SingleZoneEnv(object):
         """
         return self.render(close=True)
 
+    # define a method to get sub-step measurements for model outputs. 
+    # The outputs are defined by model_output_names and model_input_names.
+    def get_substep_measurement(self):
+        """
+        Get outputs in a smaller step than the control step.
+        The number of substeps are defined as n_substeps. 
+        The step-wise simulation results are interpolated into n_substeps.
+        :return: Tuple of List
+        """
+        # following the order as defined in model_output_names
+        substep_measurement_names = self.model_output_names + self.model_input_names
+
+        time = self.result['time'] # get a list of raw time point from modelica simulation results for [t-dt, t].
+        dt = (time[-1]-time[0])/self.n_substeps
+        time_intp = np.arange(time[0], time[-1]+dt, dt)
+
+        substep_measurement=[]
+        for var_name in substep_measurement_names:
+            substep_measurement.append(list(np.interp(time_intp, time, self.result[var_name])))
+        
+        return (substep_measurement_names,substep_measurement)
 
 class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
     """
@@ -313,7 +334,8 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
                  alpha=0.01,
                  nActions=11,
                  rf=None,
-                 p_g=None):
+                 p_g=None,
+                 n_substeps=15):
 
         logger.setLevel(log_level)
 
@@ -343,6 +365,9 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         else:
             self.p_g = p_g           
         assert len(self.p_g)==24, "Daily hourly energy price should be provided!!!"
+
+        # number of substeps to output
+        self.n_substeps=n_substeps
 
         # others
         self.viewer = None
