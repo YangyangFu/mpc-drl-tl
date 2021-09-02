@@ -347,7 +347,7 @@ class JModelicaCSSingleZoneTemperatureEnv(SingleZoneTemperatureEnv, FMI2CSEnv):
                  fmu_result_ncp=100.,
                  filter_flag=True,
                  alpha = 0.01,
-                 min_action = 18.,
+                 min_action = 12.,
                  max_action = 30.,
                  rf=None,
                  p_g=None,
