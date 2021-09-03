@@ -18,6 +18,7 @@ A paper plan for comparing MPC and DRL/TL in building control
   - [04/05/2021](#04052021)
   - [04/06/2021](#04062021)
   - [05/04/2021](#05042021)
+  - [09/03/2021](#09032021)
   
 
 
@@ -166,3 +167,15 @@ DRL vs MPC comparison matrix
    1. - MPC: get a control action:
    2. - RL: CPU time to compute Q value:
    3. - RL: CPU time to extract from Q an action:
+
+## 09/03/2021
+Comparison between MPC vs DRL case designs:
+
+1. literature review
+   1. what to compare
+   2. how to compare, such as how the problem is set up
+
+2. case design
+   1. influence of weights design in objective function for DRL and MPC 
+   2. training episode?
+
