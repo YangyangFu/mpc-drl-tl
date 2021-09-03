@@ -130,7 +130,7 @@ def test_ppo(args):
     net_a = Net(args.state_shape, hidden_sizes=args.hidden_sizes,
                 activation=nn.Tanh, device=args.device)
     actor = ActorProb(net_a, args.action_shape, max_action=args.max_action,
-                      unbounded=True, device=args.device).to(args.device)
+                      unbounded=False, device=args.device).to(args.device)
     net_c = Net(args.state_shape, hidden_sizes=args.hidden_sizes,
                 activation=nn.Tanh, device=args.device)
     critic = Critic(net_c, device=args.device).to(args.device)
