@@ -7,5 +7,4 @@ docker run^
 	  -v %CD%:/mnt/shared^
 	  -i^
       -t^
-	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/test_ppo_3000.py"
-
+	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/test_trpo_tianshou.py"
