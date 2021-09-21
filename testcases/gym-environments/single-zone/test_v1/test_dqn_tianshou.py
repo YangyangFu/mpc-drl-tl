@@ -46,7 +46,7 @@ def get_args(folder="experiment_results"):
     parser.add_argument('--training-num', type=int, default=1)
     parser.add_argument('--test-num', type=int, default=1)
 
-    parser.add_argument('--logdir', type=str, default='log')
+    parser.add_argument('--logdir', type=str, default='log_dqn')
     
     parser.add_argument(
         '--device', type=str,

@@ -33,11 +33,11 @@ def get_args(folder):
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--buffer-size', type=int, default=4096)
-    parser.add_argument('--hidden-sizes', type=int, nargs='*', default=[128,128,128,128])
+    parser.add_argument('--hidden-sizes', type=int, nargs='*', default=[128,128,128,128])#!!!
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--epoch', type=int, default=500)
-    parser.add_argument('--step-per-collect', type=int, default=2048)
+    parser.add_argument('--epoch', type=int, default=1000)
+    parser.add_argument('--step-per-collect', type=int, default=96*4)#!!!!!!!!!!!!!
     parser.add_argument('--repeat-per-collect', type=int, default=10)
     parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--training-num', type=int, default=1)
@@ -56,7 +56,7 @@ def get_args(folder):
     parser.add_argument('--value-clip', type=int, default=0)
     parser.add_argument('--norm-adv', type=int, default=0)
     parser.add_argument('--recompute-adv', type=int, default=1)
-    parser.add_argument('--logdir', type=str, default='log')
+    parser.add_argument('--logdir', type=str, default='log_ppo')
     parser.add_argument('--render', type=float, default=0.)
     parser.add_argument(
         '--device', type=str,
@@ -91,7 +91,7 @@ def make_building_env(args):
 
         #print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
 
-        res = penalty * 500.0 + cost*5e4
+        res = (penalty * 500.0 + cost*5e4)/1000.0#!!!!!!!!!!!!!!!!!!
         
         return res
 
@@ -134,6 +134,8 @@ def test_ppo(args):
     net_c = Net(args.state_shape, hidden_sizes=args.hidden_sizes,
                 activation=nn.Tanh, device=args.device)
     critic = Critic(net_c, device=args.device).to(args.device)
+
+    
     torch.nn.init.constant_(actor.sigma_param, -0.5)
     for m in list(actor.modules()) + list(critic.modules()):
         if isinstance(m, torch.nn.Linear):
@@ -147,7 +149,7 @@ def test_ppo(args):
         if isinstance(m, torch.nn.Linear):
             torch.nn.init.zeros_(m.bias)
             m.weight.data.copy_(0.01 * m.weight.data)
-
+    
     optim = torch.optim.Adam(list(actor.parameters()) + list(critic.parameters()), lr=args.lr)
 
     lr_scheduler = None
@@ -158,6 +160,8 @@ def test_ppo(args):
 
     def dist(*logits):
         return Independent(Normal(*logits), 1)
+
+    print(env.action_space)
 
     policy = PPOPolicy(actor, critic, optim, dist, discount_factor=args.gamma,
                        gae_lambda=args.gae_lambda, max_grad_norm=args.max_grad_norm,

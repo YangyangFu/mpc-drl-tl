@@ -7,5 +7,5 @@ exec docker run --runtime=nvidia -e NVIDIA_DRIVER_CAPABILITIES=compute,utility -
 	  -v `pwd`:/mnt/shared \
 	  -i \
       -t \
-	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/test_ddpg_tianshou.py"  
+	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/test_iqn_tianshou.py"  
 exit $

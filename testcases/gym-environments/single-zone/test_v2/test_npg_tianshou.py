@@ -1,30 +1,34 @@
+#!/usr/bin/env python3
+
+import argparse
+import datetime
 import os
+import pprint
+
 import gym_singlezone_jmodelica
 import gym
-import torch
-import pprint
-import datetime
-import argparse
 import numpy as np
-import time
+import torch
 from torch import nn
+from torch.distributions import Independent, Normal
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.tensorboard import SummaryWriter
-from torch.distributions import Independent, Normal
 
-from tianshou.policy import PPOPolicy
-from tianshou.utils import BasicLogger
-from tianshou.env import SubprocVectorEnv
-from tianshou.utils.net.common import Net
-from tianshou.trainer import onpolicy_trainer
-from tianshou.utils.net.continuous import ActorProb, Critic
 from tianshou.data import Collector, ReplayBuffer, VectorReplayBuffer
+from tianshou.env import SubprocVectorEnv
+from tianshou.policy import NPGPolicy
+from tianshou.trainer import onpolicy_trainer
+from tianshou.utils import TensorboardLogger
+from tianshou.utils.net.common import Net
+from tianshou.utils.net.continuous import ActorProb, Critic
+import time
+
 
 
 def get_args(folder):
 
     time_step = 15*60.0
-    num_of_days = 1#31
+    num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
 
     parser = argparse.ArgumentParser()
@@ -32,35 +36,32 @@ def get_args(folder):
     parser.add_argument('--time-step', type=float, default=time_step)
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--buffer-size', type=int, default=4096)
-    parser.add_argument('--hidden-sizes', type=int, nargs='*', default=[128,128,128,128])#!!!
-    parser.add_argument('--lr', type=float, default=3e-4)
+    parser.add_argument('--buffer-size', type=int, default=4096)#!!!!!!!!!!!
+    parser.add_argument(
+        '--hidden-sizes', type=int, nargs='*', default=[256,256,256,256]
+    )  # baselines [32, 32]
+    parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--epoch', type=int, default=3000)
-    parser.add_argument('--step-per-collect', type=int, default=96*4)#!!!!!!!!!!!!!
-    parser.add_argument('--repeat-per-collect', type=int, default=10)
-    parser.add_argument('--batch-size', type=int, default=64)
+    parser.add_argument('--epoch', type=int, default=500)#!!!!!!!!!!!!100
+    parser.add_argument('--step-per-collect', type=int, default=96*4)
+    parser.add_argument('--repeat-per-collect', type=int, default=1)
+    # batch-size >> step-per-collect means calculating all data in one singe forward.
+    parser.add_argument('--batch-size', type=int, default=99999)
     parser.add_argument('--training-num', type=int, default=1)
     parser.add_argument('--test-num', type=int, default=1)
-    # ppo special
+    # npg special
     parser.add_argument('--rew-norm', type=int, default=True)
-    # In theory, `vf-coef` will not make any difference if using Adam optimizer.
-    parser.add_argument('--vf-coef', type=float, default=0.25)
-    parser.add_argument('--ent-coef', type=float, default=0.0)
     parser.add_argument('--gae-lambda', type=float, default=0.95)
     parser.add_argument('--bound-action-method', type=str, default="clip")
     parser.add_argument('--lr-decay', type=int, default=True)
-    parser.add_argument('--max-grad-norm', type=float, default=0.5)
-    parser.add_argument('--eps-clip', type=float, default=0.2)
-    parser.add_argument('--dual-clip', type=float, default=None)
-    parser.add_argument('--value-clip', type=int, default=0)
-    parser.add_argument('--norm-adv', type=int, default=0)
-    parser.add_argument('--recompute-adv', type=int, default=1)
-    parser.add_argument('--logdir', type=str, default='log_ppo1')
+    parser.add_argument('--logdir', type=str, default='log_npg')
     parser.add_argument('--render', type=float, default=0.)
+    parser.add_argument('--norm-adv', type=int, default=1)
+    parser.add_argument('--optim-critic-iters', type=int, default=20)
+    parser.add_argument('--actor-step-size', type=float, default=0.1)
     parser.add_argument(
-        '--device', type=str,
-        default='cuda' if torch.cuda.is_available() else 'cpu')
+        '--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu'
+    )
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',
                         help='watch the play of pre-trained policy only')
@@ -107,19 +108,26 @@ def make_building_env(args):
                    rf = rw_func)
     return env
 
-def test_ppo(args):
+
+def test_npg(args):
     env = make_building_env(args)
     args.state_shape = env.observation_space.shape or env.observation_space.n
     args.action_shape = env.action_space.shape or env.action_space.n
     args.max_action = env.action_space.high[0]
     print("Observations shape:", args.state_shape)
     print("Actions shape:", args.action_shape)
-    print("Action range:", np.min(env.action_space.low),
-          np.max(env.action_space.high))
-
-    train_envs = SubprocVectorEnv([lambda: make_building_env(args) for _ in range(args.training_num)])
-    #test_envs = make_building_env(args)
-    test_envs = SubprocVectorEnv([lambda: make_building_env(args) for _ in range(args.test_num)])
+    print("Action range:", np.min(env.action_space.low), np.max(env.action_space.high))
+    # train_envs = gym.make(args.task)
+    train_envs = SubprocVectorEnv(
+        [lambda: make_building_env(args) for _ in range(args.training_num)], #norm_obs=True
+    )
+    # test_envs = gym.make(args.task)
+    test_envs = SubprocVectorEnv(
+        [lambda: make_building_env(args) for _ in range(args.test_num)],
+        #norm_obs=True,
+        obs_rms=train_envs.obs_rms,
+        update_obs_rms=False
+    )
 
     # seed
     np.random.seed(args.seed)
@@ -127,15 +135,26 @@ def test_ppo(args):
     train_envs.seed(args.seed)
     test_envs.seed(args.seed)
     # model
-    net_a = Net(args.state_shape, hidden_sizes=args.hidden_sizes,
-                activation=nn.Tanh, device=args.device)
-    actor = ActorProb(net_a, args.action_shape, max_action=args.max_action,
-                      unbounded=False, device=args.device).to(args.device)
-    net_c = Net(args.state_shape, hidden_sizes=args.hidden_sizes,
-                activation=nn.Tanh, device=args.device)
+    net_a = Net(
+        args.state_shape,
+        hidden_sizes=args.hidden_sizes,
+        activation=nn.Tanh,
+        device=args.device
+    )
+    actor = ActorProb(
+        net_a,
+        args.action_shape,
+        max_action=args.max_action,
+        unbounded=True,#!!!????
+        device=args.device
+    ).to(args.device)
+    net_c = Net(
+        args.state_shape,
+        hidden_sizes=args.hidden_sizes,
+        activation=nn.Tanh,
+        device=args.device
+    )
     critic = Critic(net_c, device=args.device).to(args.device)
-
-    
     torch.nn.init.constant_(actor.sigma_param, -0.5)
     for m in list(actor.modules()) + list(critic.modules()):
         if isinstance(m, torch.nn.Linear):
@@ -149,29 +168,38 @@ def test_ppo(args):
         if isinstance(m, torch.nn.Linear):
             torch.nn.init.zeros_(m.bias)
             m.weight.data.copy_(0.01 * m.weight.data)
-    
-    optim = torch.optim.Adam(list(actor.parameters()) + list(critic.parameters()), lr=args.lr)
 
+    optim = torch.optim.Adam(critic.parameters(), lr=args.lr)
     lr_scheduler = None
     if args.lr_decay:
         # decay learning rate to 0 linearly
-        max_update_num = np.ceil(args.step_per_epoch / args.step_per_collect) * args.epoch
-        lr_scheduler = LambdaLR(optim, lr_lambda=lambda epoch: 1 - epoch / max_update_num)
+        max_update_num = np.ceil(
+            args.step_per_epoch / args.step_per_collect
+        ) * args.epoch
+
+        lr_scheduler = LambdaLR(
+            optim, lr_lambda=lambda epoch: 1 - epoch / max_update_num
+        )
 
     def dist(*logits):
         return Independent(Normal(*logits), 1)
 
-    print(env.action_space)
-
-    policy = PPOPolicy(actor, critic, optim, dist, discount_factor=args.gamma,
-                       gae_lambda=args.gae_lambda, max_grad_norm=args.max_grad_norm,
-                       vf_coef=args.vf_coef, ent_coef=args.ent_coef,
-                       reward_normalization=args.rew_norm, action_scaling=True,
-                       action_bound_method=args.bound_action_method,
-                       lr_scheduler=lr_scheduler, action_space=env.action_space,
-                       eps_clip=args.eps_clip, value_clip=args.value_clip,
-                       dual_clip=args.dual_clip, advantage_normalization=args.norm_adv,
-                       recompute_advantage=args.recompute_adv)
+    policy = NPGPolicy(
+        actor,
+        critic,
+        optim,
+        dist,
+        discount_factor=args.gamma,
+        gae_lambda=args.gae_lambda,
+        reward_normalization=args.rew_norm,
+        action_scaling=True,
+        action_bound_method=args.bound_action_method,
+        lr_scheduler=lr_scheduler,
+        action_space=env.action_space,
+        advantage_normalization=args.norm_adv,
+        optim_critic_iters=args.optim_critic_iters,
+        actor_step_size=args.actor_step_size
+    )
 
     # load a previous policy
     if args.resume_path:
@@ -187,11 +215,11 @@ def test_ppo(args):
     test_collector = Collector(policy, test_envs)
     # log
     t0 = datetime.datetime.now().strftime("%m%d_%H%M%S")
-    log_file = f'seed_{args.seed}_{t0}-{args.task.replace("-", "_")}_ppo'
-    log_path = os.path.join(args.logdir, args.task, 'ppo', log_file)
+    log_file = f'seed_{args.seed}_{t0}-{args.task.replace("-", "_")}_npg'
+    log_path = os.path.join(args.logdir, args.task, 'npg', log_file)
     writer = SummaryWriter(log_path)
     writer.add_text("args", str(args))
-    logger = BasicLogger(writer, update_interval=100, train_interval=100)
+    logger = TensorboardLogger(writer, update_interval=100, train_interval=100)
 
     def save_fn(policy):
         torch.save(policy.state_dict(), os.path.join(log_path, 'policy.pth'))
@@ -199,10 +227,19 @@ def test_ppo(args):
     if not args.watch:
         # trainer
         result = onpolicy_trainer(
-            policy, train_collector, test_collector, args.epoch, args.step_per_epoch,
-            args.repeat_per_collect, args.test_num, args.batch_size,
-            step_per_collect=args.step_per_collect, save_fn=save_fn, logger=logger,
-            test_in_train=False)
+            policy,
+            train_collector,
+            test_collector,
+            args.epoch,
+            args.step_per_epoch,
+            args.repeat_per_collect,
+            args.test_num,
+            args.batch_size,
+            step_per_collect=args.step_per_collect,
+            save_fn=save_fn,
+            logger=logger,
+            test_in_train=False
+        )
         pprint.pprint(result)
 
     def watch():
@@ -227,18 +264,14 @@ def test_ppo(args):
 
 
 if __name__ == '__main__':
-    
-    folder='./ppo_results_3000'
+    folder='./npg_results'
     if not os.path.exists(folder):
         os.mkdir(folder)
-    args = get_args(folder=folder)
-    
-    start = time.time()
-    test_ppo(args)
-    end = time.time()
 
-    # save training statistics
-    statistics = {"training time":end-start, 
-                    "episode": args.epoch}
-    with open('statistics_3000.json', 'w') as fp:
-        json.dump(statistics,fp)
+    start = time.time()
+    print("Begin time {}".format(start))
+
+    test_npg(get_args(folder))
+
+    end = time.time()
+    print("Total execution time {:.2f} seconds".format(end-start))
