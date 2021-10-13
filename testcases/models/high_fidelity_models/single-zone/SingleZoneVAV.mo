@@ -1145,7 +1145,8 @@ First implementation.
     extends Modelica.Icons.BasesPackage;
     model Room "Room model for test case"
       extends Buildings.Air.Systems.SingleZone.VAV.Examples.BaseClasses.Room(
-        roo(use_C_flow=true, nPorts=6),
+        roo(use_C_flow=true,
+          mSenFac=4,         nPorts=6),
         sinInf(use_C_in=true),
         TRooAir(unit="K"));
       Modelica.Blocks.Math.Gain gaiCO2Gen(k=2)
