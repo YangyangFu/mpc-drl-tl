@@ -12,6 +12,9 @@ TAG_CPU_PY3 = cpu_py3
 TAG_GPU_PY2 = gpu_py2
 TAG_GPU_PY3 = gpu_py3
 
+build:
+	docker build --no-cache --rm -t ${IMA_NAME} .
+
 build_cpu_py2:
 	docker build -f ${DOCKERFILE_CPU_PY2} --no-cache --rm -t ${IMA_NAME} .
 

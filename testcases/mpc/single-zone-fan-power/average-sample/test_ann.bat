@@ -8,4 +8,3 @@ docker run --name fmuc^
 	  -i^
       -t^
 	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/test_ann.py"
-

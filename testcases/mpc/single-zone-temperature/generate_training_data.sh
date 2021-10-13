@@ -7,6 +7,7 @@
 	  --rm \
 	  -v `pwd`:/mnt/shared \
 	  -i \
-          -t \
-	  fncs /bin/bash -c "cd /mnt/shared && python /mnt/shared/generate_training_data.py"
+      -t \
+	  fncs /bin/bash -c\ 
+	  "source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/generate_training_data.py"
     exit $
