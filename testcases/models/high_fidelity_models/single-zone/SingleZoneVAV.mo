@@ -888,7 +888,8 @@ First implementation.
     BaseClasses.Room  zon(
       redeclare package MediumA = MediumA,
         mAir_flow_nominal=0.75,
-        lat=weaDat.lat) "Thermal envelope of single zone"
+        lat=weaDat.lat,
+      roo(mSenFac=4))   "Thermal envelope of single zone"
       annotation (Placement(transformation(extent={{40,-20},{80,20}})));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
         computeWetBulbTemperature=false, filNam=
@@ -981,12 +982,12 @@ First implementation.
     Modelica.Blocks.Sources.Step     uExt(
       height=-0.25,
       offset=0.5,
-      startTime=212*24*3600 + 13*3600)
+      startTime=212*24*3600 + 14*3600)
       annotation (Placement(transformation(extent={{-100,80},{-80,100}})));
     FaultInjection.Utilities.InsertionTypes.Generic.faultMode faultMode(
       active=true,
       startTime=212*24*3600 + 12*3600,
-      endTime=212*24*3600 + 12*3600 + 2*3600,
+      endTime=212*24*3600 + 12*3600 + 4*3600,
       maximum=1)
       annotation (Placement(transformation(extent={{-60,100},{-40,120}})));
     Buildings.Controls.SetPoints.OccupancySchedule occSch
