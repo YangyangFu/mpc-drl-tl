@@ -7,5 +7,5 @@
 	  -v `pwd`:/mnt/shared \
 	  -i \
           -t \
-	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/compile_fmu.py"
+	  mpcdrl /bin/bash -c "cd /mnt/shared && python2 /mnt/shared/compile_fmu.py"
     exit $

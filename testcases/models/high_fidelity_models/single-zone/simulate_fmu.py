@@ -32,7 +32,7 @@ options = fmu.simulate_options()
 options['filter']=['uFan','TRoo','hvac.uFan']
 options['result_handling']="memory" #"memory"
 
-options['ncp'] = 100.
+options['ncp'] = 100
 
 # initialize output
 y = []
@@ -48,7 +48,7 @@ print('Inputs: {0}'.format(input_names))
 initialize = True
 
 ts = startTime
-tic = time.clock()
+tic = time.process_time()
 while ts < endTime:
     # settings
     te = ts + dt
@@ -67,7 +67,7 @@ while ts < endTime:
 
     # get results
 
-toc = time.clock()
+toc = time.process_time()
 
 print ('Finish simulation in:' + str(toc-tic)+" second(s)")
 
