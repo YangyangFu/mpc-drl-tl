@@ -8,7 +8,7 @@ USER root
 ### install env for OPC: optimizer, nonlinear system identifier
 RUN conda update conda && \
     conda config --add channels conda-forge && \
-    conda install casadi scikit-learn 
+    conda install casadi scikit-learn matplotlib
 
 #### ====================================================================================
 ### Install DRL-related
@@ -21,9 +21,9 @@ RUN pip install pvlib
 WORKDIR $HOME
 RUN cd $HOME/github && pip install git+https://github.com/thu-ml/tianshou.git@master --upgrade
 
-### Install DRL algorithm - StableBaseline3 in case tianshou is not working
-WORKDIR $HOME
-RUN pip install stable-baselines3
+### Install DRL algorithm - StableBaseline3 in case tianshou is not working - discarded 
+#WORKDIR $HOME
+#RUN pip install stable-baselines3
 
 ### =======================================================================================
 ### intall customized gym environment into docker: install a building control environment
@@ -38,6 +38,10 @@ WORKDIR $HOME
 COPY ./testcases/gym-environments/single-zone-temperature/gym_singlezone_temperature $HOME/github/testcases/gym-environments/single-zone-temperature/gym_singlezone_temperature
 COPY ./testcases/gym-environments/single-zone-temperature/setup.py $HOME/github/testcases/gym-environments/single-zone-temperature/setup.py
 RUN cd $HOME/github/testcases/gym-environments/single-zone-temperature && pip install -e .
+
+### =================================================================================
+# Install Modelica dependency
+COPY ./library /usr/local/JModelica/ThirdParty/MSL
 
 ### =========================================================================================
 # change user
