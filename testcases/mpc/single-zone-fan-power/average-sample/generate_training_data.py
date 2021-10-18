@@ -17,7 +17,7 @@ import pandas as pd
 
 
 # simulate setup - 181-212 for july; 212-243 for August
-time_stop = 1*24*3600.  
+time_stop = 31*24*3600.  
 ts = 212*24*3600.
 te = ts + time_stop
 
@@ -37,11 +37,11 @@ def excite_fan(time):
     for i in time:
         h = int((i%86400)/3600)
         if h<6:
-             y[j] = 0.1
+             y[j] = 0.
         elif h<19:
             y[j] = uniform(0,1) 
         else:
-            y[j] = 0.1         
+            y[j] = 0.         
         j+=1
     return y
 

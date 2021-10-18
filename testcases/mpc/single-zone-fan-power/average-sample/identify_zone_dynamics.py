@@ -10,10 +10,47 @@ from scipy.optimize import curve_fit
 import json
 from model import Zone
 
-data = pd.read_csv('Tz_core_data.csv',index_col=[0])
+# ============================================================
+## prepare data for zone temperature prediction
+# ============================================================
+def prepare_zone_data(data, lz, lo):
+    zone_temp_name = "T_roo"
+    Tz_his = pd.DataFrame(data[zone_temp_name]-273.15)
+    for i in range(lz):
+        Tz_his['Tz_'+str(i+1)] = Tz_his[zone_temp_name].values
+        shift = Tz_his['Tz_'+str(i+1)].shift(periods=i+1)
+        Tz_his['Tz_'+str(i+1)]=shift.values
+    Tz_his['time'] = data.index
+    Tz_his['Tz'] = data[zone_temp_name]-273.15
+    Tz_his=Tz_his.drop(columns=[zone_temp_name])
+
+    oa_name = 'T_oa'
+    To_his = pd.DataFrame(data[oa_name]-273.15)
+
+    for i in range(lo):
+        To_his['To_'+str(i+1)] = To_his[oa_name].values
+        shift = To_his['To_'+str(i+1)].shift(periods=i+1)
+        To_his['To_'+str(i+1)]=shift.values
+    To_his=To_his.drop(columns=[oa_name])
+
+    # combine them and return
+    return pd.concat([Tz_his,To_his],axis=1)
+
+# load overall data
+data = pd.read_csv('train_data.csv',index_col=[0])
+# delays settings
+lz=4
+lo=4
+# zone
+Tz_data = prepare_zone_data(data,lz,lo)
+Tz_data['mz'] = data['mass_flow']
+Tz_data['Tsa'] = data['T_sa'] - 273.15
+Tz_data.dropna(inplace=True)
+data=Tz_data
+print(Tz_data['Tsa'])
 
 # split training and testing
-ratio = 0.8
+ratio = 0.67
 n_train = int(ratio*len(data))
 data_train = data.iloc[:n_train,:]
 data_test = data.iloc[n_train:,:]
@@ -92,7 +129,7 @@ plt.plot(ypred_test-y_test, 'b-', label='Prediction Errors in Testing')
 plt.ylabel('Error (C)')
 plt.legend()
 
-plt.savefig('TZone.pdf')
+plt.savefig('TZone_ARX.pdf')
 
 
 # export model parameter
@@ -100,5 +137,5 @@ popt_zone = {'alpha':list(popt[:lz]),
             'beta':list(popt[lz:lz+lo]),
             'gamma':popt[lz+lo]}
 
-with open('zone.json', 'w') as fp:
+with open('zone_arx.json', 'w') as fp:
     json.dump(popt_zone, fp)
