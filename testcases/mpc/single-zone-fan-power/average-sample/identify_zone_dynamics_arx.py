@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
 import json
 from model import Zone
 
@@ -44,20 +46,16 @@ lo=4
 # zone
 Tz_data = prepare_zone_data(data,lz,lo)
 Tz_data['mz'] = data['mass_flow']
-Tz_data['Tsa'] = data['T_sa'] - 273.15
+Tz_data['Tsa'] = 13#data['T_sa'] - 273.15
 Tz_data.dropna(inplace=True)
 data=Tz_data
-print(Tz_data['Tsa'])
+#print(Tz_data['Tsa'])
 
 # split training and testing
-ratio = 0.67
+ratio = 0.8
 n_train = int(ratio*len(data))
 data_train = data.iloc[:n_train,:]
 data_test = data.iloc[n_train:,:]
-
-# model settings
-lz = 4
-lo = 4
 
 # fit a zone temperature model
 zone = Zone(Lz=lz, Lo=lo)
@@ -79,7 +77,7 @@ def predict(zone,Tz_mea_his, To_mea_his, mz, Ts, params):
         # update historical Tz prediction for next step
         Tz_t_his_pred =np.append(Tz_t_his_pred,Tz_t_pred)[1:]
 
-        # update prediction overall
+        # update prediction histories
         Tz_pred.append(Tz_t_pred)
 
         # update step
@@ -95,8 +93,7 @@ def func_TZone(x,alpha1,alpha2,alpha3,alpha4,beta1,beta2,beta3,beta4,gamma):
     Ts = x[:,lz+lo+1]
     params = {'alpha':alpha, 'beta':beta, 'gamma':gamma}
     y = predict(zone,Tz_his, To_his, mz, Ts, params)
-    print (y)
-    print (y.shape)
+
     return y
 
 # represent data in np.array
@@ -139,3 +136,25 @@ popt_zone = {'alpha':list(popt[:lz]),
 
 with open('zone_arx.json', 'w') as fp:
     json.dump(popt_zone, fp)
+
+# export prediction performance
+##  performance
+def nrmse(y,ypred):
+      mse = mean_squared_error(y,ypred)
+      return np.sqrt(np.sum(mse))/np.mean(y+1e-06)
+
+r2_train = r2_score(y_train,ypred_train)
+mse_train = mean_squared_error(y_train,ypred_train)
+error_mean_train = np.mean(ypred_train-y_train)
+nrmse_train = nrmse(y_train, ypred_train)
+
+r2_test = r2_score(y_test,ypred_test)
+mse_test = mean_squared_error(y_test,ypred_test)
+error_mean_test = np.mean(ypred_test-y_test)
+nrmse_test = nrmse(y_test, ypred_test)
+
+accuracy = {'test':{'r2':r2_test,'mse':mse_test, 'nrmse':nrmse_test, 'error_mean':error_mean_test}, 
+            'train':{'r2':r2_train,'mse':mse_train, 'nrmse':nrmse_train, 'error_mean':error_mean_train}}
+
+with open('zone_arx_accuracy.json', 'w') as json_file:
+      json.dump(accuracy,json_file)
