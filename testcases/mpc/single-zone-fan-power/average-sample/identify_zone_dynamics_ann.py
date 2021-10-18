@@ -84,8 +84,8 @@ pipe = Pipeline(steps)
 
 # Fifth, perform model selection using grid search to find the best trained ANN model
 estimator = GridSearchCV(pipe,
-                   param_grid={'reg__alpha':[1e-4,1e-3],
-                                'reg__hidden_layer_sizes':[(128),(128,128),(128,128,128)],
+                   param_grid={'reg__alpha':[1e-4,1e-3,1e-2],
+                                'reg__hidden_layer_sizes':[(128),(128,128)],
                                'reg__activation':['relu']},
                    cv=5,scoring='neg_mean_squared_error')
 
