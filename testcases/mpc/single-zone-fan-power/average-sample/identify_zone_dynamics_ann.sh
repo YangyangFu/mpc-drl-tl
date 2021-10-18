@@ -7,5 +7,5 @@ exec docker run \
 	  -v `pwd`:/mnt/shared \
 	  -i \
       -t \
-	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/TZone_identification_ANN.py"  
+	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/identify_zone_dynamics_ann.py"  
 exit $

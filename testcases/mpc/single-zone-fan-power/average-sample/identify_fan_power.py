@@ -85,7 +85,7 @@ plt.plot(ypred_test-y_test, 'b-', label='Prediction Errors in Testing')
 plt.ylabel('Error (W)')
 plt.legend()
 
-plt.savefig('Power.pdf')
+plt.savefig('power.pdf')
 
 
 ### check robustness
@@ -104,7 +104,7 @@ plt.savefig('fan-power-fit.pdf')
 ### export model parameter
 popt_zone = {'alpha':list(popt)}
 
-with open('Power.json', 'w') as fp:
+with open('power.json', 'w') as fp:
     json.dump(popt_zone, fp)
 
 # Look at the accuracy
