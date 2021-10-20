@@ -74,7 +74,7 @@ scaler = StandardScaler().fit(X_train)
 # Dimension reduction
 
 # Second, create a ANN estimator
-ann = MLPRegressor(solver='adam',alpha=0.01,max_iter=1000)
+ann = MLPRegressor(solver='adam',alpha=0.01,max_iter=10000)
 
 # Third, create steps
 steps = [('normalize',scaler),('reg',ann)]
@@ -86,7 +86,7 @@ pipe = Pipeline(steps)
 estimator = GridSearchCV(pipe,
                    param_grid={'reg__alpha':[1e-4,1e-3,1e-2],
                                 'reg__hidden_layer_sizes':[(128),(128,128)],
-                               'reg__activation':['relu']},
+                               'reg__activation':['logistic','relu','tanh']},
                    cv=5,scoring='neg_mean_squared_error')
 
 # fit the model using grid searching validation
