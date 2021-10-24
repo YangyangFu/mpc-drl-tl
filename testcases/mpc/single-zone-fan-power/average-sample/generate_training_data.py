@@ -17,7 +17,7 @@ import pandas as pd
 
 
 # simulate setup - 181-212 for july; 212-243 for August
-time_stop = 30*24*3600.  
+time_stop = 31*24*3600.  
 ts = 212*24*3600.
 te = ts + time_stop
 
@@ -25,7 +25,7 @@ te = ts + time_stop
 fmu_name = "SingleZoneDamperControl.fmu"
 fmu = load_fmu(fmu_name)
 options = fmu.simulate_options()
-options['ncp'] = 10000.
+options['ncp'] = 10000
 
 # excite signal: - generator for exciting signals
 def uniform(a,b):
@@ -37,11 +37,11 @@ def excite_fan(time):
     for i in time:
         h = int((i%86400)/3600)
         if h<6:
-             y[j] = 0.1
+             y[j] = 0.
         elif h<19:
             y[j] = uniform(0,1) 
         else:
-            y[j] = 0.1         
+            y[j] = 0.         
         j+=1
     return y
 
@@ -52,22 +52,21 @@ spe_sig = excite_fan(time_arr)
 
 
 # input
-input_names = fmu.get_model_variables(causality=2).keys()
-
-input_trac = np.transpose(np.vstack((time_arr.flatten(),spe_sig.flatten())))
-input_object = (input_names,input_trac)
+input_trac = np.transpose(np.vstack((time_arr,spe_sig)))
+input_object = ('uFan',input_trac)
 
 # simulate fmu
 res = fmu.simulate(start_time=ts,
                     final_time=te, 
-                    options=options,
-                    input = input_object)
+                    input=input_object,
+                    options=options)
 
 # what data do we need??
 tim = res['time']
 spe = res['uFan']
 flo = res['hvac.fanSup.m_flow_in']
 Toa = res['TOut']
+Tsa = res['hvac.TSup']
 TRoo = res['TRoo']
 PTot = res['PTot']
 
@@ -75,6 +74,7 @@ PTot = res['PTot']
 train_data = pd.DataFrame({'speed':np.array(spe),
                             'mass_flow':np.array(flo),
                             'T_oa':np.array(Toa),
+                            'T_sa':np.array(Tsa),
                             'T_roo':np.array(TRoo),
                             'P_tot':np.array(PTot)}, index=tim)
 

@@ -1,4 +1,4 @@
-exec docker run --runtime=nvidia -e NVIDIA_DRIVER_CAPABILITIES=compute,utility -e NVIDIA_VISIBLE_DEVICES=7\
+exec docker run \
       --user=root \
 	  --detach=false \
 	  -e DISPLAY=${DISPLAY} \
@@ -7,6 +7,6 @@ exec docker run --runtime=nvidia -e NVIDIA_DRIVER_CAPABILITIES=compute,utility -
 	  -v `pwd`:/mnt/shared \
 	  -i \
       -t \
-	  mpcdrl /bin/bash -c \ 
+	  mpcdrl /bin/bash -c \
 	  "source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/test_ddqn_tianshou.py"  
 exit $
