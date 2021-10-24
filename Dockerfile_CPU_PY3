@@ -18,7 +18,8 @@ RUN conda update conda && \
          casadi \
          tianshou \
          matplotlib \
-         pvlib-python && \
+         pvlib-python \
+         joblib && \
     conda clean -ya
 
 ## install fmu-gym
