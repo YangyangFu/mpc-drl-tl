@@ -52,7 +52,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 #    python-opengl 
 
 # Install pytorch gpu version
-RUN conda install pytorch torchvision torchaudio cudatoolkit=10.1 -c pytorch
+RUN conda install pytorch torchvision torchaudio cudatoolkit=10.1 -c pytorch &&\
+    conda clean -ya
 
 ### ====================================================================================
 ## install env for OPC: optimizer, nonlinear system identifier
