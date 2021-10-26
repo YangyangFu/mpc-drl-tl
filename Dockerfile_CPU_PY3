@@ -4,10 +4,10 @@ LABEL maintainer yangyangfu(yangyang.fu@tamu.edu)
 # root 
 USER root
 
-# update: for pytorch cpu/gpu
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    python-opengl 
+# update: for pytorch cpu/gpu - no need if no render
+# RUN apt-get update && \
+#    apt-get install -y --no-install-recommends \
+#    python-opengl 
 
 ### ====================================================================================
 ## install env for OPC: optimizer, nonlinear system identifier
