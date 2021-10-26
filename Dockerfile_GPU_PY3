@@ -64,7 +64,8 @@ RUN conda update conda && \
     casadi \
     tianshou \
     matplotlib \
-    pvlib-python && \
+    pvlib-python \
+    joblib && \
     conda clean -ya
 
 ## install fmu-gym
@@ -85,6 +86,11 @@ WORKDIR $HOME
 COPY ./testcases/gym-environments/single-zone-temperature/gym_singlezone_temperature $HOME/github/testcases/gym-environments/single-zone-temperature/gym_singlezone_temperature
 COPY ./testcases/gym-environments/single-zone-temperature/setup.py $HOME/github/testcases/gym-environments/single-zone-temperature/setup.py
 RUN cd $HOME/github/testcases/gym-environments/single-zone-temperature && pip install -e .
+
+### ===========================================================================================
+### install testcase dependency
+# install Modelica dependency
+COPY ./library /usr/local/JModelica/ThirdParty/MSL
 
 ### =============================
 USER developer

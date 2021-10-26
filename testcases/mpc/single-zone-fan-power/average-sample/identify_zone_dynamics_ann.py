@@ -54,8 +54,6 @@ Tz_data['mz'] = data['mass_flow']
 Tz_data.dropna(inplace=True)
 data=Tz_data
 
-
-
 # split traing and testing data
 ratio = 0.8
 n_train = int(ratio*len(data))

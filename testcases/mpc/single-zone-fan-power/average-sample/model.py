@@ -43,12 +43,11 @@ class Zone():
             gamma = params['gamma'] # list
 
         # check data dimensions
-        if int(self.Lz) != len(alpha) or int(self.Lz) != len(Tz_his_meas):
+        if int(self.Lz) != len(alpha) or int(self.Lz) != len(np.array(Tz_his_meas)):
             raise ValueError("The delayed step 'l' is not equal to the size of historical zone temperature or the length of coefficient 'alpha'.")
-        if int(self.Lo) != len(beta) or int(self.Lo) != len(To_his_meas):
+        if int(self.Lo) != len(beta) or int(self.Lo) != len(np.array(To_his_meas)):
             raise ValueError("The delayed step 'l' is not equal to the size of historical zone temperature or the length of coefficient 'alpha'.")
         # check data type ?/
-        
         Tz_pred = np.sum(np.array(alpha)*np.array(Tz_his_meas)) + np.sum(np.array(beta)*np.array(To_his_meas)) + gamma*mz*(Tsa-Tz_his_meas[-1])
 
         return float(Tz_pred)
@@ -99,9 +98,9 @@ class Zone():
 class FanPower():
     """Polynominal model for AHU fan power prediction
     """
-    def __init__(self, n=2, json_file=""):
+    def __init__(self, n=4, json_file=""):
         """ initialize model
-        :param n: order of the polynomial equation. default to 2
+        :param n: number of the polynomial equation. default to 2
         :type n: int, optional
         :param json_file: file path of the parameters in json file. Used for MPC function calling. defaults to " "
         :type json_file: str, optional
@@ -127,14 +126,14 @@ class FanPower():
             alpha = params['alpha'] # list
 
         # check data dimensions
-        if int(self.n+1) != len(alpha):
+        if int(self.n) != len(alpha):
             raise ValueError("The specified polynomial equation order is not equal to the length of coefficient 'alpha'.")
 
         # check data type ?/
 
         # calculate power
         p = 0
-        for i in range(self.n+1):
+        for i in range(self.n):
             p += alpha[i]*mz**i
         
         return p 
