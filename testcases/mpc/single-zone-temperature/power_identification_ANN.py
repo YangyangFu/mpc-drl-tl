@@ -8,7 +8,7 @@ from sklearn.metrics import r2_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler
-from sklearn.externals import joblib
+import joblib
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
 import pandas as pd
@@ -21,7 +21,6 @@ import json
 # #############################################################################
 #read data for the systems
 # define the path
-
 
 data = pd.read_csv('train_data.csv',index_col=[0])
 index= data.index.values.astype('int')
@@ -67,7 +66,7 @@ scaler = StandardScaler().fit(X_train)
 # Dimension reduction
 
 # Second, create a ANN estimator
-ann = MLPRegressor(solver='lbfgs',alpha=0.001,hidden_layer_sizes=(200,))
+ann = MLPRegressor(solver='lbfgs',alpha=0.001,hidden_layer_sizes=(200,),max_iter=10000)
 
 # Third, create steps
 steps = [('normalize',scaler),('reg',ann)]
@@ -139,10 +138,5 @@ plt.legend()
 
 plt.savefig('power.pdf')
 
-
 # save the model
 joblib.dump(estimator,'powerANN.pkl')
-
-
-
-

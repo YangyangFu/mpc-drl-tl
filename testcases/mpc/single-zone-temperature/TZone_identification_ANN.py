@@ -5,7 +5,7 @@ from sklearn.metrics import r2_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler
-from sklearn.externals import joblib
+import joblib
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
 import pandas as pd
@@ -18,7 +18,6 @@ import json
 # #############################################################################
 #read data for the systems
 # define the path
-
 
 data = pd.read_csv('train_data.csv',index_col=[0])
 
@@ -36,7 +35,7 @@ data=pd.concat([data,Tz_his],axis=1)
 data.dropna(inplace=True)
 data.to_csv('prepared_data_tzone.csv')
 
-print data
+print(data)
 #X= data[['T_roo_1','T_roo_2','T_roo_3','T_roo_4','T_roo_5','T_roo_6','T_roo_7','T_roo_8','mass_flow','T_oa']].values
 X= data[['T_roo_1','T_roo_2','T_roo_3','T_roo_4','T_set','T_oa']].values
 #X= data[['T_roo_1','mass_flow','T_oa']].values
@@ -46,8 +45,8 @@ y= data['T_roo'].values
 X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2)
 
-print X_train
-print y_train
+print(X_train)
+print(y_train)
 
 # #############################################################################
 # Fit regression model
@@ -57,7 +56,7 @@ scaler = StandardScaler().fit(X_train)
 # Dimension reduction
 
 # Second, create a ANN estimator
-ann = MLPRegressor(solver='lbfgs',alpha=0.001)
+ann = MLPRegressor(solver='lbfgs',alpha=0.001,max_iter=10000)
 
 # Third, create steps
 steps = [('normalize',scaler),('reg',ann)]
@@ -85,7 +84,6 @@ print("ANN prediction for %d inputs in %.3f s"
       % (X_test.shape[0], ann_predict))
 # #############################################################################
 # train  
-
 
 # Look at the accuracy
 r2 = r2_score(y_test,y_ann)
@@ -123,10 +121,5 @@ plt.legend()
 
 plt.savefig('TZone.pdf')
 
-
 # save the model
 joblib.dump(estimator,'TZoneANN.pkl')
-
-
-
-
