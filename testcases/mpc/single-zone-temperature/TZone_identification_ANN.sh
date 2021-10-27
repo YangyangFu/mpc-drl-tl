@@ -7,5 +7,5 @@
 	  -v `pwd`:/mnt/shared \
 	  -i \
       -t \
-	  mpcdrl /bin/bash -c "source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/TZone_identification_ANN.py"
+	  yangyangfu/mpcdrl:cpu_py2  /bin/bash -c "cd /mnt/shared && python /mnt/shared/TZone_identification_ANN.py"
     exit $
