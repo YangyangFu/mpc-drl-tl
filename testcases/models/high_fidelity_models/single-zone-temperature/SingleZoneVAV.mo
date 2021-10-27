@@ -41,7 +41,8 @@ package SingleZoneVAV
     BaseClasses.Room  zon(
       redeclare package MediumA = MediumA,
         mAir_flow_nominal=0.75,
-        lat=weaDat.lat) "Thermal envelope of single zone"
+        lat=weaDat.lat,
+      roo(mSenFac=4))   "Thermal envelope of single zone"
       annotation (Placement(transformation(extent={{40,-20},{80,20}})));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
         computeWetBulbTemperature=false, filNam=
@@ -132,6 +133,8 @@ package SingleZoneVAV
     Buildings.Controls.SetPoints.OccupancySchedule occSch
       "Occupancy schedule"
       annotation (Placement(transformation(extent={{-140,80},{-120,100}})));
+    Modelica.Blocks.Sources.Constant zer(k=0)
+      annotation (Placement(transformation(extent={{-100,-120},{-80,-100}})));
   equation
     connect(weaDat.weaBus, weaBus) annotation (Line(
         points={{-140,130},{-108,130}},
@@ -141,8 +144,6 @@ package SingleZoneVAV
         index=1,
         extent={{6,3},{6,3}}));
 
-    connect(con.yHea, hvac.uHea) annotation (Line(points={{-79,6},{-56,6},{-56,
-            12},{-42,12}},             color={0,0,127}));
     connect(con.yCooCoiVal, hvac.uCooVal) annotation (Line(points={{-79,0},{-54,0},
             {-54,5},{-42,5}},             color={0,0,127}));
     connect(con.yOutAirFra, hvac.uEco) annotation (Line(points={{-79,3},{-50,3},{
@@ -235,6 +236,8 @@ package SingleZoneVAV
             -40},{-150,-10},{-142,-10}}, color={0,0,127}));
     connect(occSch.occupied, con.uOcc) annotation (Line(points={{-119,84},{-106,
             84},{-106,9},{-104,9}}, color={255,0,255}));
+    connect(zer.y, hvac.uHea) annotation (Line(points={{-79,-110},{-56,-110},{
+            -56,12},{-42,12}}, color={0,0,127}));
     annotation (
       experiment(
         StartTime=18316800,
@@ -319,12 +322,13 @@ First implementation.
     BaseClasses.Room  zon(
       redeclare package MediumA = MediumA,
         mAir_flow_nominal=0.75,
-        lat=weaDat.lat) "Thermal envelope of single zone"
+        lat=weaDat.lat,
+      roo(mSenFac=4))   "Thermal envelope of single zone"
       annotation (Placement(transformation(extent={{40,-20},{80,20}})));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
         computeWetBulbTemperature=false, filNam=
-        Modelica.Utilities.Files.loadResource(
-            "Resources/weatherdata/USA_CA_Riverside.Muni.AP.722869_TMY3.mos"))
+          ModelicaServices.ExternalReferences.loadResource(
+          "modelica://Buildings/Resources/weatherdata/DRYCOLD.mos"))
       annotation (Placement(transformation(extent={{-160,120},{-140,140}})));
 
     Buildings.BoundaryConditions.WeatherData.Bus weaBus "Weather data bus"
@@ -384,17 +388,21 @@ First implementation.
       description="Room air CO2 concentration") "CO2 concentration of room air"
       annotation (Placement(transformation(extent={{120,-40},{140,-20}})));
 
-    Modelica.Blocks.Interfaces.RealOutput TRoo
+    Modelica.Blocks.Interfaces.RealOutput TRoo(
+       final unit="K",
+       displayUnit="degC")
       "Connector of Real output signal"
       annotation (Placement(transformation(extent={{160,-10},{180,10}})));
     Modelica.Blocks.Interfaces.RealOutput CO2Roo
       "Connector of Real output signal"
       annotation (Placement(transformation(extent={{160,-40},{180,-20}})));
-    Modelica.Blocks.Math.MultiSum PHVAC(nu=3)
+    Modelica.Blocks.Math.MultiSum PHVAC(nu=4)
       annotation (Placement(transformation(extent={{126,34},{138,46}})));
     Modelica.Blocks.Interfaces.RealOutput PTot
       annotation (Placement(transformation(extent={{160,30},{180,50}})));
-    Modelica.Blocks.Interfaces.RealOutput TOut
+    Modelica.Blocks.Interfaces.RealOutput TOut(
+      final unit="K",
+      displayUnit="degC")
       annotation (Placement(transformation(extent={{160,-70},{180,-50}})));
     Modelica.Blocks.Interfaces.RealOutput GHI
       annotation (Placement(transformation(extent={{160,-90},{180,-70}})));
@@ -413,6 +421,8 @@ First implementation.
     Buildings.Controls.SetPoints.OccupancySchedule occSch
       "Occupancy schedule"
       annotation (Placement(transformation(extent={{-140,80},{-120,100}})));
+    Modelica.Blocks.Sources.Constant zer(k=0)
+      annotation (Placement(transformation(extent={{-100,-120},{-80,-100}})));
   equation
     connect(weaDat.weaBus, weaBus) annotation (Line(
         points={{-140,130},{-108,130}},
@@ -422,8 +432,6 @@ First implementation.
         index=1,
         extent={{6,3},{6,3}}));
 
-    connect(con.yHea, hvac.uHea) annotation (Line(points={{-79,6},{-56,6},{-56,
-            12},{-42,12}},             color={0,0,127}));
     connect(con.yCooCoiVal, hvac.uCooVal) annotation (Line(points={{-79,0},{-54,0},
             {-54,5},{-42,5}},             color={0,0,127}));
     connect(con.yOutAirFra, hvac.uEco) annotation (Line(points={{-79,3},{-50,3},{
@@ -480,14 +488,12 @@ First implementation.
       annotation (Line(points={{141,0},{170,0}}, color={0,0,127}));
     connect(CO2RooAir.y, CO2Roo)
       annotation (Line(points={{141,-30},{170,-30}}, color={0,0,127}));
-    connect(PFan.y, PHVAC.u[1]) annotation (Line(points={{161,140},{174,140},{
-            174,64},{94,64},{94,42.8},{126,42.8}},
-                                                 color={0,0,127}));
-    connect(PCoo.y, PHVAC.u[2]) annotation (Line(points={{161,100},{168,100},{
-            168,68},{90,68},{90,40},{126,40}},   color={0,0,127}));
-    connect(PPum.y, PHVAC.u[3]) annotation (Line(points={{141,80},{160,80},{160,
-            68},{88,68},{88,37.2},{126,37.2}},
-                                             color={0,0,127}));
+    connect(PFan.y, PHVAC.u[1]) annotation (Line(points={{161,140},{174,140},{174,
+            64},{94,64},{94,43.15},{126,43.15}}, color={0,0,127}));
+    connect(PCoo.y, PHVAC.u[2]) annotation (Line(points={{161,100},{168,100},{168,
+            68},{90,68},{90,41.05},{126,41.05}}, color={0,0,127}));
+    connect(PPum.y, PHVAC.u[3]) annotation (Line(points={{141,80},{160,80},{160,68},
+            {88,68},{88,38.95},{126,38.95}}, color={0,0,127}));
     connect(PHVAC.y, PTot)
       annotation (Line(points={{139.02,40},{170,40}}, color={0,0,127}));
     connect(weaBus.TDryBul, TOut) annotation (Line(
@@ -516,6 +522,10 @@ First implementation.
             -10},{-149.5,-10},{-149.5,-10},{-142,-10}}, color={0,0,127}));
     connect(occSch.occupied, con.uOcc) annotation (Line(points={{-119,84},{-110,
             84},{-110,9},{-104,9}}, color={255,0,255}));
+    connect(PHea.y, PHVAC.u[4]) annotation (Line(points={{141,120},{170,120},{170,
+            60},{98,60},{98,36.85},{126,36.85}}, color={0,0,127}));
+    connect(zer.y, hvac.uHea) annotation (Line(points={{-79,-110},{-58,-110},{
+            -58,12},{-42,12}}, color={0,0,127}));
     annotation (
       experiment(
         StartTime=18316800,
@@ -1856,6 +1866,7 @@ VAV system model that serves a single thermal zone.
   annotation (uses(Modelica(version="3.2.3"),
       Buildings(version="7.0.0"),
       IBPSA(version="3.0.0"),
-      FaultInjection(version="1.0.0")),
+      FaultInjection(version="1.0.0"),
+      ModelicaServices(version="3.2.3")),
     version="1");
 end SingleZoneVAV;
