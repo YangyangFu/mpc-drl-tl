@@ -55,6 +55,8 @@ RUN pip install pvlib
 RUN pip install matplotlib
 # Install scikit learn for nonlinear system identification
 RUN pip install -U scikit-learn
+# Install joblib
+RUN pip install joblib
 
 ### =======================================================================================
 ### intall customized gym environment into docker: install a building control environment
