@@ -99,7 +99,7 @@ def get_Toa(time,dt,PH,Toa_year):
 
 ### 0- Simulation setup
 start = 212*24*3600.#+13*24*3600
-end = start + 7*24*3600.
+end = start + 2*24*3600.
 
 ### 1- Load virtual building model
 hvac = load_fmu('SingleZoneTemperature.fmu')
@@ -168,26 +168,27 @@ case = mpc_case(PH=PH,
 # initialize all results
 u_opt=[]
 t_opt=[]
-
+P_pred = []
+Tz_pred = []
 while ts<end:
     
     te = ts+dt*CH
     t_opt.append(ts)
     h = int((ts % 86400)/3600)  # hour index 0~23
-    u_opt_ph=[uTSet_ini]*PH
+#    u_opt_ph=[uTSet_ini]*PH
     ### generate control action from MPC
-    if h>=occ_start-2 and h<=occ_end+1: # activate mpc after warmup
+    #if h>=occ_start-2 and h<=occ_end+1: # activate mpc after warmup
         # update mpc case
-        case.set_time(ts)
-        case.set_measurement(measurement)
-        case.set_states(states) 
-        case.set_predictor(predictor)
-        # call optimizer
-        optimum = case.optimize()
+    case.set_time(ts)
+    case.set_measurement(measurement)
+    case.set_states(states) 
+    case.set_predictor(predictor)
+    # call optimizer
+    optimum = case.optimize()
 
-        # get objective and design variables
-        f_opt_ph = optimum['objective']
-        u_opt_ph = optimum['variable']
+    # get objective and design variables
+    f_opt_ph = optimum['objective']
+    u_opt_ph = optimum['variable']
     
     # get the control action for the control horizon
     u_opt_ch = u_opt_ph[0]
@@ -197,6 +198,11 @@ while ts<end:
 
     # update start points for optimizer using previous optimum value
     case.set_u_start(u_opt_ph)
+    
+    # update power prediction for debugging purposes 
+    case.obj(u_opt_ph)
+    P_pred.append(case.P_pred_ph[0])
+    Tz_pred.append(case.Tz_pred_ph[0])
     ### advance building simulation by one step
     u_traj = np.transpose(np.vstack(([ts,te],[uTSet, uTSet])))
     input_object = ("TSetCoo",u_traj)
@@ -227,7 +233,9 @@ while ts<end:
     u_opt.append(uTSet)
 
 final = {'u_opt':u_opt,
-        't_opt':t_opt}
+        't_opt':t_opt,
+        'power_predicted':P_pred,
+        'Tz_predicted':Tz_pred}
 
 with open('u_opt.json', 'w') as outfile:
     json.dump(final, outfile)

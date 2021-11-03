@@ -66,9 +66,9 @@ pipe = Pipeline(steps)
 
 # Fifth, perform model selection using grid search to find the best trained ANN model
 estimator = GridSearchCV(pipe,
-                   param_grid={'reg__alpha':[1e-4,1e-3,1e-2,1e-1,1],
+                   param_grid={'reg__alpha':[1e-4,1e-3,1e-2],
                                'reg__activation':['identity','logistic','tanh','relu']},
-                   cv=5,scoring='neg_mean_absolute_error')
+                   cv=5,scoring='neg_mean_squared_error')
 
 # fit the model using grid searching validation
 t0 = time.time()

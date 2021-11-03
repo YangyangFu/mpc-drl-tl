@@ -56,7 +56,7 @@ y= data['P_coo'].values
 
 # split traing and testing data
 X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2)
+        X, y, test_size=0.2, random_state=44)
 
 # #############################################################################
 # Fit regression model
@@ -66,7 +66,7 @@ scaler = StandardScaler().fit(X_train)
 # Dimension reduction
 
 # Second, create a ANN estimator
-ann = MLPRegressor(solver='lbfgs',alpha=0.001,hidden_layer_sizes=(200,),max_iter=10000)
+ann = MLPRegressor(solver='adam',alpha=0.001,hidden_layer_sizes=(64,),max_iter=10000)
 
 # Third, create steps
 steps = [('normalize',scaler),('reg',ann)]
@@ -76,8 +76,9 @@ pipe = Pipeline(steps)
 
 # Fifth, perform model selection using grid search to find the best trained ANN model
 estimator = GridSearchCV(pipe,
-                   param_grid={'reg__alpha':[1e-4,1e-3,1e-2,1e-1,1],
-                               'reg__activation':['identity','logistic','tanh','relu']},
+                   param_grid={'reg__alpha':[1e-05,1e-4],
+                              'reg__hidden_layer_sizes':[(128, 128),(128,128,64)],
+                               'reg__activation':['relu']},
                    cv=5,scoring='neg_mean_squared_error')
 
 # fit the model using grid searching validation

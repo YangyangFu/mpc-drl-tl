@@ -7,5 +7,5 @@ docker run^
 	  -v %CD%:/mnt/shared^
 	  -i^
       -t^
-	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/mpc_final_run.py"
+	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/test_powerANN.py"
 
