@@ -160,10 +160,10 @@ class mpc_case():
         # solve optimization
         xtol=1e-3
         ftol=1e-6
-        solver='de' # GLP
+        #solver='de' # GLP
         #solver = "interalg" # GLP
         #solver='ralg' # NLP
-        #solver='ipopt'# NLP
+        solver='ipopt'# NLP
         r = model.solve(solver,xtol=xtol,ftol=ftol)
         x_opt, f_opt = r.xf, r.ff
         d1 = r.evals
@@ -235,11 +235,11 @@ class mpc_case():
 
         # see https://github.com/troyshu/openopt/blob/d15e81999ef09d3c9c8cb2fbb83388e9d3f97a98/openopt/oo.py#L390.
         return NLP(objective, start, df=df,  c=c,  dc=dc, h=h,  dh=dh,  A=A,  b=b,  Aeq=Aeq,  beq=beq,  
-        lb=lb, ub=ub, gtol=gtol, contol=contol, maxIter = 10000, maxFunEvals = 1e4, name = 'NLP for: '+str(self.time))
+        lb=lb, ub=ub, gtol=gtol, contol=contol, maxIter = 5000, maxFunEvals = 5e3, name = 'NLP for: '+str(self.time))
 
     def get_optimization_model(self):
-        return self.openopt_model_glp()
-        #return self.openopt_model_nlp()
+        #return self.openopt_model_glp()
+        return self.openopt_model_nlp()
 
     def FILO(self,lis,x):
         lis.pop() # remove the last element

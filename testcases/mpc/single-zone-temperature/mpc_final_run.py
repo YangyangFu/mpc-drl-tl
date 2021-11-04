@@ -12,7 +12,7 @@ from pyfmi import load_fmu
 
 # simulation setup
 ts = 212*24*3600.#+13*24*3600
-nday = 2
+nday = 1
 period = nday*24*3600.
 te = ts + period
 dt = 15*60.
@@ -45,6 +45,7 @@ with open('u_opt.json') as f:
 t_opt = opt['t_opt']
 u_opt = opt['u_opt']
 P_pred = opt['power_predicted']
+Tz_pred = opt['Tz_predicted']
 ### 1- Load virtual building model
 mpc = load_fmu('SingleZoneTemperature.fmu')
 
@@ -142,6 +143,7 @@ plt.ylabel('Cooling Setpoint')
 plt.subplot(413)
 plt.plot(measurement_base['time'], measurement_base['TRoo']-273.15,'b--',label='Baseline')
 plt.plot(measurement_mpc['time'], np.array(measurement_mpc['TRoo'])-273.15,'r-',label='MPC')
+plt.plot(t_opt, np.array(Tz_pred)-273.15,'k-',label='Prediction')
 plt.plot(tim,T_upper, 'g-.', lw=1,label='Bounds')
 plt.plot(tim,T_lower, 'g-.', lw=1)
 plt.grid(True)
@@ -155,6 +157,7 @@ plt.plot(measurement_mpc['time'], measurement_mpc['PCoo.y'],'r-',label='MPC')
 plt.plot(t_opt,P_pred,'k-',label='Prediction')
 plt.grid(True)
 plt.xticks(xticks,xticks_label)
+plt.legend()
 plt.ylabel('Total [W]')
 plt.savefig('mpc-vs-rbc.pdf')
 plt.savefig('mpc-vs-rbc.png')
