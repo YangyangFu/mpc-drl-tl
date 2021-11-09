@@ -250,14 +250,6 @@ class mpc_case():
         return self.openopt_model_glp()
         #return self.openopt_model_nlp()
 
-    def FILO(self,lis,x):
-        lis.pop() # remove the last element
-        lis.reverse()
-        lis.append(x)
-        lis.reverse()
-
-        return lis
-
     def zone_temperature(self,Tz_his, mz, Toa):
         ann = self.zone_model
         x=list(Tz_his)
@@ -353,12 +345,12 @@ class mpc_case():
         self.u_start = start
 
 class ObjectiveCallback(ca.Callback):
-    def __init__(self,name,time, PH, params, states, opts={}):
+    def __init__(self,name,time, PH, w, power_model, states, opts={}):
         ca.Callback.__init__(self)
         self.time = time
         self.PH = PH
-        self.params_zone = params['zone'] # params={'zone':{}, 'power':{}}
-        self.params_power = params['power']
+        self.params_power = power_model
+        self.w = w # weights for energy cost and temperature violation term [w1, w2]
         self.construct(name,opts)
 
     # Number of inputs and outputs   
@@ -367,7 +359,7 @@ class ObjectiveCallback(ca.Callback):
 
     # Array of inputs and outputs
     def get_sparsity_in(self,i):
-        return ca.Sparsity.dense(self.PH,1)
+        return ca.Sparsity.dense(2*self.PH,1)
     def get_sparsity_out(self,i):
         return ca.Sparsity.dense(1,1)
 
@@ -375,23 +367,154 @@ class ObjectiveCallback(ca.Callback):
     def init(self):
         print('initializing object')
 
-    def zone_arx(self,Tz_his_meas, Tz_his_pred, To_his_meas, mz):
-        Lz = len(self.zone_model['alpha'])
-        Lo = len(self.zone_model['beta'])
-        f_Tz = model.Zone(Lz=Lz, Lo=Lo)
-        f_Tz.params = self.zone_model
-
-        Tsa = 13
-        Tz = f_Tz.predict(Tz_his_meas, Tz_his_pred, To_his_meas, mz, Tsa)
-        return Tz
-    
     def power_polynomial(self,mz):
-        f_P = model.FanPower(n=4)
-        f_P.params = self.power_model
+        params = self.power_model
+        f_P = model.FanPower(n=len(params['alpha']))
         PFan = f_P.predict(mz)
         return PFan
 
     def eval(self,arg):
+        """evaluate objective
+
+        """
+        # get control inputs: U = {u(t+1), u(t+2), ... u(t+PH)}
+        #                      u = [mz, \epsilon]
+        U = arg[0]
+
+        # loop over the prediction horizon
+        i = 0
+        P_pred_ph = []
+
+        while i < self.PH:
+            # get u for current step 
+            u = U[i*2:2*i+2]
+            mz = u[0]*0.75 # control inputs
+            eps = u[1] # temperature slack
+
+            ### ====================================================================
+            ###            Power Predictor
+            ### =====================================================================
+            # predict total power at current step
+            P_pred = self.power_polynomial(mz) 
+            # Save step-wise power prediction 
+            P_pred_ph.append(P_pred) # save all step-wise power for cost calculation
+
+            ### ===========================================================
+            ###      Update for next step
+            ### ==========================================================
+            # update clock
+            i += 1
+
+        # energy cost: calculate total cost based on predicted energy prices
+        price_ph = self.predictor['price']
+        energy_cost = float(np.sum(np.array(price_ph)*np.array(P_pred_ph)))*self.dt/3600./1000. 
+
+        # zone temperature bounds penalty
+        penalty = eps**2
+
+        # objective for a minimization problem
+        f = self.w[0]*energy_cost + self.w[1]*penalty
+
+        return [f]
 
 
-        pass
+class ZoneTemperatureCallback(ca.Callback):
+    def __init__(self,name,time, PH, zone_model, states, predictor, opts={}):
+        ca.Callback.__init__(self)
+        self.time = time
+        self.PH = PH
+        self.params_zone = zone_model # params={'alpha':{}}
+        self.states = states
+        self.predictor = predictor
+        self.instantiate_zone_model()
+        self.construct(name,opts)
+
+    # Number of inputs and outputs   
+    def get_n_in(self): return 1
+    def get_n_out(self): return 1
+
+    # Array of inputs and outputs
+    def get_sparsity_in(self,i):
+        return ca.Sparsity.dense(2*self.PH,1)
+    def get_sparsity_out(self,i):
+        return ca.Sparsity.dense(self.PH,1)
+
+    # Initialize the object
+    def init(self):
+        print('initializing object')
+
+    def instantiate_zone_model(self):
+        """Instantiate a zone model
+        """
+        self.Lz = len(self.zone_model['alpha'])
+        self.Lo = len(self.zone_model['beta'])
+        self.f_Tz = model.Zone(Lz=self.Lz, Lo=self.Lo)
+        self.f_Tz.params = self.zone_model
+
+    def zone_arx(self,Tz_his_meas, To_his_meas, mz):
+        
+        Tsa = 13
+        return self.f_Tz.model(Tz_his_meas, To_his_meas, mz, Tsa)
+
+    def eval(self,arg):
+        """evaluate temperature
+
+        """
+        # get control inputs: U = {u(t+1), u(t+2), ... u(t+PH)}
+        #                      u = [mz, \epsilon]
+        U = arg[0]
+
+        # loop over the prediction horizon
+        i = 0
+        Tz_pred_ph = []
+
+        # get states at current step t
+        Tz_his_meas = self.states['Tz_his_meas'] # [Tz(t-l), ..., Tz(t-1), Tz(t)] 
+        To_his_meas = self.states['To_his_meas'] # [Tz(t-l), ..., Tz(t-1), Tz(t)] 
+        Tz_his_pred = self.states['Tz_his_pred'] # [Tz(t-l), ..., Tz(t-1), Tz(t)] 
+
+        # get autocorrection term 
+        e = self.f_Tz.autocorrection(Tz_his_meas, Tz_his_pred)
+
+        while i < self.PH:
+            # get u for current step 
+            u = U[i*2:2*i+2]
+            mz = u[0]*0.75 # control inputs
+
+            ### ====================================================================
+            ###           Zone temperature prediction
+            ### =====================================================================
+            # predict total power at current step
+            Tz_pred = self.zone_arx(Tz_his_meas, To_his_meas, mz) + e
+            # Save step-wise power prediction 
+            Tz_pred_ph.append(Tz_pred) # save all step-wise temperature for output
+
+            ### ===========================================================
+            ###      Update for next step
+            ### ==========================================================
+            # update states for zone recursive regression model
+            # update future measurement
+            # future zone temperature measurements
+            Tz_his_meas = FILO(Tz_his_meas,Tz_pred)
+            # future oa temperature measurement
+            To_pred = self.predictor['Toa'][i]
+            To_his_meas = FILO(To_his_meas,To_pred)
+
+            # save step-wise temperature
+            Tz_pred_ph.append(Tz_pred) # save all step-wise power for cost calculation
+
+            # update clock
+            i += 1
+
+        # return predicted zone temperature over prediction horizon
+        return Tz_pred_ph
+
+
+def FILO(lis,x):
+    # FIRST IN LAST OUT:
+    lis.pop() # remove the last element
+    lis.reverse()
+    lis.append(x)
+    lis.reverse()
+
+    return lis
