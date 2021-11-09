@@ -8,19 +8,25 @@ import numpy as np
 
 import casadi as ca
 import model
+import joblib
 
 class mpc_case():
-    def __init__(self,PH,CH,time,dt,parameters_zone, parameters_power,measurement,states,predictor):
+    def __init__(self,PH,CH,time,dt,zone_model, power_model,measurement,states,predictor):
 
         self.PH=PH # prediction horizon
         self.CH=CH # control horizon
         self.dt = dt # time step
         self.time = time # current time index
 
-        self.parameters_zone = parameters_zone # parameters for zone dynamic mpc model, dictionary
-        self.parameters_power = parameters_power # parameters for system power dynamic mpc model, dictionary
+        #self.parameters_zone = parameters_zone # parameters for zone dynamic mpc model, dictionary
+        #self.parameters_power = parameters_power # parameters for system power dynamic mpc model, dictionary
         self.measurement = measurement # measurement at current time step, dictionary
         self.predictor = predictor # price and outdoor air temperature for the future horizons
+        
+        ## load MPC models
+        # should be decided beforehand: if ARX, {'alpha':[], 'beta':[], 'gamma':[]}; if ANN, {'model_name':'xx.pkl'}
+        self.zone_model = zone_model if 'model_name' not in zone_model else joblib.load(zone_model['model_name'])
+        self.power_model = power_model if 'model_name' not in power_model else joblib.load(power_model['model_name'])
 
         self.states = states # dictionary
         self.P_his_t = []
@@ -346,61 +352,46 @@ class mpc_case():
         start = self.get_u_start(prev)
         self.u_start = start
 
-class Zone(ca.Callback):
-  def __init__(self, name, Lz=4, Lo=4, json_file="", opts={"enable_fd":True}):
-    ca.Callback.__init__(self)
-    self.Lz=Lz,
-    self.Lo=Lo,
-    self.json_file = json_file
-    self.construct(name, opts)
+class ObjectiveCallback(ca.Callback):
+    def __init__(self,name,time, PH, params, states, opts={}):
+        ca.Callback.__init__(self)
+        self.time = time
+        self.PH = PH
+        self.params_zone = params['zone'] # params={'zone':{}, 'power':{}}
+        self.params_power = params['power']
+        self.construct(name,opts)
 
-  # Number of inputs and outputs
-  def get_n_in(self): return 1
-  def get_n_out(self): return 1
+    # Number of inputs and outputs   
+    def get_n_in(self): return 1
+    def get_n_out(self): return 1
 
-  # Array of inputs and outputs
-  def get_sparsity_in(self,i):
-    #self.nin=2*np.asarray(self.Lz,dtype="int32")+np.asarray(self.Lo,dtype="int32")+2
-    self.nin=2*self.Lz[0]+self.Lo[0]+2
-    return ca.Sparsity.dense(self.nin,1)
-  def get_sparsity_out(self,i):
-    return ca.Sparsity.dense(1,1)
+    # Array of inputs and outputs
+    def get_sparsity_in(self,i):
+        return ca.Sparsity.dense(self.PH,1)
+    def get_sparsity_out(self,i):
+        return ca.Sparsity.dense(1,1)
 
-  # Initialize the object
-  def init(self):
-     print('initializing object')
+    # Initialize the object
+    def init(self):
+        print('initializing object')
 
-  # Evaluate numerically
-  def eval(self, arg):
-    x = arg[0] # size of sparsity_in
-    T = model.Zone(Lz=self.Lz[0], Lo=self.Lo[0], json_file=self.json_file)
+    def zone_arx(self,Tz_his_meas, Tz_his_pred, To_his_meas, mz):
+        Lz = len(self.zone_model['alpha'])
+        Lo = len(self.zone_model['beta'])
+        f_Tz = model.Zone(Lz=Lz, Lo=Lo)
+        f_Tz.params = self.zone_model
 
-    Tz_his_meas=x[0:self.Lz[0]]
-    Tz_his_pred=x[self.Lz[0]:self.Lz[0]+self.Lz[0]]
-    To_his_meas=x[self.Lz[0]+self.Lz[0]:self.Lz[0]+self.Lz[0]+self.Lo[0]]
-    mz=x[-2]
-    Tsa=x[-1]
-    f = T.predict(Tz_his_meas, Tz_his_pred, To_his_meas, mz, Tsa)
-    #Tz_his_meas, Tz_his_pred, To_his_meas, mz, Tsa
-    return [f]
+        Tsa = 13
+        Tz = f_Tz.predict(Tz_his_meas, Tz_his_pred, To_his_meas, mz, Tsa)
+        return Tz
+    
+    def power_polynomial(self,mz):
+        f_P = model.FanPower(n=4)
+        f_P.params = self.power_model
+        PFan = f_P.predict(mz)
+        return PFan
 
-class Power(ca.Callback):
-  def __init__(self, name, json_file, opts={"enable_fd":True}):
-    ca.Callback.__init__(self)
-    self.json_file = json_file
-    self.construct(name, opts)
+    def eval(self,arg):
 
-  # Number of inputs and outputs
-  def get_n_in(self): return 1
-  def get_n_out(self): return 1
 
-  # Initialize the object
-  def init(self):
-     print('initializing object')
-
-  # Evaluate numerically
-  def eval(self, arg):
-    x = arg[0]
-    fan = model.FanPower(n=4,json_file=self.json_file)
-    f = fan.predict(x)
-    return [f]
+        pass

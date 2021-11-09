@@ -293,11 +293,9 @@ class mpc_case():
 
         alpha=np.array(alpha).reshape(-1)
         #beta=np.array(beta).reshape(-1)
-        if mz>=1e-03:
-            P = alpha[0]+alpha[1]*mz+alpha[2]*mz**2 #+ beta[0]+ beta[1]*Toa+beta[2]*Toa**2
-        else:
-            P = 0
-        return float(abs(P))
+        P = 0
+        for i in range(len(alpha)):
+            P += alpha[i]*mz**i #+ beta[0]+ beta[1]*Toa+beta[2]*Toa**2
 
     def set_time(self, time):
         
