@@ -189,7 +189,6 @@ def FILO(lis,x):
 
     return lis
 
-
 class mpc_case():
     def __init__(self,PH,CH,time,dt,zone_model, power_model,measurement,states,predictor):
 
@@ -214,6 +213,9 @@ class mpc_case():
         self.number_zone = 1
         self.occ_start = 6 # occupancy starts
         self.occ_end = 19 # occupancy ends
+
+        # some mpc settings
+        self.w = [1, 0.01]
 
         # initialize optimiztion
         #self.optimization_model=self.get_optimization_model() # pyomo object
@@ -294,104 +296,6 @@ class mpc_case():
 
         return self.optimum
         
-
-    def optimize(self):
-        """
-        MPC optimizer: call optimizer to solve a minimization problem
-        
-        """
-       
-        self.optimum={}
-
-        # get optimization model
-        model = self.get_optimization_model()
-
-        # solve optimization
-        xtol=1e-3
-        ftol=1e-6
-        solver='de' # GLP
-        #solver = "interalg" # GLP
-        #solver='ralg' # NLP
-        #solver='ipopt'# NLP
-        r = model.solve(solver,xtol=xtol,ftol=ftol)
-        x_opt, f_opt = r.xf, r.ff
-        d1 = r.evals
-        d2 = r.elapsed
-        nbr_iters = d1['iter']
-        nbr_fevals = d1['f']
-        solve_time = d2['solver_time']
-        
-
-        self.optimum['objective'] = f_opt
-        self.optimum['variable'] = x_opt
-
-        disp = True
-        if disp:
-            print (' ')
-            print ('Solver: OpenOpt solver ' + solver)
-            print (' ')
-            print ('Number of iterations: ' + str(nbr_iters))
-            print ('Number of function evaluations: ' + str(nbr_fevals))
-            print (' ')
-            print ('Execution time: ' + str(solve_time))
-            print (' ')
-
-        return self.optimum
-
-    def openopt_model_glp(self):
-        """This is to formulate a global optimization problem
-        """
-        # create oovar of size PH
-        #u = oovar(size=self.PH)
-        # might not work becasue u is a oovar object, not list
-        objective = lambda u: self.obj([u[i] for i in range(self.PH)])
-        #startPoint = 0.5*np.array(self.PH)
-
-        # bounds
-        lb = self.u_lb
-        ub = self.u_ub
-
-        return GLP(objective, lb=lb, ub=ub, maxIter = 5e5)
-
-    def openopt_model_nlp(self):
-        """This is to formulate a nolinear programming problem in openopt: minimization
-        """
-        objective = lambda u: self.obj([u[i] for i in range(self.PH)])
-        # objective gradient - optional
-        df = None
-        # start point
-        start = self.u_start
-        # constraints if any
-        c = None # nonlinear inequality
-        dc = None # derivative of c
-        h = None # nonlinear equality
-        dh = None # derivative of h
-        A = None # linear inequality
-        b = None
-        Aeq = None # linear equality
-        beq = None # linear equality
-
-        # bounds
-        lb = self.u_lb
-        ub = self.u_ub
-
-        # tolerance control
-        # required constraints tolerance, default for NLP is 1e-6
-        contol = 1e-6
-
-        # If you use solver algencan, NB! - it ignores xtol and ftol; using maxTime, maxCPUTime, maxIter, maxFunEvals, fEnough is recommended.
-        # Note that in algencan gtol means norm of projected gradient of  the Augmented Lagrangian
-        # so it should be something like 1e-3...1e-5
-        gtol = 1e-6 # (default gtol = 1e-6)
-
-        # see https://github.com/troyshu/openopt/blob/d15e81999ef09d3c9c8cb2fbb83388e9d3f97a98/openopt/oo.py#L390.
-        return NLP(objective, start, df=df,  c=c,  dc=dc, h=h,  dh=dh,  A=A,  b=b,  Aeq=Aeq,  beq=beq,  
-        lb=lb, ub=ub, gtol=gtol, contol=contol, maxIter = 50000, maxFunEvals = 20000, name = 'NLP for: '+str(self.time))
-
-    def get_optimization_model(self):
-        return self.openopt_model_glp()
-        #return self.openopt_model_nlp()
-
     def set_time(self, time):
         
         self.time = time
