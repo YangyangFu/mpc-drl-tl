@@ -11,9 +11,8 @@ import model
 import joblib
 
 class ObjectiveCallback(ca.Callback):
-    def __init__(self,name,time, PH, w, power_model, opts={}):
+    def __init__(self,name, PH, w, power_model, opts={}):
         ca.Callback.__init__(self)
-        self.time = time
         self.PH = PH
         self.params_power = power_model
         self.w = w # weights for energy cost and temperature violation term [w1, w2]
@@ -50,6 +49,7 @@ class ObjectiveCallback(ca.Callback):
         # loop over the prediction horizon
         i = 0
         P_pred_ph = []
+        eps_ph = []
 
         while i < self.PH:
             # get u for current step 
@@ -65,6 +65,11 @@ class ObjectiveCallback(ca.Callback):
             # Save step-wise power prediction 
             P_pred_ph.append(P_pred) # save all step-wise power for cost calculation
 
+            ### =====================================
+            #             Temperature violation
+            ### ======================================
+            eps_ph.append(eps)
+
             ### ===========================================================
             ###      Update for next step
             ### ==========================================================
@@ -73,10 +78,10 @@ class ObjectiveCallback(ca.Callback):
 
         # energy cost: calculate total cost based on predicted energy prices
         price_ph = self.predictor['price']
-        energy_cost = float(np.sum(np.array(price_ph)*np.array(P_pred_ph)))*self.dt/3600./1000. 
+        energy_cost = np.sum(np.array(price_ph)*np.array(P_pred_ph))*self.dt/3600./1000. 
 
         # zone temperature bounds penalty
-        penalty = eps**2
+        penalty = np.sum(np.array(eps_ph)**2)
 
         # objective for a minimization problem
         f = self.w[0]*energy_cost + self.w[1]*penalty
@@ -85,9 +90,8 @@ class ObjectiveCallback(ca.Callback):
 
 
 class ZoneTemperatureCallback(ca.Callback):
-    def __init__(self,name,time, PH, zone_model, states, predictor, opts={}):
+    def __init__(self,name, PH, zone_model, states, predictor, opts={}):
         ca.Callback.__init__(self)
-        self.time = time
         self.PH = PH
         self.params_zone = zone_model # params={'alpha':{}}
         self.states = states
@@ -214,10 +218,6 @@ class mpc_case():
         # initialize optimiztion
         #self.optimization_model=self.get_optimization_model() # pyomo object
         self.optimum= {}
-        self.u_start = [0.5]*PH
-        self.u_lb = [0.0]*PH
-        self.u_ub = [1.0]*PH
-
 
     def optimize_casadi(self):
         """MPC optimization problem in casadi interface
@@ -225,7 +225,6 @@ class mpc_case():
 
         # instantiate objective function
         f = ObjectiveCallback('f', 
-                            time = self.time, 
                             PH = self.PH,
                             w = self.w,
                             power_model = self.power_model,
@@ -233,7 +232,6 @@ class mpc_case():
              
         # instantiate nonlinear constraints zone temperature
         Tz = ZoneTemperatureCallback('Tz',
-                                    time = self.time, 
                                     PH = self.PH, 
                                     zone_model = self.zone_model, 
                                     states = self.states, 
@@ -243,26 +241,59 @@ class mpc_case():
 
         # define objective function
         obj = f(u)
+        # define constraint function
+        Tz_pred = Tz(u) # predicted T of size PH
 
-        # define nonlinear temperature constraints
-        g = Tz(u)
+        ### define nonlinear temperature constraints
+        # zone temperature bounds - need check with the high-fidelty model
+        T_upper = np.array([30.0 for i in range(24)])
+        T_upper[self.occ_start:self.occ_end] = 26.0
+        T_lower = np.array([12.0 for i in range(24)])
+        T_lower[self.occ_start:self.occ_end] = 22.0
 
-        # define lower bound of zone temperature
-        lbg = 
+        # get overshoot and undershoot for each step
+        # current time step
+        time = self.time
 
-        # define upper bound of zone temperature
-        ubg = 
+        g = []
+        lbg = []
+        ubg = []
+        for k in range(self.PH):
+            # future time        
+            t = int(time+k*self.dt)
+            t = int((t % 86400)/3600)  # hour index 0~23
+            
+            # inequality constraints
+            eps = u[2*k+1]
+            g += [Tz_pred[k]+eps, Tz_pred[k]-eps]
+            # get upper and lower T bound
+            lbg += [T_lower[t], 0.]
+            ubg += [ca.inf, T_upper[t]]
 
         # formulate an optimziation problem using nlp solver
-        opt_prob = ca.nlpsol()
+        prob = {'f':obj, 'x': u, 'g': ca.vertcat(*g)}
+        nlp_optimize = ca.nlpsol('solver', 'ipopt', prob)
 
         # set initial guess
+        u0 = [0.2,0.]*self.PH
+
+        # set lower upper bound for u
+        lbx = [0., 0.]*self.PH
+        ubx = [1.0, 1.0]*self.PH
 
         # solve the optimization problem
-
+        solution = nlp_optimize(x0=u0, lbx=lbx, ubx=ubx, lbg=lbg, ubg=ubg)
+        
         # get and save the results
+        u_opt = solution['x']
+        f_opt = solution['f']
+        self.optimum['objective'] = f_opt
+        self.optimum['variable'] = u_opt
 
+        print(solution)
 
+        return self.optimum
+        
 
     def optimize(self):
         """
