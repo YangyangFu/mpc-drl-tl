@@ -11,11 +11,13 @@ import model
 import joblib
 
 class ObjectiveCallback(ca.Callback):
-    def __init__(self,name, PH, w, power_model, opts={}):
+    def __init__(self,name, PH, dt, w, power_model, predictor, opts={}):
         ca.Callback.__init__(self)
         self.PH = PH
-        self.params_power = power_model
+        self.dt = dt
         self.w = w # weights for energy cost and temperature violation term [w1, w2]
+        self.power_model = power_model
+        self.predictor = predictor
         self.construct(name,opts)
 
     # Number of inputs and outputs   
@@ -35,7 +37,9 @@ class ObjectiveCallback(ca.Callback):
     def power_polynomial(self,mz):
         params = self.power_model
         f_P = model.FanPower(n=len(params['alpha']))
+        f_P.params = params
         PFan = f_P.predict(mz)
+
         return PFan
 
     def eval(self,arg):
@@ -93,10 +97,10 @@ class ZoneTemperatureCallback(ca.Callback):
     def __init__(self,name, PH, zone_model, states, predictor, opts={}):
         ca.Callback.__init__(self)
         self.PH = PH
-        self.params_zone = zone_model # params={'alpha':{}}
+        self.zone_model = zone_model # params={'alpha':{}}
         self.states = states
         self.predictor = predictor
-        self.instantiate_zone_model()
+        self.instantiate_zone_arx_model()
         self.construct(name,opts)
 
     # Number of inputs and outputs   
@@ -113,8 +117,8 @@ class ZoneTemperatureCallback(ca.Callback):
     def init(self):
         print('initializing object')
 
-    def instantiate_zone_model(self):
-        """Instantiate a zone model
+    def instantiate_zone_arx_model(self):
+        """Instantiate a zone arx model
         """
         self.Lz = len(self.zone_model['alpha'])
         self.Lo = len(self.zone_model['beta'])
@@ -156,8 +160,6 @@ class ZoneTemperatureCallback(ca.Callback):
             ### =====================================================================
             # predict total power at current step
             Tz_pred = self.zone_arx(Tz_his_meas, To_his_meas, mz) + e
-            # Save step-wise power prediction 
-            Tz_pred_ph.append(Tz_pred) # save all step-wise temperature for output
 
             ### ===========================================================
             ###      Update for next step
@@ -165,10 +167,11 @@ class ZoneTemperatureCallback(ca.Callback):
             # update states for zone recursive regression model
             # update future measurement
             # future zone temperature measurements
-            Tz_his_meas = FILO(Tz_his_meas,Tz_pred)
+            Tz_his_meas = LIFO(Tz_his_meas,Tz_pred)
+
             # future oa temperature measurement
             To_pred = self.predictor['Toa'][i]
-            To_his_meas = FILO(To_his_meas,To_pred)
+            To_his_meas = LIFO(To_his_meas,To_pred)
 
             # save step-wise temperature
             Tz_pred_ph.append(Tz_pred) # save all step-wise power for cost calculation
@@ -177,17 +180,15 @@ class ZoneTemperatureCallback(ca.Callback):
             i += 1
 
         # return predicted zone temperature over prediction horizon
-        return Tz_pred_ph
+
+        return [Tz_pred_ph]
 
 
-def FILO(lis,x):
-    # FIRST IN LAST OUT:
-    lis.pop() # remove the last element
-    lis.reverse()
-    lis.append(x)
-    lis.reverse()
+def LIFO(array,x):
+    # lAST IN FIRST OUT:
+    a = np.append(array,x)
 
-    return lis
+    return list(a[1:])
 
 class mpc_case():
     def __init__(self,PH,CH,time,dt,zone_model, power_model,measurement,states,predictor):
@@ -215,31 +216,37 @@ class mpc_case():
         self.occ_end = 19 # occupancy ends
 
         # some mpc settings
+        self.n = 2
         self.w = [1, 0.01]
-
+        self.u_lb = [0.]*self.n
+        self.u_ub = [1.,0.01]
         # initialize optimiztion
+        self.u_start = self.u_lb*self.PH
         #self.optimization_model=self.get_optimization_model() # pyomo object
         self.optimum= {}
 
-    def optimize_casadi(self):
+    def optimize(self):
         """MPC optimization problem in casadi interface
         """
 
         # instantiate objective function
         f = ObjectiveCallback('f', 
                             PH = self.PH,
+                            dt = self.dt,
                             w = self.w,
                             power_model = self.power_model,
-                            opt={"enable_fd":True})   
+                            predictor = self.predictor,
+                            opts={"enable_fd":True})   
              
         # instantiate nonlinear constraints zone temperature
         Tz = ZoneTemperatureCallback('Tz',
                                     PH = self.PH, 
                                     zone_model = self.zone_model, 
                                     states = self.states, 
-                                    predictor =self.predictor, opt={"enable_fd":True})
+                                    predictor =self.predictor, 
+                                    opts={"enable_fd":True})
         # define casadi variables
-        u = ca.MX.sym("U",2*self.PH)
+        u = ca.MX.sym("U",self.n*self.PH)
 
         # define objective function
         obj = f(u)
@@ -266,7 +273,7 @@ class mpc_case():
             t = int((t % 86400)/3600)  # hour index 0~23
             
             # inequality constraints
-            eps = u[2*k+1]
+            eps = u[self.n*k+1]
             g += [Tz_pred[k]+eps, Tz_pred[k]-eps]
             # get upper and lower T bound
             lbg += [T_lower[t], 0.]
@@ -277,11 +284,11 @@ class mpc_case():
         nlp_optimize = ca.nlpsol('solver', 'ipopt', prob)
 
         # set initial guess
-        u0 = [0.2,0.]*self.PH
+        u0 = self.u_start
 
         # set lower upper bound for u
-        lbx = [0., 0.]*self.PH
-        ubx = [1.0, 1.0]*self.PH
+        lbx = self.u_lb*self.PH
+        ubx = self.u_ub*self.PH
 
         # solve the optimization problem
         solution = nlp_optimize(x0=u0, lbx=lbx, ubx=ubx, lbg=lbg, ubg=ubg)
@@ -293,6 +300,10 @@ class mpc_case():
         self.optimum['variable'] = u_opt
 
         print(solution)
+        
+        # save the function for external calls
+        self.f = f
+        self.Tz = Tz
 
         return self.optimum
         
@@ -338,8 +349,8 @@ class mpc_case():
         self.predictor = predictor
 
     def get_u_start(self,optimum_prev):
-        fut = optimum_prev[1:]
-        start = np.append(fut,(self.u_lb[-1]+self.u_ub[-1])/2.)
+        fut = optimum_prev[self.n:]
+        start = np.append(fut, [0.5,0.])
         return start
 
     def set_u_start(self,prev):

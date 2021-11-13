@@ -32,33 +32,33 @@ def interpolate_dataframe(df,new_index):
         df_out[col_name] = np.interp(new_index, df.index, col)    
     return df_out
 
-def FILO(a_list,x):
-    """First in last out: 
+def LIFO(a_list,x):
+    """Last in first out: 
     x: scalor
     """
-    a_list.pop() # remove the last element
-    a_list.reverse()
     a_list.append(x)
-    a_list.reverse()
 
-    return a_list
+    return a_list[1:]
 
-def get_states(states,measurement):
+def get_states(states,measurement,Tz_pred):
     # read list
     Tz_his = states['Tz_his_meas']
     To_his = states['To_his_meas']
+    Tz_his_pred = states['Tz_his_pred']
 
-    # read scalor
-    Tz = measurement['TRoo'].values[0]
-    To = measurement['Tout'].values[0]
+    # read scalor: to degC for ARX model
+    Tz = measurement['TRoo'].values[0] - 273.15
+    To = measurement['TOut'].values[0] - 273.15
 
-    # new list
-    new_Tz_his = FILO(Tz_his,Tz)
-    new_To_his = FILO(To_his,To)
-    
+    # new list - avoid immutable lists
+    new_Tz_his = LIFO(Tz_his,Tz)
+    new_To_his = LIFO(To_his,To)
+    new_Tz_his_pred = LIFO(Tz_his_pred,Tz_pred)
+
     # new dic
     states['Tz_his_meas'] = new_Tz_his
-    states['To_his_meas']= new_To_his
+    states['To_his_meas'] = new_To_his
+    states['Tz_his_pred'] = new_Tz_his_pred
 
     return states
 
@@ -84,7 +84,7 @@ def read_temperature(weather_file,dt):
 
     dat = read_epw(weather_file)
 
-    tem_sol_h = dat[0][['temp_air']]+273.15
+    tem_sol_h = dat[0][['temp_air']]
     index_h = np.arange(0,3600.*len(tem_sol_h),3600.)
     tem_sol_h.index = index_h
 
@@ -120,35 +120,45 @@ PH = 4
 CH = 1
 with open('zone_arx.json') as f:
   parameters_zone = json.load(f)
-  print(parameters_zone)
 
 with open('power.json') as f:
   parameters_power = json.load(f)
-  print(parameters_power)
 
-# measurement at current time
+# initialize measurement
 measurement_names=['TRoo','TOut','PTot','uFan','hvac.fanSup.m_flow_in']
-measurement_ini = {}
-# states at current time for MPC model - this should be customized based on mpc design
-lag_Tz = 4 # 4-step lag - should be identified for MPC model
-Tz_ini = 273.15+20
-P_ini = 0.0
-states_ini = {'Tz_his_meas':[Tz_ini]*lag_Tz,
-            'To_his_meas':[],
-            'Tz_his_pred':[]} # initial states used for MPC models
+res = hvac.simulate(start_time = ts,
+                    final_time = ts,
+                    options=options)
+options['initialize'] = False
+measurement_ini = get_measurement(res,measurement_names)
 
-## predictors
-predictor = {}
-
-# energy prices 
-predictor['price'] = get_price(ts,dt,PH)
-# outdoor air temperature
+# read one-year weather file
 weather_file = 'USA_CA_Riverside.Muni.AP.722869_TMY3.epw'
 Toa_year = read_temperature(weather_file,dt)
-predictor['Toa'] = get_Toa(ts,dt,PH,Toa_year)
 
+### ===========================
+# states at current time for MPC model - this should be customized based on mpc design
+lag_Tz = 4 # 4-step lag - should be identified for MPC model
+lag_To = 4 # 4-step lag 
+Tz_ini = measurement_ini['TRoo'].values[0] - 273.15
+P_ini = 0.0
+To_his_meas_init = get_Toa(ts-(lag_To-1)*dt,dt,lag_To,Toa_year)
+
+states_ini = {'Tz_his_meas':[Tz_ini]*lag_Tz,
+            'To_his_meas':To_his_meas_init,
+            'Tz_his_pred':[Tz_ini]*lag_Tz} # initial states used for MPC models
+
+### ==========================================
+### predictors
+predictor = {}
+# energy prices 
+predictor['price'] = get_price(ts+dt,dt,PH)
+# outdoor air temperature
+predictor['Toa'] = get_Toa(ts+dt,dt,PH,Toa_year)
+
+### ==================================
 ### 3- MPC Control Loop
-uFan_ini = 0.1
+uFan_ini = 0.
 # initialize fan speed for warmup setup
 uFan = uFan_ini
 states = states_ini
@@ -166,6 +176,7 @@ case = mpc_case(PH=PH,
 # initialize all results
 u_opt=[]
 t_opt=[]
+warmup = True
 
 while ts<end:
     
@@ -173,13 +184,13 @@ while ts<end:
     t_opt.append(ts)
 
     ### generate control action from MPC
-    if ts>=te_warm: # activate mpc after warmup
+    print("\nstate 1")
+    print(case.states) 
+    if not warmup: # activate mpc after warmup
         # update mpc case
         case.set_time(ts)
         case.set_measurement(measurement)
-        case.set_states(states) 
-        print("\nstate 1")
-        print(case.states)   
+        case.set_states(states)   
         case.set_predictor(predictor)
         # call optimizer
         optimum = case.optimize()
@@ -187,22 +198,26 @@ while ts<end:
         # get objective and design variables
         f_opt_ph = optimum['objective']
         u_opt_ph = optimum['variable']
-        
+
         # get the control action for the control horizon
-        u_opt_ch = u_opt_ph[0]
+        u_opt_ch = u_opt_ph[0:case.n]
 
         # overwrite fan speed
-        uFan = u_opt_ch
+        uFan = np.maximum(float(u_opt_ch[0]),0)
 
         # update start points for optimizer using previous optimum value
         case.set_u_start(u_opt_ph)
+
+        # update predictions after MPC predictor is called otherwise use measurement 
+        Tz_pred = float(case.Tz(u_opt_ph)[0])
+
     ### advance building simulation by one step
-    u_traj = np.transpose(np.vstack(([ts,te],[uFan,uFan])))
-    input_object = ("uFan",u_traj)
+    #u_traj = np.transpose(np.vstack(([ts,te],[uFan,uFan])))
+    #input_object = ("uFan",u_traj)
+    hvac.set("uFan",uFan)
     res = hvac.simulate(start_time = ts,
                         final_time = te, 
-                        options = options,
-                        input = input_object)
+                        options = options)
 
     # update clock
     ts = te
@@ -210,23 +225,28 @@ while ts<end:
     # get measurement
     measurement = get_measurement(res,measurement_names)
     print(measurement)
-    # update MPC model inputs
-    print ("\nstate 2")
-    print (case.states)
-    print ("\nstate 3")    
-    print (states)
-    states = get_states(states,measurement)
+
+    # update MPC model states
+    # if not warmup then measurement else from mpc
+    if warmup:
+        Tz_pred = measurement['TRoo'].values[0] - 273.15
+
+    states = get_states(states,measurement, Tz_pred)
     print ("\nstate 4")
     print (states)
+
     # online MPC model calibration if applied - NOT IMPLEMENTED
     # update parameter_zones and parameters_power - NOT IMPLEMENTED
     
     # update predictor
-    predictor['price'] = get_price(ts,dt,PH)
-    predictor['Toa'] = get_Toa(ts,dt,PH,Toa_year)
+    predictor['price'] = get_price(ts+dt,dt,PH)
+    predictor['Toa'] = get_Toa(ts+dt,dt,PH,Toa_year)
 
     # update fmu settings
     options['initialize'] = False
+
+    # update warmup flag for next step
+    warmup = ts<te_warm
 
     # Save all the optimal results for future simulation
     u_opt.append(uFan)
