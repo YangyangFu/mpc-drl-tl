@@ -26,7 +26,7 @@ baseline = load_fmu('SingleZoneDamperControlBaseline.fmu')
 
 ## fmu settings
 options = baseline.simulate_options()
-options['ncp'] = 5000.
+options['ncp'] = 5000
 options['initialize'] = True
 
 ## construct optimal input for fmu
@@ -44,13 +44,14 @@ with open('u_opt.json') as f:
 
 t_opt = opt['t_opt']
 u_opt = opt['u_opt']
-
+u_opt = np.maximum(np.array(u_opt),0)
+print(u_opt)
 ### 1- Load virtual building model
 mpc = load_fmu('SingleZoneDamperControl.fmu')
 
 ## fmu settings
 options = mpc.simulate_options()
-options['ncp'] = 5000.
+options['ncp'] = 5000
 options['initialize'] = True
 
 ## construct optimal input for fmu
