@@ -56,10 +56,9 @@ input_trac = np.transpose(np.vstack((time_arr,spe_sig)))
 input_object = ('uFan',input_trac)
 
 # simulate fmu
-print("Thermal mass before change is :",fmu.get("zon.roo.mSenFac"))
-fmu.set("TCooOn", 4)
-fmu.set("zon.roo.mSenFac",4)
-print("TCooOn", fmu.get("TCooOn"))
+print("Thermal mass before change is :",fmu.get("mSenFac"))
+fmu.set("mSenFac",4)
+print("TCooOn", fmu.get("mSenFac"))
 #print("Thermal mass after change is :", fmu.get("zon.roo.mSenFac"))
 print(ssss)
 res = fmu.simulate(start_time=ts,
