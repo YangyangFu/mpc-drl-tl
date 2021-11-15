@@ -7,4 +7,4 @@ docker run^
 	  -v %CD%:/mnt/shared^
 	  -i^
       -t^
-	  mpcdrl /bin/bash -c "cd /mnt/shared && python2 /mnt/shared/compile_fmu.py"
+	  yangyangfu/mpcdrl:cpu_py3 /bin/bash -c "cd /mnt/shared && python2 /mnt/shared/compile_fmu.py"

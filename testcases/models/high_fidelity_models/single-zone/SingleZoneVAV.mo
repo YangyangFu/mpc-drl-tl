@@ -873,7 +873,7 @@ First implementation.
       "Cooling setpoint during on";
     parameter Modelica.SIunits.Temperature TCooOff=303.15
       "Cooling setpoint during off";
-    parameter Real mSenFac = 1 "Thermal mass scalor in the zone";
+    parameter Real mSenFac = 4 "Thermal mass scalor in the zone";
 
     BaseClasses.Control.ChillerDXHeatingEconomizerController                  con(
       minAirFlo=0.1,
