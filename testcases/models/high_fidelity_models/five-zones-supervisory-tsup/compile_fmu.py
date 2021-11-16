@@ -15,7 +15,7 @@ modelpath = 'FiveZoneVAV.Guideline36TSup'
 
 # COMPILE FMU: set JVM maximum leap to 5G to avoid memory issues
 # -----------
-fmupath = compile_fmu(modelpath, library, jvm_args='-Xmx3g',target='cs',version='2.0',compile_to='VAV.fmu')
+fmupath = compile_fmu(modelpath, library, jvm_args='-Xmx3g',target='cs',version='2.0',compile_to='FiveZoneVAV.fmu')
 # -----------
 
 
