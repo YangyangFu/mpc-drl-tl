@@ -138,26 +138,73 @@ model Guideline36TSup
   Buildings.Controls.OBC.CDL.Routing.BooleanReplicator booRepSupFan(final nout=
         numZon) "Replicate boolean input"
     annotation (Placement(transformation(extent={{500,630},{520,650}})));
-  Modelica.Blocks.Interfaces.RealOutput PHVAC
+  Modelica.Blocks.Interfaces.RealOutput PHVAC(
+     quantity="Power",
+     unit="W")
     "Power consumption of HVAC equipment, W"
     annotation (Placement(transformation(extent={{1400,650},{1420,670}})));
-  Modelica.Blocks.Interfaces.RealOutput PBoiGas "Boiler gas consumption, W"
+  Modelica.Blocks.Interfaces.RealOutput PBoiGas(
+     quantity="Power",
+     unit="W")
+    "Boiler gas consumption, W"
     annotation (Placement(transformation(extent={{1400,576},{1420,596}})));
-  Modelica.Blocks.Interfaces.RealOutput TRoo[5]
+  Modelica.Blocks.Interfaces.RealOutput TRooAirSou(each unit="K", each
+      displayUnit="degC")
     "Room air temperatures, K; 1- South, 2- East, 3- North, 4- West, 5- Core;"
-    annotation (Placement(transformation(extent={{1400,510},{1420,530}})));
+    annotation (Placement(transformation(extent={{1400,438},{1420,458}})));
   Modelica.Blocks.Interfaces.RealOutput TRooAirDevTot
     "Total zone air temperature deviation, K*s"
     annotation (Placement(transformation(extent={{1400,480},{1420,500}})));
-  Modelica.Blocks.Interfaces.RealOutput EHVACTot
-    "Total energy consumption of HVAC equipment, J"
+  Modelica.Blocks.Interfaces.RealOutput EHVACTot(
+     quantity="Energy",
+     unit="J")
+    "Total electricity energy consumption of HVAC equipment, J"
     annotation (Placement(transformation(extent={{1400,602},{1420,622}})));
+  Modelica.Blocks.Interfaces.RealOutput EGasTot(
+     quantity="Energy",
+     unit="J")
+    "Total boiler gas consumption, J"
+    annotation (Placement(transformation(extent={{1400,534},{1420,554}})));
+  Modelica.Blocks.Interfaces.RealOutput TAirOut(
+  unit="K",  displayUnit=
+       "degC") "Outdoor air temperature"
+    annotation (Placement(transformation(extent={{1400,-260},{1420,-240}})));
+  Modelica.Blocks.Interfaces.RealOutput GHI(
+     quantity="RadiantEnergyFluenceRate",
+     unit="W/m2")
+    "Global horizontal solar radiation, W/m2"
+    annotation (Placement(transformation(extent={{1400,-302},{1420,-282}})));
   Buildings.Controls.OBC.CDL.Interfaces.RealInput uTSupSet(
     final unit="K",
     final displayUnit="degC",
     final quantity="ThermodynamicTemperature")
     "External supply air temperature setpoint"
-    annotation (Placement(transformation(extent={{-422,300},{-382,340}})));
+    annotation (Placement(transformation(extent={{-422,236},{-382,276}})));
+  Buildings.Utilities.Math.Min minyDam(nin=5)
+    "Computes lowest zone damper position"
+    annotation (Placement(transformation(extent={{1352,-102},{1372,-82}})));
+  Modelica.Blocks.Interfaces.RealOutput yDamMin "Minimum VAV damper position"
+    annotation (Placement(transformation(extent={{1400,-102},{1420,-82}})));
+  Modelica.Blocks.Interfaces.RealOutput yDamMax "Minimum VAV damper position"
+    annotation (Placement(transformation(extent={{1400,-168},{1420,-148}})));
+  Buildings.Utilities.Math.Max maxyDam(nin=5)
+    annotation (Placement(transformation(extent={{1356,-168},{1376,-148}})));
+  Modelica.Blocks.Interfaces.RealOutput TRooAirEas(each unit="K", each
+      displayUnit="degC")
+    "Room air temperatures, K; 1- South, 2- East, 3- North, 4- West, 5- Core;"
+    annotation (Placement(transformation(extent={{1400,406},{1420,426}})));
+  Modelica.Blocks.Interfaces.RealOutput TRooAirNor(each unit="K", each
+      displayUnit="degC")
+    "Room air temperatures, K; 1- South, 2- East, 3- North, 4- West, 5- Core;"
+    annotation (Placement(transformation(extent={{1400,376},{1420,396}})));
+  Modelica.Blocks.Interfaces.RealOutput TRooAirWes(each unit="K", each
+      displayUnit="degC")
+    "Room air temperatures, K; 1- South, 2- East, 3- North, 4- West, 5- Core;"
+    annotation (Placement(transformation(extent={{1400,346},{1420,366}})));
+  Modelica.Blocks.Interfaces.RealOutput TRooAirCor(each unit="K", each
+      displayUnit="degC")
+    "Room air temperatures, K; 1- South, 2- East, 3- North, 4- West, 5- Core;"
+    annotation (Placement(transformation(extent={{1400,318},{1420,338}})));
 equation
   connect(fanSup.port_b, dpDisSupFan.port_a) annotation (Line(
       points={{320,-40},{320,0},{320,-10},{320,-10}},
@@ -305,8 +352,9 @@ equation
           {1164,491.333},{1164,662},{46,662},{46,313},{58,313}}, color={0,0,127}));
   connect(occSch.occupied, booRep.u) annotation (Line(points={{-297,-216},{-160,
           -216},{-160,290},{-122,290}}, color={255,0,255}));
-  connect(occSch.tNexOcc, reaRep.u) annotation (Line(points={{-297,-204},{-180,-204},
-          {-180,330},{-122,330}}, color={0,0,127}));
+  connect(occSch.tNexOcc, reaRep.u) annotation (Line(points={{-297,-204},{-180,
+          -204},{-180,330},{-122,330}},
+                                  color={0,0,127}));
   connect(reaRep.y, TZonSet.tNexOcc) annotation (Line(points={{-98,330},{-20,330},
           {-20,319},{58,319}}, color={0,0,127}));
   connect(booRep.y, TZonSet.uOcc) annotation (Line(points={{-98,290},{-20,290},{
@@ -464,15 +512,91 @@ equation
     annotation (Line(points={{1241,544},{1318,544}}, color={0,0,127}));
   connect(gasBoi.y, PBoiGas) annotation (Line(points={{1241,544},{1306,544},{1306,
           586},{1410,586}}, color={0,0,127}));
-  connect(flo.TRooAir, TRoo) annotation (Line(points={{1094.14,491.333},{1200,
-          491.333},{1200,520},{1410,520}},
-                                  color={0,0,127}));
   connect(TAirTotDev.y, TRooAirDevTot)
     annotation (Line(points={{1339,490},{1410,490}}, color={0,0,127}));
   connect(eleTotInt.y, EHVACTot)
     annotation (Line(points={{1341,612},{1410,612}}, color={0,0,127}));
-  connect(uTSupSet, conAHU.uTSupSet) annotation (Line(points={{-402,320},{-290,320},
-          {-290,635.6},{336,635.6}}, color={0,0,127}));
+  connect(gasTotInt.y, EGasTot)
+    annotation (Line(points={{1341,544},{1410,544}}, color={0,0,127}));
+  connect(weaBus.TDryBul, TAirOut) annotation (Line(
+      points={{-320,180},{-314,180},{-314,-282},{1342,-282},{1342,-250},{1410,-250}},
+      color={255,204,51},
+      thickness=0.5), Text(
+      string="%first",
+      index=-1,
+      extent={{-3,6},{-3,6}},
+      horizontalAlignment=TextAlignment.Right));
+
+  connect(weaBus.HGloHor, GHI) annotation (Line(
+      points={{-320,180},{-318,180},{-318,-292},{1410,-292}},
+      color={255,204,51},
+      thickness=0.5), Text(
+      string="%first",
+      index=-1,
+      extent={{-6,3},{-6,3}},
+      horizontalAlignment=TextAlignment.Right));
+  connect(conAHU.uTSupSet, uTSupSet) annotation (Line(points={{336,635.6},{-364,
+          635.6},{-364,256},{-402,256}}, color={0,0,127}));
+  connect(cor.y_actual, minyDam.u[1]) annotation (Line(
+      points={{612,58},{618,58},{618,-90},{1350,-90},{1350,-93.6}},
+      color={0,0,127},
+      pattern=LinePattern.Dash));
+  connect(sou.y_actual, minyDam.u[2]) annotation (Line(
+      points={{792,56},{798,56},{798,-88},{1350,-88},{1350,-92.8}},
+      color={0,0,127},
+      pattern=LinePattern.Dash));
+  connect(eas.y_actual, minyDam.u[3]) annotation (Line(
+      points={{972,56},{976,56},{976,-92},{1350,-92}},
+      color={0,0,127},
+      pattern=LinePattern.Dash));
+  connect(nor.y_actual, minyDam.u[4]) annotation (Line(
+      points={{1132,56},{1136,56},{1136,-92},{1350,-92},{1350,-91.2}},
+      color={0,0,127},
+      pattern=LinePattern.Dash));
+  connect(wes.y_actual, minyDam.u[5]) annotation (Line(
+      points={{1332,56},{1334,56},{1334,-88},{1350,-88},{1350,-90.4}},
+      color={0,0,127},
+      pattern=LinePattern.Dash));
+  connect(minyDam.y, yDamMin)
+    annotation (Line(points={{1373,-92},{1410,-92}}, color={0,0,127}));
+  connect(maxyDam.y, yDamMax)
+    annotation (Line(points={{1377,-158},{1410,-158}}, color={0,0,127}));
+  connect(maxyDam.u[1], cor.y_actual) annotation (Line(
+      points={{1354,-159.6},{618,-159.6},{618,58},{612,58}},
+      color={0,0,127},
+      pattern=LinePattern.Dash));
+  connect(sou.y_actual, maxyDam.u[2]) annotation (Line(
+      points={{792,56},{800,56},{800,-158},{818,-158},{818,-158.8},{1354,-158.8}},
+      color={0,0,127},
+      pattern=LinePattern.Dash));
+
+  connect(eas.y_actual, maxyDam.u[3]) annotation (Line(
+      points={{972,56},{982,56},{982,-158},{1354,-158}},
+      color={0,0,127},
+      pattern=LinePattern.Dash));
+  connect(nor.y_actual, maxyDam.u[4]) annotation (Line(
+      points={{1132,56},{1132,-156},{1354,-156},{1354,-157.2}},
+      color={0,0,127},
+      pattern=LinePattern.Dash));
+  connect(wes.y_actual, maxyDam.u[5]) annotation (Line(
+      points={{1332,56},{1336,56},{1336,-156},{1354,-156},{1354,-156.4}},
+      color={0,0,127},
+      pattern=LinePattern.Dash));
+  connect(flo.TRooAir[1], TRooAirSou) annotation (Line(points={{1094.14,488.4},
+          {1124,488.4},{1124,468},{1322,468},{1322,448},{1410,448}}, color={0,0,
+          127}));
+  connect(flo.TRooAir[2], TRooAirEas) annotation (Line(points={{1094.14,489.867},
+          {1130,489.867},{1130,472},{1326,472},{1326,416},{1410,416}}, color={0,
+          0,127}));
+  connect(flo.TRooAir[3], TRooAirNor) annotation (Line(points={{1094.14,491.333},
+          {1136,491.333},{1136,470},{1322,470},{1322,386},{1410,386}}, color={0,
+          0,127}));
+  connect(flo.TRooAir[4], TRooAirWes) annotation (Line(points={{1094.14,492.8},
+          {1130,492.8},{1130,470},{1318,470},{1318,356},{1410,356}}, color={0,0,
+          127}));
+  connect(flo.TRooAir[5], TRooAirCor) annotation (Line(points={{1094.14,494.267},
+          {1128,494.267},{1128,472},{1334,472},{1334,328},{1410,328}}, color={0,
+          0,127}));
   annotation (
     Diagram(coordinateSystem(preserveAspectRatio=false,extent={{-380,-320},{1400,
             680}})),
@@ -572,7 +696,7 @@ This is for
         "Simulate and plot"),
     experiment(
       StartTime=19180800,
-      StopTime=19267200,
+      StopTime=19785600,
       Tolerance=1e-06,
       __Dymola_Algorithm="Cvode"),
     Icon(coordinateSystem(extent={{-100,-100},{100,100}})));

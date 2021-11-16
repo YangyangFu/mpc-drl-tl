@@ -25,11 +25,11 @@ endTime = startTime + time_stop
 dt = 60*15.
 
 ## load fmu - cs
-fmu_name = "VAV"
+fmu_name = "FiveZoneVAV"
 fmu = load_fmu(fmu_name+'.fmu')
 fmu.set_log_level(0) # log level 0-7
 options = fmu.simulate_options()
-options['filter']=['PHVAC','PBoiGas','TRoo[1]','TRoo[2]','TRoo[3]','TRoo[4]','TRoo[5]','TRooAirDevTot','EHVACTot','conAHU.TSupSet']
+options['filter']=['PHVAC','PBoiGas','TRooAirSou','TRooAirEas','TRooAirNor','TRooAirWes','TRooAirCor','TRooAirDevTot','EHVACTot','conAHU.TSupSet','uTSupSet']
 options['result_handling']="memory" #"memory"
 
 options['ncp'] = 100
@@ -56,7 +56,7 @@ while ts < endTime:
     options['initialize'] = initialize  
 
     # generate inputs
-    u = uniform(12,18)
+    u = uniform(12+273.15,18+273.15)
     #time = ts
     #u_trajectory = np.vstack((time,u))
     #input_object = (input_names,np.transpose(u_trajectory))
@@ -72,14 +72,27 @@ toc = time.process_time()
 
 print ('Finish simulation in:' + str(toc-tic)+" second(s)")
 
+measurements_name=['time','conAHU.TSupSet','uTSupSet','PHVAC']
 
-name='TRooAirDevTot'
 measurement={}
-value_name=[]
-for res in res_all:
-    value_name += list(res[name])
-measurement[name] = np.array(value_name)
-print (measurement[name])
+
+for name in measurements_name:
+    value_name=[]
+    for res in res_all:
+        value_name += list(res[name])
+    measurement[name] = np.array(value_name)
+   
+plt.figure(figsize=(8,10))
+plt.subplot(211)
+plt.plot(measurement['time'],measurement['uTSupSet'],'b-',label="Input")
+plt.plot(measurement['time'],measurement['conAHU.TSupSet'],'r--',label="TSupSet")
+plt.legend()
+plt.ylabel('TSupSet')
+plt.subplot(212)
+plt.plot(measurement['time'],measurement['PHVAC'])
+plt.ylabel('PHVAC')
+plt.savefig('simulateFMU.pdf')
+
 
 # clean folder after simulation
 def deleteFiles(fileList):
