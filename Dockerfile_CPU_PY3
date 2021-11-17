@@ -15,13 +15,15 @@ RUN conda update conda && \
     conda config --add channels conda-forge && \
     conda install pip \
          scikit-learn \
-         casadi \
          tianshou \
          matplotlib \
          pvlib-python \
          joblib && \
     conda clean -ya
 
+## install casadi using pip
+WORKDIR $HOME 
+RUN pip install casadi
 ## install fmu-gym
 WORKDIR $HOME
 RUN pip install git+git://github.com/YangyangFu/modelicagym.git@master 
