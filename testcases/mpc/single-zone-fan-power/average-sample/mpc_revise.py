@@ -10,96 +10,12 @@ import casadi as ca
 import model
 import joblib
 
-class ObjectiveCallback(ca.Callback):
-    def __init__(self,name, PH, dt, w, power_model, predictor, opts={}):
-        ca.Callback.__init__(self)
-        self.PH = PH
-        self.dt = dt
-        self.w = w # weights for energy cost and temperature violation term [w1, w2]
-        self.power_model = power_model
-        self.predictor = predictor
-        self.construct(name,opts)
-
-    # Number of inputs and outputs   
-    def get_n_in(self): return 1
-    def get_n_out(self): return 1
-
-    # Array of inputs and outputs
-    def get_sparsity_in(self,i):
-        return ca.Sparsity.dense(2*self.PH,1)
-    def get_sparsity_out(self,i):
-        return ca.Sparsity.dense(1,1)
-
-    # Initialize the object
-    def init(self):
-        print('initializing object')
-
-    def power_polynomial(self,mz):
-        params = self.power_model
-        f_P = model.FanPower(n=len(params['alpha']))
-        f_P.params = params
-        PFan = f_P.predict(mz)
-
-        return PFan
-
-    def eval(self,arg):
-        """evaluate objective
-
-        """
-        # get control inputs: U = {u(t+1), u(t+2), ... u(t+PH)}
-        #                      u = [mz, \epsilon]
-        U = arg[0]
-
-        # loop over the prediction horizon
-        i = 0
-        P_pred_ph = []
-        eps_ph = []
-
-        while i < self.PH:
-            # get u for current step 
-            u = U[i*2:2*i+2]
-            mz = u[0]*0.75 # control inputs
-            eps = u[1] # temperature slack
-
-            ### ====================================================================
-            ###            Power Predictor
-            ### =====================================================================
-            # predict total power at current step
-            P_pred = self.power_polynomial(mz) 
-            # Save step-wise power prediction 
-            P_pred_ph.append(P_pred) # save all step-wise power for cost calculation
-
-            ### =====================================
-            #             Temperature violation
-            ### ======================================
-            eps_ph.append(eps)
-
-            ### ===========================================================
-            ###      Update for next step
-            ### ==========================================================
-            # update clock
-            i += 1
-
-        # energy cost: calculate total cost based on predicted energy prices
-        price_ph = self.predictor['price']
-        energy_cost = np.sum(np.array(price_ph)*np.array(P_pred_ph))*self.dt/3600./1000. 
-
-        # zone temperature bounds penalty
-        penalty = np.sum(np.array(eps_ph)**2)
-
-        # objective for a minimization problem
-        f = self.w[0]*energy_cost + self.w[1]*penalty
-
-        return [f]
-
 class PowerCallback(ca.Callback):
-    def __init__(self,name, PH, dt, w, power_model, predictor, opts={}):
+    def __init__(self,name, PH, n, power_model, opts={}):
         ca.Callback.__init__(self)
-        self.PH = PH
-        self.dt = dt
-        self.w = w # weights for energy cost and temperature violation term [w1, w2]
+        self.PH = PH # prediction horizon
+        self.n = n # number of optimization variables at each step
         self.power_model = power_model
-        self.predictor = predictor
         self.construct(name,opts)
 
     # Number of inputs and outputs   
@@ -108,7 +24,7 @@ class PowerCallback(ca.Callback):
 
     # Array of inputs and outputs
     def get_sparsity_in(self,i):
-        return ca.Sparsity.dense(2*self.PH,1)
+        return ca.Sparsity.dense(self.n*self.PH,1)
     def get_sparsity_out(self,i):
         return ca.Sparsity.dense(self.PH,1)
 
@@ -138,9 +54,8 @@ class PowerCallback(ca.Callback):
 
         while i < self.PH:
             # get u for current step 
-            u = U[i*2:2*i+2]
+            u = U[i*self.n:self.n*(i+1)]
             mz = u[0]*0.75 # control inputs
-            eps = u[1] # temperature slack
 
             ### ====================================================================
             ###            Power Predictor
@@ -157,11 +72,11 @@ class PowerCallback(ca.Callback):
 
         return [ca.DM(P_pred_ph)]
 
-
 class ZoneTemperatureCallback(ca.Callback):
-    def __init__(self,name, PH, zone_model, states, predictor, opts={}):
+    def __init__(self,name, PH, n, zone_model, states, predictor, opts={}):
         ca.Callback.__init__(self)
         self.PH = PH
+        self.n = n
         self.zone_model = zone_model # params={'alpha':{}}
         self.states = states
         self.predictor = predictor
@@ -174,7 +89,7 @@ class ZoneTemperatureCallback(ca.Callback):
 
     # Array of inputs and outputs
     def get_sparsity_in(self,i):
-        return ca.Sparsity.dense(2*self.PH,1)
+        return ca.Sparsity.dense(self.n*self.PH,1)
     def get_sparsity_out(self,i):
         return ca.Sparsity.dense(self.PH,1)
 
@@ -217,7 +132,7 @@ class ZoneTemperatureCallback(ca.Callback):
 
         while i < self.PH:
             # get u for current step 
-            u = U[i*2:2*i+2]
+            u = U[i*self.n:self.n*(i+1)]
             mz = u[0]*0.75 # control inputs
 
             ### ====================================================================
@@ -282,13 +197,17 @@ class mpc_case():
 
         # some mpc settings
         self.n = 2 # number of control variable for each step
-        self.w = [1, 0.01] # weights between energy cost and temperature violation
+        self.w = [1, 1] # weights between energy cost and temperature violation
         self.u_lb = [0.]*self.n
         self.u_ub = [1.,0.01]
         # initialize optimiztion
         self.u_start = self.u_lb*self.PH
         #self.optimization_model=self.get_optimization_model() # pyomo object
         self.optimum= {}
+
+        # save internal power and temp predictor casadi function for extra calls
+        self._P = None
+        self._Tz = None
 
     def optimize(self):
         """MPC optimization problem in casadi interface
@@ -297,15 +216,14 @@ class mpc_case():
         # instantiate power function
         P = PowerCallback('P', 
                             PH = self.PH,
-                            dt = self.dt,
-                            w = self.w,
+                            n = self.n,
                             power_model = self.power_model,
-                            predictor = self.predictor,
                             opts={"enable_fd":True})   
              
         # instantiate nonlinear constraints zone temperature
         Tz = ZoneTemperatureCallback('Tz',
                                     PH = self.PH, 
+                                    n = self.n,
                                     zone_model = self.zone_model, 
                                     states = self.states, 
                                     predictor =self.predictor, 
@@ -320,15 +238,10 @@ class mpc_case():
         for k in range(self.PH):
             fo = self.w[0]*power_ph[k]*price_ph[k]*self.dt/3600./1000 + self.w[1]*u[self.n*k+1]
             fval.append(fo)
-        print(fval,type(fval))
         fval_sum = ca.sum1(ca.vertcat(*fval))
 
-        obj=ca.Function('fval',[u],[fval_sum])
-        print(fval_sum)
-        print(obj)
-        # define a function for calculate step-wise objective
-        
-        # define a map function to 
+        obj=ca.Function('fval',[u],[fval_sum]) # this is the ultimate objective function
+        f = obj(u) # get the objective value
 
         # define constraint function
         Tz_pred = Tz(u) # predicted T of size PH
@@ -336,7 +249,7 @@ class mpc_case():
         ### define nonlinear temperature constraints
         # zone temperature bounds - need check with the high-fidelty model
         T_upper = np.array([30.0 for i in range(24)])
-        T_upper[self.occ_start:self.occ_end] = 26.0
+        T_upper[self.occ_start:self.occ_end] = 24.0
         T_lower = np.array([12.0 for i in range(24)])
         T_lower[self.occ_start:self.occ_end] = 22.0
 
@@ -360,12 +273,13 @@ class mpc_case():
             ubg += [ca.inf, T_upper[t]]
 
         # formulate an optimziation problem using nlp solver
-        prob = {'f':obj, 'x': u, 'g': ca.vertcat(*g)}
-        nlp_optimize = ca.nlpsol('solver', 'ipopt', prob)
+        prob = {'f':f, 'x': u, 'g': ca.vertcat(*g)}
+        opts = {}
+        nlp_optimize = ca.nlpsol('solver', 'ipopt', prob, opts)
 
         # set initial guess
         u0 = self.u_start
-
+        print(u0)
         # set lower upper bound for u
         lbx = self.u_lb*self.PH
         ubx = self.u_ub*self.PH
@@ -382,8 +296,8 @@ class mpc_case():
         print(solution)
         
         # save the function for external calls
-        self.f = P
-        self.Tz = Tz
+        self._P = P
+        self._Tz = Tz
 
         return self.optimum
         
@@ -430,7 +344,7 @@ class mpc_case():
 
     def get_u_start(self,optimum_prev):
         fut = optimum_prev[self.n:]
-        start = np.append(fut, [0.5,0.])
+        start = np.append(fut, [0.1,0.])
         return start
 
     def set_u_start(self,prev):

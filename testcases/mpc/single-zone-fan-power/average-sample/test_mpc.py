@@ -99,8 +99,8 @@ def get_Toa(time,dt,PH,Toa_year):
     return list(Toa.values.flatten())
 
 ### 0- Simulation setup
-start = 212*24*3600. #+ 13*24*3600
-end = start + 7*24*3600.
+start = 225*24*3600. # 212 - 8/1
+end = start + 1*24*3600.
 
 ### 1- Load virtual building model
 hvac = load_fmu('SingleZoneDamperControl.fmu')
@@ -112,7 +112,7 @@ options['initialize'] = True
 
 # Warm up FMU simulation settings
 ts = start
-te_warm = ts + 4*3600
+te_warm = ts + 1*3600
 
 ### 2- Initialize MPC case 
 dt = 15*60.
@@ -126,6 +126,7 @@ with open('power.json') as f:
 
 # initialize measurement
 measurement_names=['TRoo','TOut','PTot','uFan','hvac.fanSup.m_flow_in']
+hvac.set("zon.roo.T_start",273.15+25)
 res = hvac.simulate(start_time = ts,
                     final_time = ts,
                     options=options)
@@ -176,6 +177,8 @@ case = mpc_case(PH=PH,
 # initialize all results
 u_opt=[]
 t_opt=[]
+P_pred_opt = []
+Tz_pred_opt = []
 warmup = True
 
 while ts<end:
@@ -208,8 +211,11 @@ while ts<end:
         # update start points for optimizer using previous optimum value
         case.set_u_start(u_opt_ph)
 
+        
         # update predictions after MPC predictor is called otherwise use measurement 
-        Tz_pred = float(case.Tz(u_opt_ph)[0])
+        Tz_pred = float(case._Tz(u_opt_ph)[0])
+        # update power prediction after MPC call
+        P_pred = float(case._P(u_opt_ph)[0])
 
     ### advance building simulation by one step
     #u_traj = np.transpose(np.vstack(([ts,te],[uFan,uFan])))
@@ -230,7 +236,8 @@ while ts<end:
     # if not warmup then measurement else from mpc
     if warmup:
         Tz_pred = measurement['TRoo'].values[0] - 273.15
-
+        P_pred = measurement['PTot'].values[0]
+ 
     states = get_states(states,measurement, Tz_pred)
     print ("\nstate 4")
     print (states)
@@ -250,9 +257,13 @@ while ts<end:
 
     # Save all the optimal results for future simulation
     u_opt.append(uFan)
+    Tz_pred_opt.append(Tz_pred)
+    P_pred_opt.append(P_pred)
 
 final = {'u_opt':u_opt,
-        't_opt':t_opt}
+        't_opt':t_opt,
+        'Tz_pred_opt':Tz_pred_opt,
+        'P_pred_opt':P_pred_opt}
 
 with open('u_opt.json', 'w') as outfile:
     json.dump(final, outfile)

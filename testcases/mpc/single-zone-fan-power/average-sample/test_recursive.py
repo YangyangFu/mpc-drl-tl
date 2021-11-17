@@ -47,7 +47,7 @@ class PowerCallback(ca.Callback):
         # get control inputs: U = {u(t+1), u(t+2), ... u(t+PH)}
         #                      u = [mz, \epsilon]
         U = arg[0]
-        print(U)
+
         # loop over the prediction horizon
         i = 0
         P_pred_ph = []
@@ -57,7 +57,7 @@ class PowerCallback(ca.Callback):
             u = U[i*2:2*i+2]
             mz = u[0]*0.75 # control inputs
             eps = u[1] # temperature slack
-            print(i)
+
             ### ====================================================================
             ###            Power Predictor
             ### =====================================================================
@@ -78,8 +78,6 @@ def LIFO(array,x):
     a = np.append(array,x)
 
     return list(a[1:])
-
-
 
 def objective(PH=4,dt=900., w=[1,0.01],predictor={'price':[1.,1.,1.,1.]}):
     """MPC optimization problem in casadi interface
@@ -116,13 +114,11 @@ def objective(PH=4,dt=900., w=[1,0.01],predictor={'price':[1.,1.,1.,1.]}):
     print(obj,type(obj))
     
     # define a function for calculate step-wise objective
-    u1=[0.1]*8
-    y=obj(u1)
-    print(y)
+    y=obj(u)
 
 
     #define a nlp
-    prob = {'f':obj, 'x': u}
+    prob = {'f':y, 'x': u}
     nlp_optimize = ca.nlpsol('solver', 'ipopt', prob)
     u0 = [0.1, 0.0]*PH
     lbx=[0.0, 0.0]*PH
@@ -133,4 +129,5 @@ def objective(PH=4,dt=900., w=[1,0.01],predictor={'price':[1.,1.,1.,1.]}):
 
     return solution['x']
 
-objective()
+print(objective())
+
