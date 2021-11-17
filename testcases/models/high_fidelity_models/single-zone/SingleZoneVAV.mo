@@ -524,6 +524,7 @@ First implementation.
       experiment(
         StartTime=18316800,
         StopTime=20995200,
+        Tolerance=1e-06,
         __Dymola_Algorithm="Cvode"),
         __Dymola_Commands(file="modelica://Buildings/Resources/Scripts/Dymola/Air/Systems/SingleZone/VAV/Examples/ChillerDXHeatingEconomizer.mos"
           "Simulate and plot"),
@@ -2208,6 +2209,7 @@ First implementation.
           Buildings.Controls.Continuous.LimPID conFan(
             final k=kFan,
             Ti=60,
+            Td=0,
             final yMax=1,
             final yMin=minAirFlo,
             controllerType=Modelica.Blocks.Types.SimpleController.PI,
@@ -2236,10 +2238,10 @@ First implementation.
           connect(conFan.y, yFan)
             annotation (Line(points={{41,40},{41,40},{110,40}},
                                                            color={0,0,127}));
-          connect(conFan.trigger, trigger) annotation (Line(points={{22,28},{22,
-                  0},{-20,0},{-20,80},{-120,80}}, color={255,0,255}));
           connect(trigger, conHeaCoi.trigger) annotation (Line(points={{-120,80},
                   {-20,80},{-20,-80},{-8,-80},{-8,-52}}, color={255,0,255}));
+          connect(trigger, conFan.trigger) annotation (Line(points={{-120,80},{
+                  -20,80},{-20,16},{22,16},{22,28}}, color={255,0,255}));
           annotation (
           defaultComponentName="conHeaFan",
           Documentation(info="<html>
