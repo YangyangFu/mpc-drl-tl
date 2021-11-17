@@ -155,7 +155,7 @@ class PowerCallback(ca.Callback):
             # update clock
             i += 1
 
-        return [P_pred_ph]
+        return [ca.DM(P_pred_ph)]
 
 
 class ZoneTemperatureCallback(ca.Callback):
@@ -295,7 +295,7 @@ class mpc_case():
         """
 
         # instantiate power function
-        P = PowerCallback('f', 
+        P = PowerCallback('P', 
                             PH = self.PH,
                             dt = self.dt,
                             w = self.w,
@@ -321,9 +321,11 @@ class mpc_case():
             fo = self.w[0]*power_ph[k]*price_ph[k]*self.dt/3600./1000 + self.w[1]*u[self.n*k+1]
             fval.append(fo)
         print(fval,type(fval))
-        fval_sum = ca.cumsum(ca.hcat(fval))
-        fval_sum0 = fval_sum[-1]
-        obj=ca.Function('fval',[u],[fval_sum0])
+        fval_sum = ca.sum1(ca.vertcat(*fval))
+
+        obj=ca.Function('fval',[u],[fval_sum])
+        print(fval_sum)
+        print(obj)
         # define a function for calculate step-wise objective
         
         # define a map function to 
