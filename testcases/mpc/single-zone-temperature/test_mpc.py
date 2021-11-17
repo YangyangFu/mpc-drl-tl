@@ -98,7 +98,7 @@ def get_Toa(time,dt,PH,Toa_year):
     return list(Toa.values.flatten())
 
 ### 0- Simulation setup
-start = 212*24*3600.#+13*24*3600
+start = 225*24*3600.#+13*24*3600
 end = start + 1*24*3600.
 
 ### 1- Load virtual building model
