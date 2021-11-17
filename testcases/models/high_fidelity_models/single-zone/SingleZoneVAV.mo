@@ -18,6 +18,7 @@ package SingleZoneVAV
       "Cooling setpoint during on";
     parameter Modelica.SIunits.Temperature TCooOff=303.15
       "Cooling setpoint during off";
+    parameter Real mSenFac = 1 "Thermal mass scalor in the zone";
 
     BaseClasses.Control.ChillerDXHeatingEconomizerController con(
       minAirFlo=0.1,
@@ -41,7 +42,9 @@ package SingleZoneVAV
     BaseClasses.Room  zon(
       redeclare package MediumA = MediumA,
         mAir_flow_nominal=0.75,
-        lat=weaDat.lat) "Thermal envelope of single zone"
+        lat=weaDat.lat,
+      roo(mSenFac=mSenFac))
+                        "Thermal envelope of single zone"
       annotation (Placement(transformation(extent={{40,-20},{80,20}})));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
         computeWetBulbTemperature=false, filNam=
@@ -298,6 +301,7 @@ First implementation.
       "Cooling setpoint during on";
     parameter Modelica.SIunits.Temperature TCooOff=303.15
       "Cooling setpoint during off";
+    parameter Real mSenFac = 1 "Thermal mass scalor in the zone";
 
     BaseClasses.Control.ChillerDXHeatingEconomizerController con(
       minAirFlo=0.1,
@@ -321,7 +325,8 @@ First implementation.
     BaseClasses.Room  zon(
       redeclare package MediumA = MediumA,
         mAir_flow_nominal=0.75,
-        lat=weaDat.lat) "Thermal envelope of single zone"
+        lat=weaDat.lat,
+        roo(mSenFac=mSenFac)) "Thermal envelope of single zone"
       annotation (Placement(transformation(extent={{40,-20},{80,20}})));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
         computeWetBulbTemperature=false, filNam=
@@ -576,6 +581,7 @@ First implementation.
       "Cooling setpoint during on";
     parameter Modelica.SIunits.Temperature TCooOff=303.15
       "Cooling setpoint during off";
+    parameter Real mSenFac = 1 "Thermal mass scalor in the zone";
 
     BaseClasses.Control.ChillerDXHeatingEconomizerController                  con(
       minAirFlo=0.1,
@@ -598,7 +604,8 @@ First implementation.
     BaseClasses.Room  zon(
       redeclare package MediumA = MediumA,
         mAir_flow_nominal=0.75,
-        lat=weaDat.lat) "Thermal envelope of single zone"
+        lat=weaDat.lat,
+        roo(mSenFac=mSenFac)) "Thermal envelope of single zone"
       annotation (Placement(transformation(extent={{40,-20},{80,20}})));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
         computeWetBulbTemperature=false, filNam=
@@ -866,6 +873,7 @@ First implementation.
       "Cooling setpoint during on";
     parameter Modelica.SIunits.Temperature TCooOff=303.15
       "Cooling setpoint during off";
+    parameter Real mSenFac = 4 "Thermal mass scalor in the zone";
 
     BaseClasses.Control.ChillerDXHeatingEconomizerController                  con(
       minAirFlo=0.1,
@@ -889,7 +897,7 @@ First implementation.
       redeclare package MediumA = MediumA,
         mAir_flow_nominal=0.75,
         lat=weaDat.lat,
-      roo(mSenFac=4))   "Thermal envelope of single zone"
+        roo(mSenFac=mSenFac))   "Thermal envelope of single zone"
       annotation (Placement(transformation(extent={{40,-20},{80,20}})));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
         computeWetBulbTemperature=false, filNam=
@@ -1145,8 +1153,7 @@ First implementation.
     extends Modelica.Icons.BasesPackage;
     model Room "Room model for test case"
       extends Buildings.Air.Systems.SingleZone.VAV.Examples.BaseClasses.Room(
-        roo(use_C_flow=true,
-          mSenFac=4,         nPorts=6),
+        roo(use_C_flow=true, nPorts=6),
         sinInf(use_C_in=true),
         TRooAir(unit="K"));
       Modelica.Blocks.Math.Gain gaiCO2Gen(k=2)

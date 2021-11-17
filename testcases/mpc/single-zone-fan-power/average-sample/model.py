@@ -67,7 +67,6 @@ class Zone():
         correction = np.mean(np.array(Tz_his_meas)-np.array(Tz_his_pred))
 
         return float(correction)     
-
         
     def predict(self,Tz_his_meas, Tz_his_pred, To_his_meas, mz, Tsa):
         """This is to provide a complete prediction with autocorrection term
