@@ -18,7 +18,7 @@ package SingleZoneVAV
       "Cooling setpoint during on";
     parameter Modelica.SIunits.Temperature TCooOff=303.15
       "Cooling setpoint during off";
-    parameter Real mSenFac = 1 "Thermal mass scalor in the zone";
+    parameter Real mSenFac = 4 "Thermal mass scalor in the zone";
 
     BaseClasses.Control.ChillerDXHeatingEconomizerController con(
       minAirFlo=0.1,
@@ -44,12 +44,12 @@ package SingleZoneVAV
         mAir_flow_nominal=0.75,
         lat=weaDat.lat,
       roo(mSenFac=mSenFac))
-                        "Thermal envelope of single zone"
+      "Thermal envelope of single zone"
       annotation (Placement(transformation(extent={{40,-20},{80,20}})));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
-        computeWetBulbTemperature=false, filNam=
-        Modelica.Utilities.Files.loadResource(
-            "Resources/weatherdata/USA_CA_Riverside.Muni.AP.722869_TMY3.mos"))
+        computeWetBulbTemperature=false,
+        filNam=Modelica.Utilities.Files.loadResource(
+            "Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
       annotation (Placement(transformation(extent={{-160,120},{-140,140}})));
     Modelica.Blocks.Continuous.Integrator EFan "Total fan energy"
       annotation (Placement(transformation(extent={{40,-50},{60,-30}})));
@@ -207,9 +207,8 @@ package SingleZoneVAV
             -10},{-116,-10},{-116,-70},{-102,-70}}, color={0,0,127}));
     connect(oveTSetRooHea.y, senTSetRooHea.u) annotation (Line(points={{-119,30},
             {-116,30},{-116,50},{-102,50}}, color={0,0,127}));
-    connect(zon.CO2, CO2RooAir.u) annotation (Line(points={{81,-4},{100,-4},{
-            100,-30},{118,-30}},
-                        color={0,0,127}));
+    connect(zon.CO2, CO2RooAir.u) annotation (Line(points={{81,-4},{100,-4},{100,-30},
+            {118,-30}}, color={0,0,127}));
     connect(TRooAir.y, TRoo)
       annotation (Line(points={{141,0},{170,0}}, color={0,0,127}));
     connect(CO2RooAir.y, CO2Roo)
@@ -286,6 +285,7 @@ First implementation.
 
   model AirflowBaseline
     "Based on Buildings.Air.Systems.SingleZone.VAV.Examples.ChillerDXHeatingEconomizer."
+    import ModelicaServices;
 
     package MediumA = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Buildings library air media package";
     package MediumW = Buildings.Media.Water "Buildings library air media package";
@@ -301,7 +301,7 @@ First implementation.
       "Cooling setpoint during on";
     parameter Modelica.SIunits.Temperature TCooOff=303.15
       "Cooling setpoint during off";
-    parameter Real mSenFac = 1 "Thermal mass scalor in the zone";
+    parameter Real mSenFac = 4 "Thermal mass scalor in the zone";
 
     BaseClasses.Control.ChillerDXHeatingEconomizerController con(
       minAirFlo=0.1,
@@ -329,9 +329,10 @@ First implementation.
         roo(mSenFac=mSenFac)) "Thermal envelope of single zone"
       annotation (Placement(transformation(extent={{40,-20},{80,20}})));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
-        computeWetBulbTemperature=false, filNam=
-        Modelica.Utilities.Files.loadResource(
-            "Resources/weatherdata/USA_CA_Riverside.Muni.AP.722869_TMY3.mos"))
+        computeWetBulbTemperature=false,
+        filNam=
+          Modelica.Utilities.Files.loadResource(
+            "Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
       annotation (Placement(transformation(extent={{-160,120},{-140,140}})));
     Modelica.Blocks.Continuous.Integrator EFan "Total fan energy"
       annotation (Placement(transformation(extent={{40,-50},{60,-30}})));
@@ -611,7 +612,7 @@ First implementation.
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
         computeWetBulbTemperature=false, filNam=
         Modelica.Utilities.Files.loadResource(
-            "Resources/weatherdata/USA_CA_Riverside.Muni.AP.722869_TMY3.mos"))
+            "Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
       annotation (Placement(transformation(extent={{-160,120},{-140,140}})));
     Modelica.Blocks.Continuous.Integrator EFan "Total fan energy"
       annotation (Placement(transformation(extent={{40,-50},{60,-30}})));
@@ -903,7 +904,7 @@ First implementation.
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
         computeWetBulbTemperature=false, filNam=
         Modelica.Utilities.Files.loadResource(
-            "Resources/weatherdata/USA_CA_Riverside.Muni.AP.722869_TMY3.mos"))
+            "Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
       annotation (Placement(transformation(extent={{-160,120},{-140,140}})));
     Modelica.Blocks.Continuous.Integrator EFan "Total fan energy"
       annotation (Placement(transformation(extent={{40,-50},{60,-30}})));
@@ -2342,6 +2343,7 @@ VAV system model that serves a single thermal zone.
   annotation (uses(Modelica(version="3.2.3"),
       Buildings(version="7.0.0"),
       IBPSA(version="3.0.0"),
-      FaultInjection(version="1.0.0")),
+      FaultInjection(version="1.0.0"),
+      ModelicaServices(version="3.2.3")),
     version="1");
 end SingleZoneVAV;
