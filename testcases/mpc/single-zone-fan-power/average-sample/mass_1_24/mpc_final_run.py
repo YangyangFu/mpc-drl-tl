@@ -11,8 +11,8 @@ import json
 from pyfmi import load_fmu
 
 # simulation setup
-ts = 225*24*3600.#+13*24*3600
-nday = 1
+ts = 212*24*3600.#+13*24*3600
+nday = 7
 period = nday*24*3600.
 te = ts + period
 dt = 15*60.
