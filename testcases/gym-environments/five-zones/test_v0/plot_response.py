@@ -14,7 +14,7 @@ from pyfmi import load_fmu
 ##              General Settings
 # =======================================================
 # simulation setup
-ts = 222*24*3600.#+13*24*3600
+ts = 204*24*3600.#+13*24*3600
 nday = 7
 period = nday*24*3600.
 te = ts + period
@@ -41,7 +41,7 @@ options = baseline.simulate_options()
 options['ncp'] = 5000
 options['initialize'] = True
 options['result_handling'] = 'memory'
-options['filter'] = measurement_names
+options['filter'] = measurement_names[:-1]
 
 ## construct optimal input for fmu
 res_base = baseline.simulate(start_time = ts,
@@ -54,13 +54,15 @@ print ("Finish baseline simulation")
 ##              DRL final run: Discrete: v0-dqn
 ##===========================================================
 # get actions from the last epoch
-v1_dqn_case = './dqn_results'
-actions= np.load(v1_dqn_case+'/his_act.npy')
-u_opt = 12+6*np.array(actions[-1,:-1])/float(nActions-1)
+v0_dqn_case = './dqn_results'
+actions= np.load(v0_dqn_case+'/his_act.npy')
+u_opt = 12+6*np.array(actions[:-1])/float(nActions-1)+273.15
 print (u_opt)
 
+### 1- Load virtual building model
+hvac = load_fmu('FiveZoneVAV.fmu')
+
 ## fmu settings
-hvac.reset()
 options = hvac.simulate_options()
 options['ncp'] = 100
 options['initialize'] = True
@@ -81,24 +83,23 @@ while t < te:
                 options = options,
                 input = input_object)
     res_dqn_v0.append(ires)
-
     t += dt 
     i += 1
     options['initialize'] = False
 
 
-'''
-################################################################
-##           Compare DRL with Baseline
-## =============================================================
+
+##############################################################
+#           Compare DRL with Baseline
+# =============================================================
 
 # read measurements
 measurement_base = {}
 measurement_dqn_v0 = {}
-
-for name in measurement_names:
+for name in measurement_names[:-1]:
     measurement_base[name] = res_base[name]
     # get dqn_v0 results
+for name in measurement_names:
     value_name_dqn_v0=[]
     for ires in res_dqn_v0:
       value_name_dqn_v0 += list(ires[name])
@@ -128,24 +129,24 @@ price_tou = [1]*24*nday
 xticks=np.arange(ts,te,12*3600)
 xticks_label = np.arange(0,24*nday,12)
 
-plt.figure(figsize=(16,12))
+plt.figure(figsize=(16,28))
 # plt.subplot(411)
 # plt.step(np.arange(ts, te, 3600.),price_tou, where='post')
 # plt.xticks(xticks,[])
 # plt.grid(True)
 # plt.ylabel('Price ($/kW)')
 
-plt.subplot(411)
-plt.plot(measurement_base['time'], measurement_base['conAHU.TSup'],'b-',label='Baseline')
-plt.plot(measurement_base['time'], measurement_base['conAHU.TSupSet'],'b--',label='Baseline')
-plt.plot(measurement_dqn_v0['time'], measurement_dqn_v0['conAHU.TSup'],'r-',label='DQN')
-plt.plot(measurement_dqn_v0['time'], measurement_dqn_v0['conAHU.TSupSet'],'r--',label='DQN')
+plt.subplot(711)
+plt.plot(measurement_base['time'], measurement_base['conAHU.TSup']-273.15,'b--',label='Baseline')
+plt.plot(measurement_base['time'], measurement_base['conAHU.TSupSet']-273.15,'b-')
+plt.plot(measurement_dqn_v0['time'], measurement_dqn_v0['conAHU.TSup']-273.15,'r--',label='DQN')
+plt.plot(measurement_dqn_v0['time'], measurement_dqn_v0['conAHU.TSupSet']-273.15,'r-')
 plt.grid(True)
 plt.xticks(xticks,[])
 plt.legend()
-plt.ylabel('Supply air temperature and its setpoint')
+plt.ylabel('Supply air temperature [C]')
 
-plt.subplot(412)
+plt.subplot(712)
 plt.plot(measurement_base['time'], measurement_base['TRooAirSou']-273.15,'b-',label='Baseline')
 plt.plot(measurement_dqn_v0['time'],  measurement_dqn_v0['TRooAirSou']-273.15,'r--',label='DQN')
 plt.plot(tim,T_upper, 'g-.', lw=1,label='Bounds')
@@ -154,8 +155,9 @@ plt.grid(True)
 plt.xticks(xticks,[])
 plt.legend()
 plt.ylabel('South Zone Temperature [C]')
+plt.ylim(22, 26)
 
-plt.subplot(413)
+plt.subplot(713)
 plt.plot(measurement_base['time'], measurement_base['TRooAirEas']-273.15,'b-',label='Baseline')
 plt.plot(measurement_dqn_v0['time'],  measurement_dqn_v0['TRooAirEas']-273.15,'r--',label='DQN')
 plt.plot(tim,T_upper, 'g-.', lw=1,label='Bounds')
@@ -164,13 +166,48 @@ plt.grid(True)
 plt.xticks(xticks,[])
 plt.legend()
 plt.ylabel('East Zone Temperature [C]')
+plt.ylim(22, 26)  
 
-plt.subplot(414)
+plt.subplot(714)
+plt.plot(measurement_base['time'], measurement_base['TRooAirWes']-273.15,'b-',label='Baseline')
+plt.plot(measurement_dqn_v0['time'],  measurement_dqn_v0['TRooAirWes']-273.15,'r--',label='DQN')
+plt.plot(tim,T_upper, 'g-.', lw=1,label='Bounds')
+plt.plot(tim,T_lower, 'g-.', lw=1)
+plt.grid(True)
+plt.xticks(xticks,[])
+plt.legend()
+plt.ylabel('West Zone Temperature [C]')
+plt.ylim(22, 26)  
+
+plt.subplot(715)
+plt.plot(measurement_base['time'], measurement_base['TRooAirNor']-273.15,'b-',label='Baseline')
+plt.plot(measurement_dqn_v0['time'],  measurement_dqn_v0['TRooAirNor']-273.15,'r--',label='DQN')
+plt.plot(tim,T_upper, 'g-.', lw=1,label='Bounds')
+plt.plot(tim,T_lower, 'g-.', lw=1)
+plt.grid(True)
+plt.xticks(xticks,[])
+plt.legend()
+plt.ylabel('North Zone Temperature [C]')
+plt.ylim(22, 26)  
+
+plt.subplot(716)
+plt.plot(measurement_base['time'], measurement_base['TRooAirCor']-273.15,'b-',label='Baseline')
+plt.plot(measurement_dqn_v0['time'],  measurement_dqn_v0['TRooAirCor']-273.15,'r--',label='DQN')
+plt.plot(tim,T_upper, 'g-.', lw=1,label='Bounds')
+plt.plot(tim,T_lower, 'g-.', lw=1)
+plt.grid(True)
+plt.xticks(xticks,[])
+plt.legend()
+plt.ylabel('Core Zone Temperature [C]')
+plt.ylim(22, 26)  
+
+plt.subplot(717)
 plt.plot(measurement_base['time'], measurement_base['PHVAC'],'b-',label='Baseline')
 plt.plot(measurement_dqn_v0['time'], measurement_dqn_v0['PHVAC'],'r--',label='DQN')
 plt.grid(True)
 plt.xticks(xticks,xticks_label)
 plt.ylabel('Total [W]')
+plt.legend()
 plt.savefig('drl_comparison.pdf')
 
 
@@ -181,7 +218,6 @@ def interpolate_dataframe(df,new_index):
     """
     df_out = pd.DataFrame(index=new_index)
     df_out.index.name = df.index.name
-
     for col_name, col in df.items():
         df_out[col_name] = np.interp(new_index, df.index, col)    
     return df_out
@@ -200,69 +236,58 @@ def rw_func(cost, penalty):
     if ( not hasattr(rw_func,'x')  ):
         rw_func.x = 0
         rw_func.y = 0
-
     #cost = cost[0]
     #penalty = penalty[0]
-
     if rw_func.x > cost:
         rw_func.x = cost
     if rw_func.y > penalty:
         rw_func.y = penalty
-
     #print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
     #res = penalty * 10.0
     #res = penalty * 300.0 + cost*1e4
-    res = penalty * 500.0 + cost*5e4
-    
+    res = penalty * 50000.0 + cost*500
     return res
-def get_rewards(Ptot,TZone,price_tou,alpha):
-    n= len(Ptot)
+    
+def get_rewards(PHVAC,TZone,price_tou,alpha):
+    n= len(PHVAC)
     energy_cost = []
     penalty = []
     rewards = []
-
     alpha_up = alpha
     alpha_low = alpha
-
     for i in range(n):
         # assume 1 step is 15 minutes and data starts from hour 0
         hindex = (i%(nsteps_h*24))//nsteps_h
-        power=Ptot[i]
+        power=PHVAC[i]
         price = price_tou[hindex]
         # the power should divide by 1000
         energy_cost.append(power/1000./nsteps_h*price)
-
         # zone temperature penalty
         number_zone = 1
-
         # zone temperature bounds - need check with the high-fidelty model
         T_upper = np.array([30.0 for j in range(24)])
         T_upper[7:19] = 26.0
         T_lower = np.array([12.0 for j in range(24)])
         T_lower[7:19] = 22.0
-
         overshoot = []
         undershoot = []
         for k in range(number_zone):
-            overshoot.append(np.array([float((TZone[i] -273.15) - T_upper[hindex]), 0.0]).max())
-            undershoot.append(np.array([float(T_lower[hindex] - (TZone[i]-273.15)), 0.0]).max())
-
+            overshoot.append(np.array([float((TZone[k][i] -273.15) - T_upper[hindex]), 0.0]).max())
+            undershoot.append(np.array([float(T_lower[hindex] - (TZone[k][i]-273.15)), 0.0]).max())
         penalty.append(alpha_up*sum(np.array(overshoot)) + alpha_low*sum(np.array(undershoot)))
-    
         # sum up for rewards
         rewards.append(rw_func(energy_cost[-1], penalty[-1]))
-
     return -np.array([energy_cost, penalty, rewards]).transpose()
 
 #### get rewards
 #================================================================================
-rewards_base = get_rewards(measurement_base['PTot'].values,measurement_base['TRooAirSou','TRooAirEas','TRooAirNor','TRooAirWes','TRooAirCor'].values,price_tou,alpha)
+rewards_base = get_rewards(measurement_base['PHVAC'].values,measurement_base[['TRooAirSou','TRooAirEas','TRooAirNor','TRooAirWes','TRooAirCor']].values.T,price_tou,alpha)
 
 rewards_base = pd.DataFrame(rewards_base,columns=[['ene_cost','penalty','rewards']])
 
 # get rewards - DRL - we can either read from training results or 
 # recalculate using the method for mpc and baseline (very time consuming for multi-epoch training)
-rewards_dqn_v0_hist = np.load(dqn_results+'/his_rew.npy')
+rewards_dqn_v0_hist = np.load(v0_dqn_case+'/his_rew.npy')
 rewards_dqn_v0 = []
 # for zone 1
 for epoch in range(nepochs):
@@ -298,7 +323,7 @@ plt.savefig('rewards_epoch.png')
 #print rewards_dqn_v0_last['ene_cost'].sum()
 
 # save total energy cost, violations etc using the final episode for DRL
-rewards_dqn_v0_last = get_rewards(measurement_dqn_v0['PHVAC'].values,measurement_dqn_v0['TRooAirSou','TRooAirEas','TRooAirNor','TRooAirWes','TRooAirCor'].values,price_tou,alpha)
+rewards_dqn_v0_last = get_rewards(measurement_dqn_v0['PHVAC'].values,measurement_dqn_v0[['TRooAirSou','TRooAirEas','TRooAirNor','TRooAirWes','TRooAirCor']].values.T,price_tou,alpha)
 rewards_dqn_v0_last = pd.DataFrame(rewards_dqn_v0_last,columns=[['ene_cost','penalty','rewards']])
 
 
@@ -311,4 +336,3 @@ comparison={'base':{'energy_cost':list(rewards_base['ene_cost'].sum()),
 with open('comparison_epoch.json', 'w') as outfile:
     json.dump(comparison, outfile)
 
-'''
