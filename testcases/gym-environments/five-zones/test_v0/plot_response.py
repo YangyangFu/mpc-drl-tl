@@ -34,11 +34,11 @@ measurement_names = ['time','PHVAC','PBoiGas','TRooAirSou','TRooAirEas','TRooAir
 ## =========================================
 # DEFINE MODEL
 # ------------
-baseline = load_fmu('SingleZoneDamperControlBaseline.fmu')
+baseline = load_fmu('FiveZoneVAVBaseline.fmu')
 
 ## fmu settings
 options = baseline.simulate_options()
-options['ncp'] = 5000.
+options['ncp'] = 5000
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
@@ -48,7 +48,7 @@ res_base = baseline.simulate(start_time = ts,
                     final_time = te, 
                     options = options)
 
-
+print ("Finish baseline simulation")
 
 ###############################################################
 ##              DRL final run: Discrete: v0-dqn
@@ -56,13 +56,13 @@ res_base = baseline.simulate(start_time = ts,
 # get actions from the last epoch
 v1_dqn_case = './dqn_results'
 actions= np.load(v1_dqn_case+'/his_act.npy')
-u_opt = np.array(actions[-1,:-1])/float(nActions-1)
+u_opt = 12+6*np.array(actions[-1,:-1])/float(nActions-1)
 print (u_opt)
 
 ## fmu settings
 hvac.reset()
 options = hvac.simulate_options()
-options['ncp'] = 100.
+options['ncp'] = 100
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
@@ -75,7 +75,7 @@ i = 0
 while t < te:
     u = u_opt[i]
     u_traj = np.transpose(np.vstack(([t,t+dt],[u,u])))
-    input_object = ("uFan",u_traj)
+    input_object = ("uTSupSet",u_traj)
     ires = hvac.simulate(start_time = t,
                 final_time = t+dt, 
                 options = options,
@@ -87,7 +87,7 @@ while t < te:
     options['initialize'] = False
 
 
-
+'''
 ################################################################
 ##           Compare DRL with Baseline
 ## =============================================================
@@ -311,3 +311,4 @@ comparison={'base':{'energy_cost':list(rewards_base['ene_cost'].sum()),
 with open('comparison_epoch.json', 'w') as outfile:
     json.dump(comparison, outfile)
 
+'''
