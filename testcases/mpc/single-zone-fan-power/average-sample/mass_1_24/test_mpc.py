@@ -66,8 +66,8 @@ def get_price(time,dt,PH):
     price_tou = [0.0640, 0.0640, 0.0640, 0.0640, 
         0.0640, 0.0640, 0.0640, 0.0640, 
         0.1391, 0.1391, 0.1391, 0.1391, 
-        0.3548*10, 0.3548*10, 0.3548*10, 0.3548*10, 
-        0.3548*10, 0.3548*10, 0.1391, 0.1391, 
+        0.3548, 0.3548, 0.3548, 0.3548, 
+        0.3548, 0.3548, 0.1391, 0.1391, 
         0.1391, 0.1391, 0.1391, 0.0640]
     #- assume hourly TOU pricing
     t_ph = np.arange(time,time+dt*PH,dt)
@@ -99,8 +99,8 @@ def get_Toa(time,dt,PH,Toa_year):
     return list(Toa.values.flatten())
 
 ### 0- Simulation setup
-start = 225*24*3600. # 212 - 8/1
-end = start + 1*24*3600.
+start = 212*24*3600. # 212 - 8/1
+end = start + 7*24*3600.
 
 ### 1- Load virtual building model
 hvac = load_fmu('SingleZoneDamperControl.fmu')
@@ -134,7 +134,7 @@ options['initialize'] = False
 measurement_ini = get_measurement(res,measurement_names)
 
 # read one-year weather file
-weather_file = 'USA_CA_Riverside.Muni.AP.722869_TMY3.epw'
+weather_file = 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw'
 Toa_year = read_temperature(weather_file,dt)
 
 ### ===========================

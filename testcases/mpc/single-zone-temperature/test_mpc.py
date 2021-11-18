@@ -140,13 +140,13 @@ predictor = {}
 # energy prices 
 predictor['price'] = get_price(ts,dt,PH)
 # outdoor air temperature
-weather_file = 'USA_CA_Riverside.Muni.AP.722869_TMY3.epw'
+weather_file = 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw'
 Toa_year = read_temperature(weather_file,dt)
 predictor['Toa'] = get_Toa(ts,dt,PH,Toa_year)
 
 ### 3- MPC Control Loop
 # occupancy
-occ_start=6
+occ_start=7
 occ_end = 19
 # initialize setpoint
 uTSet_ini = 273.15+30
