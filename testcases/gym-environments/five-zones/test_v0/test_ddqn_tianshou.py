@@ -66,7 +66,7 @@ def get_args(folder="experiment_results"):
 def make_building_env(args):
     weather_file_path = "./USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
     npre_step = 3
-    simulation_start_time = 222*24*3600.0
+    simulation_start_time = 204*24*3600.0
     simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
     log_level = 7
     alpha = 1
@@ -335,9 +335,9 @@ def test_dqn(args=get_args()):
         #buffer.save_hdf5(args.save_buffer_name)
         print (result)
         print (result["rews"])
-        np.save(args.save_buffer_name+'/his_act.npy', buffer._meta.__dict__['act'])
-        np.save(args.save_buffer_name+'/his_obs.npy', buffer._meta.__dict__['obs'])
-        np.save(args.save_buffer_name+'/his_rew.npy', buffer._meta.__dict__['rew'])
+        np.save(args.save_buffer_name+'/his_act_final.npy', buffer._meta.__dict__['act'])
+        np.save(args.save_buffer_name+'/his_obs_final.npy', buffer._meta.__dict__['obs'])
+        np.save(args.save_buffer_name+'/his_rew_final.npy', buffer._meta.__dict__['rew'])
         #print(buffer._meta.__dict__.keys())
         
         rew = result["rews"].mean()
@@ -357,6 +357,10 @@ def test_dqn(args=get_args()):
             #stop_fn=stop_fn, 
             save_fn=save_fn, logger=logger,
             update_per_step=args.update_per_step, test_in_train=False)
+            
+        np.save(args.save_buffer_name+'/his_act.npy', buffer._meta.__dict__['act'])
+        np.save(args.save_buffer_name+'/his_obs.npy', buffer._meta.__dict__['obs'])
+        np.save(args.save_buffer_name+'/his_rew.npy', buffer._meta.__dict__['rew'])
         '''
 
         result = offpolicy_trainer_1(
