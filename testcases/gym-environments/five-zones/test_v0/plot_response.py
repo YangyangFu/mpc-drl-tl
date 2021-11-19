@@ -24,7 +24,7 @@ nsteps_h = int(3600//dt)
 # setup for DRL test
 nActions = 51
 alpha = 1
-nepochs = 500
+nepochs = 50
 
 # define some filters to save simulation time using fmu
 measurement_names = ['time','PHVAC','PBoiGas','TRooAirSou','TRooAirEas','TRooAirNor','TRooAirWes','TRooAirCor','TRooAirDevTot','EHVACTot','conAHU.TSupSet','conAHU.TSup','uTSupSet']
@@ -54,7 +54,7 @@ print ("Finish baseline simulation")
 ##              DRL final run: Discrete: v0-dqn
 ##===========================================================
 # get actions from the last epoch
-v0_dqn_case = './dqn_results'
+v0_dqn_case = './dqn_results_d204_a_100'
 actions= np.load(v0_dqn_case+'/his_act.npy')
 u_opt = 12+6*np.array(actions[:-1])/float(nActions-1)+273.15
 print (u_opt)
@@ -98,7 +98,7 @@ measurement_base = {}
 measurement_dqn_v0 = {}
 for name in measurement_names[:-1]:
     measurement_base[name] = res_base[name]
-    # get dqn_v0 results
+# get dqn_v0 results
 for name in measurement_names:
     value_name_dqn_v0=[]
     for ires in res_dqn_v0:
@@ -208,7 +208,7 @@ plt.grid(True)
 plt.xticks(xticks,xticks_label)
 plt.ylabel('Total [W]')
 plt.legend()
-plt.savefig('drl_comparison.pdf')
+plt.savefig('drl_comparison_interpolate.pdf')
 
 
 # save baseline and mpc measurements from simulation
@@ -219,7 +219,7 @@ def interpolate_dataframe(df,new_index):
     df_out = pd.DataFrame(index=new_index)
     df_out.index.name = df.index.name
     for col_name, col in df.items():
-        df_out[col_name] = np.interp(new_index, df.index, col)    
+        df_out[col_name] = np.interp(new_index, df.index, col)
     return df_out
 
 measurement_base = pd.DataFrame(measurement_base,index=measurement_base['time'])
@@ -266,9 +266,9 @@ def get_rewards(PHVAC,TZone,price_tou,alpha):
         number_zone = 1
         # zone temperature bounds - need check with the high-fidelty model
         T_upper = np.array([30.0 for j in range(24)])
-        T_upper[7:19] = 26.0
+        T_upper[7:19] = 24.5
         T_lower = np.array([12.0 for j in range(24)])
-        T_lower[7:19] = 22.0
+        T_lower[7:19] = 23.5
         overshoot = []
         undershoot = []
         for k in range(number_zone):
@@ -289,10 +289,13 @@ rewards_base = pd.DataFrame(rewards_base,columns=[['ene_cost','penalty','rewards
 # recalculate using the method for mpc and baseline (very time consuming for multi-epoch training)
 rewards_dqn_v0_hist = np.load(v0_dqn_case+'/his_rew.npy')
 rewards_dqn_v0 = []
-# for zone 1
-for epoch in range(nepochs):
-    rewards_dqn_v0 += list(rewards_dqn_v0_hist[epoch,:-1])
 
+rewards_dqn_v0_hist=rewards_dqn_v0_hist[128:128+672*nepochs]
+rewards_dqn_v0_hist=rewards_dqn_v0_hist.reshape(50,672)
+
+for epoch in range(nepochs):
+    rewards_dqn_v0 += list(rewards_dqn_v0_hist[epoch,:])
+    # rewards_dqn_v0 += list(rewards_dqn_v0_hist[epoch,:-1])
 rewards_dqn_v0 = pd.DataFrame(np.array(rewards_dqn_v0),columns=['rewards'])
 print (rewards_dqn_v0)
 
@@ -313,7 +316,7 @@ plt.xlabel('epoch')
 plt.grid(True)
 plt.legend()
 plt.savefig('rewards_epoch.pdf')
-plt.savefig('rewards_epoch.png')
+#plt.savefig('rewards_epoch.png')
 
 
 # The following codes are only for comparing occupied control performance

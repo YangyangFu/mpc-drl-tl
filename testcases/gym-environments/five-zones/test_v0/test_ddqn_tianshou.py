@@ -92,7 +92,7 @@ def make_building_env(args):
         print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
         #res = penalty * 10.0
         #res = penalty * 300.0 + cost*1e4
-        res = penalty * 50000.0 + cost*500
+        res = penalty * 500.0 + cost*500
         
         return res
 
@@ -173,6 +173,7 @@ def offpolicy_trainer_1(
     test_collector.reset_stat()
     test_in_train = test_in_train and train_collector.policy == policy
 
+    history_Reward=[]
 
     for epoch in range(1 + start_epoch, 1 + max_epoch):
         # train
@@ -202,7 +203,7 @@ def offpolicy_trainer_1(
                     "n/ep": str(int(result["n/ep"])),
                     "n/st": str(int(result["n/st"])),
                 }
-                #print("last_rew:    ", train_collector.buffer._meta.__dict__['rew'][:1000])
+                #print("last_rew:    ", train_collector.buffer)
                 for i in range(round(update_per_step * result["n/st"])):
                     gradient_step += 1
                     losses = policy.update(batch_size, train_collector.buffer)
@@ -213,17 +214,18 @@ def offpolicy_trainer_1(
                     logger.log_update_data(losses, gradient_step)
                     t.set_postfix(**data)
                 print("data")
-                print(data)
+                print(data) #{'env_step': '33211', 'rew': '0.00', 'len': '0', 'n/ep': '0', 'n/st': '1', 'loss': '16740996.438'}
             
             if t.n <= t.total:
                 t.update()
-        
-        
+
+            history_Reward.append(result["rews"])
+            
         if save_fn:
             save_fn(policy)
 
         
-
+    np.save(args.save_buffer_name+'/rew_per_epoch.npy', history_Reward)
     return 1
 
 def test_dqn(args=get_args()):
@@ -333,8 +335,9 @@ def test_dqn(args=get_args()):
         collector = Collector(policy, test_envs, buffer, exploration_noise=False)
         result = collector.collect(n_step=args.step_per_epoch)
         #buffer.save_hdf5(args.save_buffer_name)
-        print (result)
-        print (result["rews"])
+        print (result) 
+        #{'n/ep': 1, 'n/st': 672, 'rews': array([-1032753.50984556]), 'lens': array([672]), 'idxs': array([0]), 'rew': -1032753.5098455583, 'len': 672.0, 'rew_std': 0.0, 'len_std': 0.0}
+        
         np.save(args.save_buffer_name+'/his_act_final.npy', buffer._meta.__dict__['act'])
         np.save(args.save_buffer_name+'/his_obs_final.npy', buffer._meta.__dict__['obs'])
         np.save(args.save_buffer_name+'/his_rew_final.npy', buffer._meta.__dict__['rew'])
@@ -357,10 +360,12 @@ def test_dqn(args=get_args()):
             #stop_fn=stop_fn, 
             save_fn=save_fn, logger=logger,
             update_per_step=args.update_per_step, test_in_train=False)
-            
+
+        #output is arrays of size 50000
         np.save(args.save_buffer_name+'/his_act.npy', buffer._meta.__dict__['act'])
         np.save(args.save_buffer_name+'/his_obs.npy', buffer._meta.__dict__['obs'])
         np.save(args.save_buffer_name+'/his_rew.npy', buffer._meta.__dict__['rew'])
+            
         '''
 
         result = offpolicy_trainer_1(
