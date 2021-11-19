@@ -192,7 +192,7 @@ class mpc_case():
 
         # some building control settings
         self.number_zone = 1
-        self.occ_start = 6 # occupancy starts
+        self.occ_start = 7 # occupancy starts
         self.occ_end = 19 # occupancy ends
 
         # some mpc settings
@@ -249,7 +249,7 @@ class mpc_case():
         ### define nonlinear temperature constraints
         # zone temperature bounds - need check with the high-fidelty model
         T_upper = np.array([30.0 for i in range(24)])
-        T_upper[self.occ_start:self.occ_end] = 24.0
+        T_upper[self.occ_start:self.occ_end] = 26.0
         T_lower = np.array([12.0 for i in range(24)])
         T_lower[self.occ_start:self.occ_end] = 22.0
 

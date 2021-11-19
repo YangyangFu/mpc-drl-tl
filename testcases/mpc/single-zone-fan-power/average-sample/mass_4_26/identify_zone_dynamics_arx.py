@@ -52,7 +52,7 @@ data=Tz_data
 #print(Tz_data['Tsa'])
 
 # split training and testing
-ratio = 0.8
+ratio = 0.75
 n_train = int(ratio*len(data))
 data_train = data.iloc[:n_train,:]
 data_test = data.iloc[n_train:,:]
