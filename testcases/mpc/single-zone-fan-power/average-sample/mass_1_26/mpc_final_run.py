@@ -11,8 +11,8 @@ import json
 from pyfmi import load_fmu
 
 # simulation setup
-ts = 225*24*3600.#+13*24*3600
-nday = 1
+ts = 212*24*3600.#+13*24*3600
+nday = 7
 period = nday*24*3600.
 te = ts + period
 dt = 15*60.
@@ -86,7 +86,7 @@ T_upper = np.array([30.0 for i in tim])
 T_lower = np.array([12.0 for i in tim])
 #T_lower[occ_start*4:(occ_end-1)*4] = 22.0
 for i in range(nday):
-  T_upper[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 24.0
+  T_upper[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 26.0
   T_lower[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 22.
 
 price_tou = [0.0640, 0.0640, 0.0640, 0.0640, 
