@@ -99,8 +99,8 @@ def get_Toa(time,dt,PH,Toa_year):
     return list(Toa.values.flatten())
 
 ### 0- Simulation setup
-start = 212*24*3600. # 212 - 8/1
-end = start + 7*24*3600.
+start = 217*24*3600. # 212 - 8/1
+end = start + 2*24*3600.
 
 ### 1- Load virtual building model
 hvac = load_fmu('SingleZoneDamperControl.fmu')
