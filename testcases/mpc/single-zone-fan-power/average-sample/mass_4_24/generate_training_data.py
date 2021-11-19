@@ -26,6 +26,7 @@ fmu_name = "SingleZoneDamperControl.fmu"
 fmu = load_fmu(fmu_name)
 options = fmu.simulate_options()
 options['ncp'] = 10000
+print("mSenFac: ", fmu.get("mSenFac"))
 
 # excite signal: - generator for exciting signals
 def uniform(a,b):

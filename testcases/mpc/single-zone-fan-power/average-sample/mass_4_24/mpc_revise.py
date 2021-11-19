@@ -192,7 +192,7 @@ class mpc_case():
 
         # some building control settings
         self.number_zone = 1
-        self.occ_start = 6 # occupancy starts
+        self.occ_start = 7 # occupancy starts
         self.occ_end = 19 # occupancy ends
 
         # some mpc settings

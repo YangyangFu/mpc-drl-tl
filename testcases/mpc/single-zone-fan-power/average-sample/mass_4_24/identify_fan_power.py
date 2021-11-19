@@ -49,7 +49,7 @@ y = data['P_tot'].values
 
 ### prepare data for fitting
 # split data randomly
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=42)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=42)
 
 # call curve fit
 # fit a power model
