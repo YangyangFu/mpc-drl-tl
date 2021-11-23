@@ -13,6 +13,11 @@ class ZoneTemperature():
         x= [Tai, Twe, Twi]
      Disturbances:
         u = [Tao, qCon_i, qHVAC, qRad_e, qRad_i]
+            - Outdoor air temperature
+            - indoor convective heat gain 
+            - air conditioning cooling energy
+            - outdoor radiative heat 
+            - indoor radiative heat gain
      Output:
         y = [Tai]
     """
@@ -100,6 +105,61 @@ class ZoneTemperature():
 
 # %% Define inverse function for zone temperautre RC model to calculate thermal load from setpoints
 class ZoneThermalLoad():
+    """Inverse R4C3 RC model for calculating thermal load from given zone temperature setpoint
+        xdot = Ax + Bu
+        y = Cx
+     States:
+        x= [Twe, Twi]
+     Disturbances:
+        u = [Tao, qCon_i, qHVAC, qRad_e, qRad_i]
+            - Outdoor air temperature
+            - indoor convective heat gain 
+            - air conditioning cooling energy
+            - outdoor radiative heat 
+            - indoor radiative heat gain
+     Output:
+        y = [Tai]
+    """
+    def __init__(self, Rg, Re, Rw, Ri, Cwe, Cwi, Cai, U):
+        # assign parameters
+        self.Rg = Rg 
+        self.Re = Re 
+        self.Ri = Ri 
+        self.Rw = Rw 
+        self.Cwe = Cwe 
+        self.Cwi = Cwi 
+        self.Cai = Cai
+        # initialize the matrix 
+        self.A = np.zeros((3,3))
+        self.B = np.zeros((3,5))
+        self.C = np.zeros((1,3))
+        self.D = np.zeros((1,1))
+        self.update_matrix()
+
+        # initialize ODE
+        # disturbances
+        self.U = U # dataframe that stores the disturbances as columns with time as index
+        self.xdot = np.zeros((3,1))
+        self.solver = "RK45" # options are: RK45, RK23, DOP53, Radau, BDF, LSODA
+    def update_matrix(self):
+        self.A[0,0] = -1/self.Cai*(1/self.Rg+1/self.Ri)
+        self.A[0,2] = 1/(self.Cai*self.Ri)
+        self.A[1,1] = -1/self.Cwe*(1/self.Re+1/self.Rw)
+        self.A[1,2] = 1/(self.Cwe*self.Rw)
+        self.A[2,0] = 1/(self.Cwi*self.Ri)
+        self.A[2,1] = 1/(self.Cwi*self.Rw)
+        self.A[2,2] = -1/self.Cwi*(1/self.Rw+1/self.Ri)
+
+        self.B[0,0] = 1/(self.Cai*self.Rg)
+        self.B[0,1] = 1/self.Cai 
+        self.B[0,2] = 1/self.Cai 
+        self.B[1,0] = 1/(self.Cwe*self.Re)
+        self.B[1,3] = 1/self.Cwe
+        self.B[2,4] = 1/self.Cwi
+
+        self.C[0,0] = 1
+
+        self.D = 0    
     pass
 # %% Define system power model
 class FanPower():
@@ -177,7 +237,7 @@ if __name__ == '__main__':
                             Cwi = Cwi,
                             Cai = Cai,
                             U = U)
-    t_span = (0,1)
+    t_span = (0,60)
     x0 = 20*np.ones((3,))
     t_eval = t_span
     res = TZone.solve(t_span, x0, t_eval)
