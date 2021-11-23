@@ -1,3 +1,4 @@
+# %% Import dependency
 import numpy as np
 import json
 from scipy.integrate import solve_ivp
@@ -25,16 +26,16 @@ class ZoneTemperature():
         self.Cwi = Cwi 
         self.Cai = Cai
         # initialize the matrix 
-        self.A = np.zeros(3,3)
-        self.B = np.zeros(3,5)
-        self.C = np.zeros(1,3)
-        self.D = np.zeros(1,1)
+        self.A = np.zeros((3,3))
+        self.B = np.zeros((3,5))
+        self.C = np.zeros((1,3))
+        self.D = np.zeros((1,1))
         self.update_matrix()
 
         # initialize ODE
         # disturbances
         self.U = U # dataframe that stores the disturbances as columns with time as index
-        self.xdot = np.zeros(3,1)
+        self.xdot = np.zeros((3,1))
         self.solver = "RK45" # options are: RK45, RK23, DOP53, Radau, BDF, LSODA
     def update_matrix(self):
         self.A[0,0] = -1/self.Cai*(1/self.Rg+1/self.Ri)
@@ -60,30 +61,41 @@ class ZoneTemperature():
         """return disturbance signal at time t from given source
     
         """
-        return self.U.loc[t,:].values()
+        #return self.U.loc[t,:].values()
+        return [0]*5
 
     def R4C3_ODE(self, t, x):
+        """ODE
+
+        :param t: time
+        :type t: scalor
+        :param x: state variables, (n,) or (n,k) 
+        :type x: [type]
+        :return: [description]
+        :rtype: [type]
+        """
         x = np.reshape(x, (3,1))        
         ut = np.reshape(self.u(t), (5,1))     
         self.xdot = np.matmul(self.A, x) + np.matmul(self.B, ut)
+        # reshape to the same shape as x
+        self.xdot = self.xdot.reshape(-1)
 
-        # return xdot
         return self.xdot
 
-    def solve(self, t_span, x0, solver, t_eval):
+    def solve(self, t_span, x0, t_eval):
     
         res = solve_ivp(self.R4C3_ODE, 
                 t_span = t_span, 
                 y0 = x0, 
-                method = solver,
+                method = self.solver,
                 t_eval = t_eval)
         # return xnext
         return res
 
-    def predict(self, t_span, x0, solver, t_eval):
+    def predict(self, t_span, x0, t_eval):
 
-        sol = self.solve(t_span, x0, solver, t_eval)
-        x_next = sol.y[0][-1,:]
+        sol = self.solve(t_span, x0, t_eval)
+        x_next = sol.y[:,-1]
         return x_next
 
 # %% Define inverse function for zone temperautre RC model to calculate thermal load from setpoints
@@ -145,3 +157,31 @@ class FanPower():
 
 class ChillerPlantPower:
     pass
+# %% Run test
+if __name__ == '__main__':
+    # Test zone RC model
+    Rg = 1. 
+    Re = 1.
+    Rw = 1.
+    Ri = 1.
+    Cwe = 10.
+    Cwi = 10.
+    Cai = 10.
+    U = []
+
+    TZone = ZoneTemperature(Rg = Rg,
+                            Re = Re,
+                            Rw = Rw,
+                            Ri = Ri,
+                            Cwe = Cwe,
+                            Cwi = Cwi,
+                            Cai = Cai,
+                            U = U)
+    t_span = (0,1)
+    x0 = 20*np.ones((3,))
+    t_eval = t_span
+    res = TZone.solve(t_span, x0, t_eval)
+    print(res.y)
+    xnext = TZone.predict(t_span,x0,t_eval)
+    print(xnext)
+# %%
