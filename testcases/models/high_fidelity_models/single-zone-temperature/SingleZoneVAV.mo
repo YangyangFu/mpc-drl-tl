@@ -47,7 +47,7 @@ package SingleZoneVAV
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
         computeWetBulbTemperature=false,
         filNam=Modelica.Utilities.Files.loadResource(
-          "Resources/weatherdata/USA_CA_Riverside.Muni.AP.722869_TMY3.mos"))
+          "Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
       annotation (Placement(transformation(extent={{-160,120},{-140,140}})));
 
     Buildings.BoundaryConditions.WeatherData.Bus weaBus "Weather data bus"
@@ -328,7 +328,7 @@ First implementation.
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
         computeWetBulbTemperature=false,
         filNam=Modelica.Utilities.Files.loadResource(
-          "Resources/weatherdata/USA_CA_Riverside.Muni.AP.722869_TMY3.mos"))
+          "Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
       annotation (Placement(transformation(extent={{-160,120},{-140,140}})));
 
     Buildings.BoundaryConditions.WeatherData.Bus weaBus "Weather data bus"
@@ -617,7 +617,7 @@ First implementation.
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
         computeWetBulbTemperature=false,
         filNam=Modelica.Utilities.Files.loadResource(
-          "Resources/weatherdata/USA_CA_Riverside.Muni.AP.722869_TMY3.mos"))
+          "Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
       annotation (Placement(transformation(extent={{-160,120},{-140,140}})));
 
     Buildings.BoundaryConditions.WeatherData.Bus weaBus "Weather data bus"
