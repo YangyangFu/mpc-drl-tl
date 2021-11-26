@@ -18,7 +18,7 @@ import pandas as pd
 
 # simulate setup - 181-212 for july; 212-243 for August
 time_stop = 31*24*3600.  
-ts = 212*24*3600.
+ts = 181*24*3600.
 te = ts + time_stop
 
 ## load fmu - cs

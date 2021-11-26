@@ -63,13 +63,12 @@ def get_states(states,measurement,Tz_pred):
     return states
 
 def get_price(time,dt,PH):
-    price_tou = [0.2987, 0.2987, 0.2987, 0.2987, 
-        0.2987, 0.2987, 0.4667, 0.4667, 
-        0.4667, 0.4667, 0.4667, 0.4667, 
-        0.4667, 0.4667, 1.5877, 1.5877, 
-        1.5877, 1.5877, 1.5877, 0.4667, 
-        0.4667, 0.4667, 0.2987, 0.2987]
-    #- assume hourly TOU pricing
+    price_tou = [0.02987, 0.02987, 0.02987, 0.02987, 
+        0.02987, 0.02987, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.15877, 0.15877, 
+        0.15877, 0.15877, 0.15877, 0.04667, 
+        0.04667, 0.04667, 0.02987, 0.02987]
     t_ph = np.arange(time,time+dt*PH,dt)
     price_ph = [price_tou[int(t % 86400 /3600)] for t in t_ph]
 
@@ -99,8 +98,8 @@ def get_Toa(time,dt,PH,Toa_year):
     return list(Toa.values.flatten())
 
 ### 0- Simulation setup
-start = 217*24*3600. # 212 - 8/1
-end = start + 2*24*3600.
+start = 195*24*3600. # 181 - 7/1 
+end = start + 7*24*3600.
 
 ### 1- Load virtual building model
 hvac = load_fmu('SingleZoneDamperControl.fmu')
