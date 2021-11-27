@@ -523,7 +523,7 @@ First implementation.
             -20,-46},{-60,-46},{-60,12},{-42,12}}, color={0,0,127}));
     annotation (
       experiment(
-        StartTime=18316800,
+        StartTime=15724800,
         StopTime=20995200,
         Tolerance=1e-06,
         __Dymola_Algorithm="Cvode"),

@@ -11,8 +11,8 @@ import json
 from pyfmi import load_fmu
 
 # simulation setup
-ts = 212*24*3600.#+13*24*3600
-nday = 7
+ts = 195*24*3600.#+13*24*3600
+nday = 1
 period = nday*24*3600.
 te = ts + period
 dt = 15*60.
@@ -82,19 +82,18 @@ occ_start = 7
 occ_end = 19
 tim = np.arange(ts,te,dt)
 T_upper = np.array([30.0 for i in tim])
-#T_upper[occ_start*4:(occ_end-1)*4] = 26.0
 T_lower = np.array([12.0 for i in tim])
-#T_lower[occ_start*4:(occ_end-1)*4] = 22.0
+
 for i in range(nday):
   T_upper[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 26.0
   T_lower[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 22.
 
-price_tou = [0.2987, 0.2987, 0.2987, 0.2987, 
-        0.2987, 0.2987, 0.4667, 0.4667, 
-        0.4667, 0.4667, 0.4667, 0.4667, 
-        0.4667, 0.4667, 1.5877, 1.5877, 
-        1.5877, 1.5877, 1.5877, 0.4667, 
-        0.4667, 0.4667, 0.2987, 0.2987]*nday
+price_tou = [0.02987, 0.02987, 0.02987, 0.02987, 
+        0.02987, 0.02987, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.15877, 0.15877, 
+        0.15877, 0.15877, 0.15877, 0.04667, 
+        0.04667, 0.04667, 0.02987, 0.02987]*nday
 
 xticks=np.arange(ts,te+1,12*3600)
 xticks_label = np.arange(0,24*nday+1,12)

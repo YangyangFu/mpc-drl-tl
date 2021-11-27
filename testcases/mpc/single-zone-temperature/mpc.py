@@ -160,10 +160,10 @@ class mpc_case():
         # solve optimization
         xtol=1e-3
         ftol=1e-6
-        #solver='de' # GLP
+        solver='de' # GLP
         #solver = "interalg" # GLP
         #solver='ralg' # NLP
-        solver='ipopt'# NLP
+        #solver='ipopt'# NLP
         r = model.solve(solver,xtol=xtol,ftol=ftol)
         x_opt, f_opt = r.xf, r.ff
         d1 = r.evals
@@ -178,14 +178,14 @@ class mpc_case():
 
         disp = True
         if disp:
-            print ' '
-            print 'Solver: OpenOpt solver ' + solver
-            print ' '
-            print 'Number of iterations: ' + str(nbr_iters)
-            print 'Number of function evaluations: ' + str(nbr_fevals)
-            print ' '
-            print 'Execution time: ' + str(solve_time)
-            print ' '
+            print (' ')
+            print ('Solver: OpenOpt solver ' + solver)
+            print (' ')
+            print ('Number of iterations: ' + str(nbr_iters))
+            print ('Number of function evaluations: ' + str(nbr_fevals))
+            print (' ')
+            print ('Execution time: ' + str(solve_time))
+            print (' ')
 
         return self.optimum
 

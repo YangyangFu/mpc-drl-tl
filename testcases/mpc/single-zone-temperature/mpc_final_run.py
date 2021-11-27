@@ -99,12 +99,12 @@ for i in range(nday):
   T_upper[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 26.0
   T_lower[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 22.
 
-price_tou = [0.0640, 0.0640, 0.0640, 0.0640, 
-        0.0640, 0.0640, 0.0640, 0.0640, 
-        0.1391, 0.1391, 0.1391, 0.1391, 
-        0.3548, 0.3548, 0.3548, 0.3548, 
-        0.3548, 0.3548, 0.1391, 0.1391, 
-        0.1391, 0.1391, 0.1391, 0.0640]*nday
+price_tou = [0.02987, 0.02987, 0.02987, 0.02987, 
+        0.02987, 0.02987, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.15877, 0.15877, 
+        0.15877, 0.15877, 0.15877, 0.04667, 
+        0.04667, 0.04667, 0.02987, 0.02987]*nday
 
 def interpolate_dataframe(df,new_index):
     """Interpolate a dataframe along its index based on a new index

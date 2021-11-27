@@ -63,13 +63,12 @@ def get_states(states,measurement,Tz_pred):
     return states
 
 def get_price(time,dt,PH):
-    price_tou = [0.2987, 0.2987, 0.2987, 0.2987, 
-        0.2987, 0.2987, 0.4667, 0.4667, 
-        0.4667, 0.4667, 0.4667, 0.4667, 
-        0.4667, 0.4667, 1.5877, 1.5877, 
-        1.5877, 1.5877, 1.5877, 0.4667, 
-        0.4667, 0.4667, 0.2987, 0.2987]
-    #- assume hourly TOU pricing
+    price_tou = [0.02987, 0.02987, 0.02987, 0.02987, 
+        0.02987, 0.02987, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.15877, 0.15877, 
+        0.15877, 0.15877, 0.15877, 0.04667, 
+        0.04667, 0.04667, 0.02987, 0.02987]
     t_ph = np.arange(time,time+dt*PH,dt)
     price_ph = [price_tou[int(t % 86400 /3600)] for t in t_ph]
 
@@ -99,8 +98,8 @@ def get_Toa(time,dt,PH,Toa_year):
     return list(Toa.values.flatten())
 
 ### 0- Simulation setup
-start = 212*24*3600. # 212 - 8/1
-end = start + 7*24*3600.
+start = 195*24*3600. # 181 - 7/1 
+end = start + 1*24*3600.
 
 ### 1- Load virtual building model
 hvac = load_fmu('SingleZoneDamperControl.fmu')
@@ -134,7 +133,7 @@ options['initialize'] = False
 measurement_ini = get_measurement(res,measurement_names)
 
 # read one-year weather file
-weather_file = 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3'
+weather_file = 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw'
 Toa_year = read_temperature(weather_file,dt)
 
 ### ===========================

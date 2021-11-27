@@ -15,8 +15,8 @@ import pandas as pd
 
 
 # simulate setup - 181-212 for july; 212-243 for August
-time_stop = 30*24*3600.  
-ts = 212*24*3600.
+time_stop = 31*24*3600.  
+ts = 181*24*3600.
 te = ts + time_stop
 
 ## load fmu - cs
@@ -24,7 +24,7 @@ fmu_name = "SingleZoneTemperature.fmu"
 fmu = load_fmu(fmu_name)
 options = fmu.simulate_options()
 options['ncp'] = 10000
-
+print(fmu.get('zon.roo.mSenFac'))
 # excite signal: - generator for exciting signals
 def uniform_real(a,b):
     return (b-a)*random.random_sample()+a

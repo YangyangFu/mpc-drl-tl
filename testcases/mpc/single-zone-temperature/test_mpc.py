@@ -62,12 +62,12 @@ def get_states(states,measurement):
     return states
 
 def get_price(time,dt,PH):
-    price_tou = [0.0640, 0.0640, 0.0640, 0.0640, 
-        0.0640, 0.0640, 0.0640, 0.0640, 
-        0.1391, 0.1391, 0.1391, 0.1391, 
-        0.3548, 0.3548, 0.3548, 0.3548, 
-        0.3548, 0.3548, 0.1391, 0.1391, 
-        0.1391, 0.1391, 0.1391, 0.0640]
+    price_tou = [0.02987, 0.02987, 0.02987, 0.02987, 
+        0.02987, 0.02987, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.15877, 0.15877, 
+        0.15877, 0.15877, 0.15877, 0.04667, 
+        0.04667, 0.04667, 0.02987, 0.02987]
     #- assume hourly TOU pricing
     t_ph = np.arange(time,time+dt*PH,dt)
     price_ph = [price_tou[int(t % 86400 /3600)] for t in t_ph]
@@ -98,8 +98,8 @@ def get_Toa(time,dt,PH,Toa_year):
     return list(Toa.values.flatten())
 
 ### 0- Simulation setup
-start = 225*24*3600.#+13*24*3600
-end = start + 1*24*3600.
+start = 212*24*3600.#+13*24*3600
+end = start + 7*24*3600.
 
 ### 1- Load virtual building model
 hvac = load_fmu('SingleZoneTemperature.fmu')
@@ -140,7 +140,7 @@ predictor = {}
 # energy prices 
 predictor['price'] = get_price(ts,dt,PH)
 # outdoor air temperature
-weather_file = 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw'
+weather_file = 'USA_CA_Riverside.Muni.AP.722869_TMY3.epw'
 Toa_year = read_temperature(weather_file,dt)
 predictor['Toa'] = get_Toa(ts,dt,PH,Toa_year)
 

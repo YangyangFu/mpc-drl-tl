@@ -12,7 +12,7 @@ from pyfmi import load_fmu
 
 # simulation setup
 ts = 195*24*3600.#+13*24*3600
-nday = 7
+nday = 1
 period = nday*24*3600.
 te = ts + period
 dt = 15*60.
@@ -89,12 +89,12 @@ for i in range(nday):
   T_upper[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 24.0
   T_lower[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 22.
 
-price_tou = [0.2987, 0.2987, 0.2987, 0.2987, 
-        0.2987, 0.2987, 0.4667, 0.4667, 
-        0.4667, 0.4667, 0.4667, 0.4667, 
-        0.4667, 0.4667, 1.5877, 1.5877, 
-        1.5877, 1.5877, 1.5877, 0.4667, 
-        0.4667, 0.4667, 0.2987, 0.2987]*nday
+price_tou = [0.02987, 0.02987, 0.02987, 0.02987, 
+        0.02987, 0.02987, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.15877, 0.15877, 
+        0.15877, 0.15877, 0.15877, 0.04667, 
+        0.04667, 0.04667, 0.02987, 0.02987]*nday
 
 xticks=np.arange(ts,te+1,12*3600)
 xticks_label = np.arange(0,24*nday+1,12)

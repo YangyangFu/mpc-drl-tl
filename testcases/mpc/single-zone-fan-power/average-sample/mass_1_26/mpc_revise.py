@@ -197,9 +197,9 @@ class mpc_case():
 
         # some mpc settings
         self.n = 2 # number of control variable for each step
-        self.w = [1, 1] # weights between energy cost and temperature violation
+        self.w = [1., 1.] # weights between energy cost and temperature violation
         self.u_lb = [0.]*self.n
-        self.u_ub = [1.,0.01]
+        self.u_ub = [1.,0.1]
         # initialize optimiztion
         self.u_start = self.u_lb*self.PH
         #self.optimization_model=self.get_optimization_model() # pyomo object
@@ -236,7 +236,7 @@ class mpc_case():
         price_ph = self.predictor['price']
         fval = []
         for k in range(self.PH):
-            fo = self.w[0]*power_ph[k]*price_ph[k]*self.dt/3600./1000 + self.w[1]*u[self.n*k+1]
+            fo = self.w[0]*power_ph[k]*price_ph[k]*self.dt/3600./1000 + self.w[1]*u[self.n*k+1]**2
             fval.append(fo)
         fval_sum = ca.sum1(ca.vertcat(*fval))
 
