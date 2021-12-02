@@ -26,6 +26,10 @@ RUN conda update conda && \
 WORKDIR $HOME
 RUN pip install git+git://github.com/YangyangFu/modelicagym.git@master 
 
+## BuildingSpy
+WORKDIR $HOME
+RUN pip install buildingspy
+
 ### =======================================================================================
 ### intall customized gym environment into docker: install a building control environment
 # install single zone damper control environment

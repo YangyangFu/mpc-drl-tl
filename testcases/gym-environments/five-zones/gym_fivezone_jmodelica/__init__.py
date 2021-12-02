@@ -15,3 +15,8 @@ register(
     kwargs = config
 )
 
+register(
+    id='JModelicaCSFiveZoneEnv-v1',
+    entry_point='gym_fivezone_jmodelica.envs.five_zone_env_v1:JModelicaCSFiveZoneEnv',
+    kwargs = config
+)

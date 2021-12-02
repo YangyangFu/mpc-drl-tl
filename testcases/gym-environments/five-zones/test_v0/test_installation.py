@@ -7,8 +7,8 @@ import tianshou as ts
 ## ====================================================
 #    Testing JModelicaCSFiveZoneEnv-v0 installation
 ## ===================================================
-simulation_start_time=222*3600*24.
-simulation_end_time=222*3600*24.+3600*12.
+simulation_start_time=204*3600*24.
+simulation_end_time=204*3600*24.+3600*12.
 time_step=15*60.
 
 env = gym.make("JModelicaCSFiveZoneEnv-v0",
