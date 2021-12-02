@@ -6,7 +6,7 @@ import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 
 from tianshou.policy import DQNPolicy
-from tianshou.utils import BasicLogger
+from tianshou.utils import BasicLogger, TensorboardLogger
 from tianshou.env import SubprocVectorEnv
 from tianshou.trainer import offpolicy_trainer
 from tianshou.data import Collector, VectorReplayBuffer
@@ -30,13 +30,13 @@ def get_args(folder="experiment_results"):
     parser.add_argument('--eps-train-final', type=float, default=0.05)
 
     parser.add_argument('--buffer-size', type=int, default=50000)
-    parser.add_argument('--lr', type=float, default=0.0003)#0.0003!!!!!!!!!!!!!!!!!!!!!
+    parser.add_argument('--lr', type=float, default=0.00005)#0.0003!!!!!!!!!!!!!!!!!!!!!
     parser.add_argument('--gamma', type=float, default=0.99)
 
     parser.add_argument('--n-step', type=int, default=1)
     parser.add_argument('--target-update-freq', type=int, default=100)
 
-    parser.add_argument('--epoch', type=int, default=50)
+    parser.add_argument('--epoch', type=int, default=100)
 
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--step-per-collect', type=int, default=1)
@@ -173,7 +173,11 @@ def offpolicy_trainer_1(
     test_collector.reset_stat()
     test_in_train = test_in_train and train_collector.policy == policy
 
-    history_Reward=[]
+    history_reward_epoch=[]
+    history_loss=[]
+    history_action=(train_collector.buffer._meta.__dict__['act'][:batch_size]).tolist()
+    history_state=(train_collector.buffer._meta.__dict__['obs'][:batch_size]).tolist()
+    history_reward=(train_collector.buffer._meta.__dict__['rew'][:batch_size]).tolist()
 
     for epoch in range(1 + start_epoch, 1 + max_epoch):
         # train
@@ -186,11 +190,16 @@ def offpolicy_trainer_1(
                 if train_fn:
                     train_fn(epoch, env_step)
                 result = train_collector.collect(n_step=step_per_collect)
-                #print(result)
+                print(result)
+                
+                #Save the history results for each epoch
+                
+                history_action.append(train_collector.buffer._meta.__dict__['act'][(batch_size+env_step) % len(train_collector.buffer)])
+                history_state.append(train_collector.buffer._meta.__dict__['obs'][(batch_size+env_step) % len(train_collector.buffer)])
+                history_reward.append(train_collector.buffer._meta.__dict__['rew'][(batch_size+env_step) % len(train_collector.buffer)])
+                
                 if result["n/ep"] > 0 and reward_metric:
                     result["rews"] = reward_metric(result["rews"])
-                print("result:rews")
-                print(result["rews"])
                 env_step += int(result["n/st"])
                 t.update(result["n/st"])
                 logger.log_train_data(result, env_step)
@@ -206,27 +215,27 @@ def offpolicy_trainer_1(
                 #print("last_rew:    ", train_collector.buffer)
                 for i in range(round(update_per_step * result["n/st"])):
                     gradient_step += 1
+                    print("gradient_step: ",gradient_step)
                     losses = policy.update(batch_size, train_collector.buffer)
+                    print("losses:    ", losses)
                     for k in losses.keys():
                         stat[k].add(losses[k])
                         losses[k] = stat[k].get()
                         data[k] = f"{losses[k]:.3f}"
                     logger.log_update_data(losses, gradient_step)
                     t.set_postfix(**data)
-                print("data")
-                print(data) #{'env_step': '33211', 'rew': '0.00', 'len': '0', 'n/ep': '0', 'n/st': '1', 'loss': '16740996.438'}
-            
+                history_loss.append(list(losses.values()))
             if t.n <= t.total:
                 t.update()
 
-            history_Reward.append(result["rews"])
+            history_reward_epoch.append(result["rews"])
             
         if save_fn:
             save_fn(policy)
 
         
-    np.save(args.save_buffer_name+'/rew_per_epoch.npy', history_Reward)
-    return 1
+
+    return history_reward, history_state, history_action, history_loss, history_reward_epoch
 
 def test_dqn(args=get_args()):
     tim_env = 0.0
@@ -307,14 +316,15 @@ def test_dqn(args=get_args()):
 
         total_epoch_pass = epoch*args.step_per_epoch + env_step
 
-        #print("observe eps:  max_eps_steps, total_epoch_pass ", max_eps_steps, total_epoch_pass)
+        print("observe eps:  max_eps_steps, total_epoch_pass ", max_eps_steps, total_epoch_pass)
         if env_step <= max_eps_steps:
             eps = args.eps_train - total_epoch_pass * (args.eps_train - args.eps_train_final) / max_eps_steps
+        # observe eps:  max_eps_steps, total_epoch_pass  60480.0 103477 train/eps env_step eps 51733 -0.625382771164021
         else:
             eps = args.eps_train_final
         policy.set_eps(eps)
-        #print('train/eps', env_step, eps)
-        #logger.write('train/eps', env_step, eps)
+        print('train/eps', env_step, eps)
+        logger.write('train/eps', env_step, eps)
 
     def test_fn(epoch, env_step):
         policy.set_eps(args.eps_test)
@@ -353,7 +363,7 @@ def test_dqn(args=get_args()):
         train_collector.collect(n_step=args.batch_size * args.training_num)
         # trainer
         
-        result = offpolicy_trainer_1(
+        history_reward, history_state, history_action, history_loss, history_reward_epoch = offpolicy_trainer_1(
             policy = policy, train_collector = train_collector, test_collector = test_collector, max_epoch = args.epoch,
             step_per_epoch = args.step_per_epoch, step_per_collect = args.step_per_collect, episode_per_test = args.test_num,
             batch_size = args.batch_size, train_fn=train_fn, test_fn=test_fn,
@@ -361,11 +371,14 @@ def test_dqn(args=get_args()):
             save_fn=save_fn, logger=logger,
             update_per_step=args.update_per_step, test_in_train=False)
 
+        np.save(args.save_buffer_name+'/rew_per_epoch.npy', history_reward_epoch)
+
         #output is arrays of size 50000
-        np.save(args.save_buffer_name+'/his_act.npy', buffer._meta.__dict__['act'])
-        np.save(args.save_buffer_name+'/his_obs.npy', buffer._meta.__dict__['obs'])
-        np.save(args.save_buffer_name+'/his_rew.npy', buffer._meta.__dict__['rew'])
-            
+        np.save(args.save_buffer_name+'/his_act_hist.npy', history_action)
+        np.save(args.save_buffer_name+'/his_obs_hist.npy', history_state)
+        np.save(args.save_buffer_name+'/his_rew_hist.npy', history_reward)
+        np.save(args.save_buffer_name+'/his_loss_hist.npy', history_loss)
+        
         '''
 
         result = offpolicy_trainer_1(
