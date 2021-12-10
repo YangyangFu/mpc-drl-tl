@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import casadi as ca
-import json
 import model
-import joblib 
+import joblib
 
 class Zone(ca.Callback):
   def __init__(self, name, Lz=4, Lo=4, json_file="", opts={"enable_fd":True}):
@@ -97,7 +96,7 @@ print("primal solution = ", sol["x"])
 print("dual solution (x) = ", sol["lam_x"])
 print("dual solution (g) = ", sol["lam_g"])
 
-## Optimize arx 
+## Optimize ann
 nlp = {'x':x1, 'f':f1}
 solver = ca.nlpsol("nlpsol", "ipopt", nlp)
 # solve NLP
