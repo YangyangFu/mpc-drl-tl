@@ -1,4 +1,4 @@
-within ;
+﻿within ;
 package FiveZone "Five zone VAV supervisory control"
   model Guideline36TSup
     "Variable air volume flow system with terminal reheat and five thermal zones"
@@ -1051,8 +1051,9 @@ This is for
     connect(TZonSet[1].yOpeMod, conVAVCor.uOpeMod) annotation (Line(points={{82,303},
             {130,303},{130,180},{420,180},{420,14},{520,14},{520,32},{528,32}},
           color={255,127,0}));
-    connect(flo.TRooAir, TZonSet.TZon) annotation (Line(points={{1094.14,491.333},
-            {1164,491.333},{1164,662},{46,662},{46,313},{58,313}}, color={0,0,127}));
+    connect(flo.TRooAir, TZonSet.TZon) annotation (Line(points={{1094.14,
+            491.333},{1164,491.333},{1164,662},{46,662},{46,313},{58,313}},
+                                                                   color={0,0,127}));
     connect(occSch.occupied, booRep.u) annotation (Line(points={{-297,-216},{-160,
             -216},{-160,290},{-122,290}}, color={255,0,255}));
     connect(occSch.tNexOcc, reaRep.u) annotation (Line(points={{-297,-204},{-180,
@@ -1130,8 +1131,8 @@ This is for
     connect(zonOutAirSet.VPriAir_flow, zonToSys.VPriAir_flow) annotation (Line(
           points={{242,581},{258,581},{258,572},{278,572}},     color={0,0,127}));
     connect(conAHU.yAveOutAirFraPlu, zonToSys.yAveOutAirFraPlu) annotation (Line(
-          points={{424,588.667},{440,588.667},{440,468},{270,468},{270,582},{278,
-            582}},
+          points={{424,588.667},{440,588.667},{440,468},{270,468},{270,582},{
+            278,582}},
           color={0,0,127}));
     connect(conAHU.VDesUncOutAir_flow, reaRep1.u) annotation (Line(points={{424,
             599.333},{440,599.333},{440,590},{458,590}},
@@ -1160,8 +1161,8 @@ This is for
             {110,310},{110,638.444},{336,638.444}},      color={0,0,127}));
     connect(TZonSet[1].TZonCooSet, conAHU.TZonCooSet) annotation (Line(points={{82,317},
             {120,317},{120,633.111},{336,633.111}},      color={0,0,127}));
-    connect(TOut.y, conAHU.TOut) annotation (Line(points={{-279,180},{-260,180},{
-            -260,627.778},{336,627.778}},
+    connect(TOut.y, conAHU.TOut) annotation (Line(points={{-279,180},{-260,180},
+            {-260,627.778},{336,627.778}},
                                      color={0,0,127}));
     connect(dpDisSupFan.p_rel, conAHU.ducStaPre) annotation (Line(points={{311,0},
             {160,0},{160,622.444},{336,622.444}}, color={0,0,127}));
@@ -1173,22 +1174,22 @@ This is for
                             color={0,0,127}));
     connect(VOut1.V_flow, conAHU.VOut_flow) annotation (Line(points={{-61,-20.9},
             {-61,547.778},{336,547.778}},color={0,0,127}));
-    connect(TMix.T, conAHU.TMix) annotation (Line(points={{40,-29},{40,540.667},{
-            336,540.667}},
+    connect(TMix.T, conAHU.TMix) annotation (Line(points={{40,-29},{40,540.667},
+            {336,540.667}},
                        color={0,0,127}));
-    connect(conAHU.yOutDamPos, eco.yOut) annotation (Line(points={{424,524.667},{
-            448,524.667},{448,36},{-10,36},{-10,-34}},
+    connect(conAHU.yOutDamPos, eco.yOut) annotation (Line(points={{424,524.667},
+            {448,524.667},{448,36},{-10,36},{-10,-34}},
                                                    color={0,0,127}));
-    connect(conAHU.yRetDamPos, eco.yRet) annotation (Line(points={{424,535.333},{
-            442,535.333},{442,40},{-16.8,40},{-16.8,-34}},
+    connect(conAHU.yRetDamPos, eco.yRet) annotation (Line(points={{424,535.333},
+            {442,535.333},{442,40},{-16.8,40},{-16.8,-34}},
                                                        color={0,0,127}));
     connect(conAHU.yCoo, gaiCooCoi.u) annotation (Line(points={{424,546},{452,546},
             {452,-274},{88,-274},{88,-248},{98,-248}}, color={0,0,127}));
     connect(conAHU.yHea, swiFreSta.u3) annotation (Line(points={{424,556.667},{
             458,556.667},{458,-280},{40,-280},{40,-200},{58,-200}},
                                                                 color={0,0,127}));
-    connect(conAHU.ySupFanSpe, fanSup.y) annotation (Line(points={{424,620.667},{
-            432,620.667},{432,-14},{310,-14},{310,-28}},
+    connect(conAHU.ySupFanSpe, fanSup.y) annotation (Line(points={{424,620.667},
+            {432,620.667},{432,-14},{310,-14},{310,-28}},
                                                      color={0,0,127}));
     connect(cor.y_actual,conVAVCor.yDam_actual)  annotation (Line(points={{612,58},
             {620,58},{620,74},{518,74},{518,38},{528,38}}, color={0,0,127}));
@@ -1202,10 +1203,11 @@ This is for
     connect(wes.y_actual,conVAVWes.yDam_actual)  annotation (Line(points={{1332,
             56},{1340,56},{1340,74},{1224,74},{1224,34},{1238,34}}, color={0,0,
             127}));
-    connect(flo.TRooAir, banDevSum.u1) annotation (Line(points={{1094.14,491.333},
-            {1165.07,491.333},{1165.07,490},{1238,490}},          color={0,0,127}));
-    connect(conAHU.ySupFan, booRepSupFan.u) annotation (Line(points={{424,631.333},
-            {467,631.333},{467,640},{498,640}}, color={255,0,255}));
+    connect(flo.TRooAir, banDevSum.u1) annotation (Line(points={{1094.14,
+            491.333},{1165.07,491.333},{1165.07,490},{1238,490}}, color={0,0,127}));
+    connect(conAHU.ySupFan, booRepSupFan.u) annotation (Line(points={{424,
+            631.333},{467,631.333},{467,640},{498,640}},
+                                                color={255,0,255}));
     connect(booRepSupFan.y, banDevSum.uSupFan) annotation (Line(points={{522,640},
             {580,640},{580,656},{1154,656},{1154,484},{1238,484}},      color={
             255,0,255}));
@@ -1286,17 +1288,20 @@ This is for
     connect(flo.TRooAir[1], TRooAirSou) annotation (Line(points={{1094.14,488.4},
             {1124,488.4},{1124,468},{1322,468},{1322,448},{1410,448}}, color={0,0,
             127}));
-    connect(flo.TRooAir[2], TRooAirEas) annotation (Line(points={{1094.14,489.867},
-            {1130,489.867},{1130,472},{1326,472},{1326,416},{1410,416}}, color={0,
+    connect(flo.TRooAir[2], TRooAirEas) annotation (Line(points={{1094.14,
+            489.867},{1130,489.867},{1130,472},{1326,472},{1326,416},{1410,416}},
+                                                                         color={0,
             0,127}));
-    connect(flo.TRooAir[3], TRooAirNor) annotation (Line(points={{1094.14,491.333},
-            {1136,491.333},{1136,470},{1322,470},{1322,386},{1410,386}}, color={0,
+    connect(flo.TRooAir[3], TRooAirNor) annotation (Line(points={{1094.14,
+            491.333},{1136,491.333},{1136,470},{1322,470},{1322,386},{1410,386}},
+                                                                         color={0,
             0,127}));
     connect(flo.TRooAir[4], TRooAirWes) annotation (Line(points={{1094.14,492.8},
             {1130,492.8},{1130,470},{1318,470},{1318,356},{1410,356}}, color={0,0,
             127}));
-    connect(flo.TRooAir[5], TRooAirCor) annotation (Line(points={{1094.14,494.267},
-            {1128,494.267},{1128,472},{1334,472},{1334,328},{1410,328}}, color={0,
+    connect(flo.TRooAir[5], TRooAirCor) annotation (Line(points={{1094.14,
+            494.267},{1128,494.267},{1128,472},{1334,472},{1334,328},{1410,328}},
+                                                                         color={0,
             0,127}));
     annotation (
       Diagram(coordinateSystem(preserveAspectRatio=false,extent={{-380,-320},{1400,
@@ -1402,6 +1407,356 @@ This is for
         __Dymola_Algorithm="Cvode"),
       Icon(coordinateSystem(extent={{-100,-100},{100,100}})));
   end Guideline36Baseline;
+
+  model System "System example for fault injection"
+    extends Modelica.Icons.Example;
+    extends FiveZone.BaseClasses.PartialHotWaterside(
+      final Q_flow_boi_nominal=designHeatLoad,
+      minFloBypHW(k=0.1),
+      pumSpeHW(reset=Buildings.Types.Reset.Parameter, y_reset=0),
+      boiTSup(
+        y_start=0,
+        reset=Buildings.Types.Reset.Parameter,
+        y_reset=0),
+      boi(show_T=false),
+      triResHW(TMin=313.15, TMax=321.15));
+    extends FiveZone.BaseClasses.PartialAirside(
+      fanSup(show_T=false),
+      conAHU(
+        pNumIgnReq=1,
+        TSupSetMin=284.95,
+        numIgnReqSupTem=1,
+        kTSup=0.5,
+        TiTSup=120),
+      conVAVWes(
+        VDisSetMin_flow=0.05*conVAVWes.V_flow_nominal,
+        VDisConMin_flow=0.05*conVAVWes.V_flow_nominal,
+        errTZonCoo_1=0.8,
+        errTZonCoo_2=0.4),
+      conVAVCor(
+        VDisSetMin_flow=0.05*conVAVCor.V_flow_nominal,
+        VDisConMin_flow=0.05*conVAVCor.V_flow_nominal,
+        errTZonCoo_1=0.8,
+        errTZonCoo_2=0.4),
+      conVAVSou(
+        VDisSetMin_flow=0.05*conVAVSou.V_flow_nominal,
+        VDisConMin_flow=0.05*conVAVSou.V_flow_nominal,
+        errTZonCoo_1=0.8,
+        errTZonCoo_2=0.4),
+      conVAVEas(
+        VDisSetMin_flow=0.05*conVAVEas.V_flow_nominal,
+        VDisConMin_flow=0.05*conVAVEas.V_flow_nominal,
+        errTZonCoo_1=0.8,
+        errTZonCoo_2=0.4),
+      conVAVNor(
+        VDisSetMin_flow=0.05*conVAVNor.V_flow_nominal,
+        VDisConMin_flow=0.05*conVAVNor.V_flow_nominal,
+        errTZonCoo_1=0.8,
+        errTZonCoo_2=0.4));
+    extends FiveZone.BaseClasses.PartialWaterside(
+      redeclare FiveZone.BaseClasses.IntegratedPrimaryLoadSide chiWSE(
+        use_inputFilter=true,
+        addPowerToMedium=false,
+        perPum=perPumPri),
+      watVal(
+        redeclare package Medium = MediumW,
+        m_flow_nominal=m1_flow_chi_nominal,
+        dpValve_nominal=6000,
+        riseTime=60),
+      final QEva_nominal=designCoolLoad,
+      pumCW(use_inputFilter=true),
+      resCHW(dp_nominal=139700),
+      temDifPreRes(
+        samplePeriod(displayUnit="s"),
+        uTri=0.9,
+        dpMin=0.5*dpSetPoi,
+        dpMax=dpSetPoi,
+        TMin(displayUnit="degC") = 278.15,
+        TMax(displayUnit="degC") = 283.15),
+      pumSpe(yMin=0.2));
+
+    extends FiveZone.BaseClasses.EnergyMeter(
+      eleCoiVAV(y=cor.terHea.Q1_flow + nor.terHea.Q1_flow + wes.terHea.Q1_flow
+             + eas.terHea.Q1_flow + sou.terHea.Q1_flow),
+      eleSupFan(y=fanSup.P),
+      eleChi(y=chiWSE.powChi[1]),
+      eleCHWP(y=chiWSE.powPum[1]),
+      eleCWP(y=pumCW.P),
+      eleHWP(y=pumHW.P),
+      eleCT(y=cooTow.PFan),
+      gasBoi(y=boi.QFue_flow));
+
+    parameter Buildings.Fluid.Movers.Data.Generic[numChi] perPumPri(
+      each pressure=Buildings.Fluid.Movers.BaseClasses.Characteristics.flowParameters(
+            V_flow=m2_flow_chi_nominal/1000*{0.2,0.6,1.0,1.2},
+            dp=(dp2_chi_nominal+dp2_wse_nominal+139700+36000)*{1.5,1.3,1.0,0.6}))
+      "Performance data for primary pumps";
+
+    FiveZone.Controls.CoolingMode cooModCon(
+      tWai=1200,
+      deaBan1=1.1,
+      deaBan2=0.5,
+      deaBan3=1.1,
+      deaBan4=0.5) "Cooling mode controller"
+      annotation (Placement(transformation(extent={{1028,-266},{1048,-246}})));
+    Modelica.Blocks.Sources.RealExpression towTApp(y=cooTow.TWatOut_nominal -
+          cooTow.TAirInWB_nominal)
+      "Cooling tower approach temperature"
+      annotation (Placement(transformation(extent={{988,-300},{1008,-280}})));
+    Modelica.Blocks.Sources.RealExpression yVal5(y=if cooModCon.y == Integer(
+          FiveZone.Types.CoolingModes.FullMechanical)
+           then 1 else 0)
+      "On/off signal for valve 5"
+      annotation (Placement(transformation(extent={{1060,-192},{1040,-172}})));
+    Modelica.Blocks.Sources.RealExpression yVal6(y=if cooModCon.y == Integer(
+          FiveZone.Types.CoolingModes.FreeCooling)
+           then 1 else 0)
+      "On/off signal for valve 6"
+      annotation (Placement(transformation(extent={{1060,-208},{1040,-188}})));
+    Buildings.Controls.OBC.CDL.Continuous.Product proCHWP
+      annotation (Placement(transformation(extent={{1376,-260},{1396,-240}})));
+
+    FiveZone.Controls.PlantRequest plaReqChi
+      annotation (Placement(transformation(extent={{1044,-120},{1064,-100}})));
+    FiveZone.Controls.ChillerPlantEnableDisable chiPlaEnaDis(yFanSpeMin=0.15,
+        plaReqTim=30*60)
+      annotation (Placement(transformation(extent={{1100,-120},{1120,-100}})));
+    Modelica.Blocks.Math.BooleanToReal booToRea
+      annotation (Placement(transformation(extent={{1168,-126},{1188,-106}})));
+    FiveZone.Controls.BoilerPlantEnableDisable boiPlaEnaDis(
+      yFanSpeMin=0.15,
+      plaReqTim=30*60,
+      TOutPla=291.15)
+      annotation (Placement(transformation(extent={{-278,-170},{-258,-150}})));
+    Modelica.Blocks.Math.BooleanToReal booToReaHW
+      annotation (Placement(transformation(extent={{-218,-170},{-198,-150}})));
+    FiveZone.Controls.PlantRequest plaReqBoi
+      annotation (Placement(transformation(extent={{-320,-170},{-300,-150}})));
+    Buildings.Controls.OBC.CDL.Continuous.Product proHWVal
+      annotation (Placement(transformation(extent={{40,-190},{60,-170}})));
+    Buildings.Controls.OBC.CDL.Continuous.Product proCHWVal
+      annotation (Placement(transformation(extent={{468,-118},{488,-98}})));
+
+    FiveZone.Controls.MinimumFlowBypassValve minFloBypCHW(m_flow_minimum=0.5, k=
+         0.1) "Chilled water loop minimum bypass valve control"
+      annotation (Placement(transformation(extent={{1040,-160},{1060,-140}})));
+    Modelica.Blocks.Sources.RealExpression yVal7(y=0)
+                                       "On/off signal for valve 7"
+      annotation (Placement(transformation(extent={{1060,-230},{1040,-210}})));
+  equation
+
+    connect(chiWSE.TCHWSupWSE,cooModCon. TCHWSupWSE)
+      annotation (Line(
+        points={{673,-212},{666,-212},{666,-76},{1016,-76},{1016,-260.444},{
+            1026,-260.444}},
+        color={0,0,127}));
+    connect(towTApp.y,cooModCon. TApp)
+      annotation (Line(
+        points={{1009,-290},{1018,-290},{1018,-257.111},{1026,-257.111}},
+        color={0,0,127}));
+    connect(cooModCon.TCHWRetWSE, TCHWRet.T)
+      annotation (Line(
+        points={{1026,-263.778},{1014,-263.778},{1014,-66},{608,-66},{608,-177}},
+      color={0,0,127}));
+    connect(cooModCon.y, chiStaCon.cooMod)
+      annotation (Line(
+        points={{1049,-254.889},{1072,-254.889},{1072,-66},{1270,-66},{1270,
+            -122},{1284,-122}},
+        color={255,127,0}));
+    connect(cooModCon.y,intToBoo.u)
+      annotation (Line(
+        points={{1049,-254.889},{1072,-254.889},{1072,-66},{1270,-66},{1270,
+            -154},{1284,-154}},
+        color={255,127,0}));
+    connect(cooModCon.y, cooTowSpeCon.cooMod) annotation (Line(points={{1049,
+            -254.889},{1072,-254.889},{1072,-66},{1270,-66},{1270,-93.5556},{
+            1284,-93.5556}},                           color={255,127,0}));
+    connect(cooModCon.y, CWPumCon.cooMod) annotation (Line(points={{1049,
+            -254.889},{1072,-254.889},{1072,-66},{1270,-66},{1270,-201},{1282,
+            -201}},                         color={255,127,0}));
+    connect(yVal5.y, chiWSE.yVal5) annotation (Line(points={{1039,-182},{864,-182},
+            {864,-211},{695.6,-211}},
+                                color={0,0,127}));
+    connect(watVal.port_a, cooCoi.port_b1) annotation (Line(points={{538,-98},{538,
+            -86},{182,-86},{182,-52},{190,-52}},
+                             color={0,127,255},
+        thickness=0.5));
+    connect(cooCoi.port_a1, TCHWSup.port_b) annotation (Line(points={{210,-52},{220,
+            -52},{220,-78},{642,-78},{642,-128},{758,-128}},
+                                         color={0,127,255},
+        thickness=0.5));
+    connect(proCHWP.y, chiWSE.yPum[1]) annotation (Line(points={{1398,-250},{1404,
+            -250},{1404,-340},{704,-340},{704,-203.6},{695.6,-203.6}},
+                                          color={0,0,127}));
+    connect(weaBus.TWetBul, cooModCon.TWetBul) annotation (Line(
+        points={{-320,180},{-320,22},{436,22},{436,-60},{1008,-60},{1008,
+            -253.778},{1026,-253.778}},
+        color={255,204,51},
+        thickness=0.5), Text(
+        string="%first",
+        index=-1,
+        extent={{-6,3},{-6,3}},
+        horizontalAlignment=TextAlignment.Right));
+    connect(weaBus.TWetBul, cooTow.TAir) annotation (Line(
+        points={{-320,180},{-320,24},{434,24},{434,-60},{724,-60},{724,-312},{736,
+            -312}},
+        color={255,204,51},
+        thickness=0.5), Text(
+        string="%first",
+        index=-1,
+        extent={{-6,3},{-6,3}},
+        horizontalAlignment=TextAlignment.Right));
+    connect(TCWSup.T, cooTowSpeCon.TCWSup) annotation (Line(points={{828,-305},
+            {828,-64},{1274,-64},{1274,-100.667},{1284,-100.667}},
+          color={0,0,127}));
+    connect(TCHWSup.T, cooTowSpeCon.TCHWSup) annotation (Line(points={{768,-117},
+            {768,-64},{1272,-64},{1272,-104.222},{1284,-104.222}},
+                              color={0,0,127}));
+    connect(pumSpe.y, proCHWP.u2) annotation (Line(points={{1361,-248},{1366,-248},
+            {1366,-256},{1374,-256}},
+                                   color={0,0,127}));
+    connect(watVal.y_actual, temDifPreRes.u) annotation (Line(points={{531,-113},{
+            530,-113},{530,-122},{518,-122},{518,-72},{964,-72},{964,-244},{1194,-244}},
+                                                            color={0,0,127}));
+    connect(cooModCon.y, temDifPreRes.uOpeMod) annotation (Line(points={{1049,
+            -254.889},{1072,-254.889},{1072,-238},{1194,-238}},
+          color={255,127,0}));
+    connect(temDifPreRes.TSet, cooModCon.TCHWSupSet) annotation (Line(points={{1217,
+            -249},{1218,-249},{1218,-250},{1232,-250},{1232,-70},{1018,-70},{
+            1018,-250.222},{1026,-250.222}},
+                                      color={0,0,127}));
+    connect(temDifPreRes.TSet, chiWSE.TSet) annotation (Line(points={{1217,-249},{
+            1218,-249},{1218,-250},{1232,-250},{1232,-338},{704,-338},{704,-218.8},
+            {695.6,-218.8}},         color={0,0,127}));
+    connect(temDifPreRes.TSet, cooTowSpeCon.TCHWSupSet) annotation (Line(points={{1217,
+            -249},{1218,-249},{1218,-250},{1232,-250},{1232,-70},{1268,-70},{
+            1268,-97.1111},{1284,-97.1111}},        color={0,0,127}));
+    connect(TOut.y, chiPlaEnaDis.TOut) annotation (Line(points={{-279,180},{1078,
+            180},{1078,-105.4},{1098,-105.4}},
+                                           color={0,0,127}));
+    connect(chiPlaEnaDis.ySupFan, conAHU.ySupFan) annotation (Line(points={{1098,
+            -110},{1076,-110},{1076,629.333},{424,629.333}},             color={
+            255,0,255}));
+    connect(cooModCon.yPla, chiPlaEnaDis.yPla) annotation (Line(points={{1026,
+            -247.333},{1022,-247.333},{1022,-70},{1142,-70},{1142,-110},{1121,
+            -110}}, color={255,0,255}));
+    connect(gai.y, pumCW.y) annotation (Line(points={{1347,-206},{1400,-206},{1400,
+            -342},{880,-342},{880,-288},{898,-288}}, color={0,0,127}));
+    connect(cooTowSpeCon.y, cooTow.y) annotation (Line(points={{1307,-97.1111},
+            {1402,-97.1111},{1402,-344},{722,-344},{722,-308},{736,-308}},
+                                                                        color={0,
+            0,127}));
+    connect(chiOn.y, chiWSE.on[1]) annotation (Line(points={{1347,-128},{1408,-128},
+            {1408,-338},{868,-338},{868,-215.6},{695.6,-215.6}},
+                                                              color={255,0,255}));
+    connect(chiPlaEnaDis.yPla, booToRea.u)
+      annotation (Line(points={{1121,-110},{1142,-110},{1142,-116},{1166,-116}},
+                                                         color={255,0,255}));
+    connect(booToRea.y, proCHWP.u1) annotation (Line(points={{1189,-116},{1246,-116},
+            {1246,-64},{1368,-64},{1368,-244},{1374,-244}},
+                    color={0,0,127}));
+    connect(booToRea.y, val.y) annotation (Line(points={{1189,-116},{1246,-116},{1246,
+            -174},{1420,-174},{1420,-342},{620,-342},{620,-296},{646,-296},{646,-304}},
+                                                                    color={0,0,
+            127}));
+    connect(conAHU.ySupFan, andFreSta.u2) annotation (Line(points={{424,629.333},
+            {436,629.333},{436,652},{-50,652},{-50,-138},{-22,-138}},
+                        color={255,0,255}));
+    connect(heaCoi.port_b1, HWVal.port_a)
+      annotation (Line(points={{98,-52},{98,-170},{98,-170}},color={238,46,47},
+        thickness=0.5));
+    connect(boiPlaEnaDis.yPla, booToReaHW.u)
+      annotation (Line(points={{-257,-160},{-220,-160}}, color={255,0,255}));
+    connect(booToReaHW.y, boiIsoVal.y) annotation (Line(points={{-197,-160},{-182,
+            -160},{-182,-360},{242,-360},{242,-300},{292,-300},{292,-308}},
+                               color={0,0,127}));
+    connect(booToReaHW.y, proPumHW.u1) annotation (Line(points={{-197,-160},{-178,
+            -160},{-178,-72},{-98,-72},{-98,-210},{-42,-210},{-42,-308},{-34,-308}},
+                                          color={0,0,127}));
+    connect(booToReaHW.y, proBoi.u1) annotation (Line(points={{-197,-160},{-184,-160},
+            {-184,-82},{-96,-82},{-96,-208},{-40,-208},{-40,-266},{-34,-266}},
+                                          color={0,0,127}));
+    connect(boiPlaEnaDis.yPla, pumSpeHW.trigger) annotation (Line(points={{-257,-160},
+            {-240,-160},{-240,-82},{-92,-82},{-92,-338},{-68,-338},{-68,-332}},
+                                                                  color={255,0,
+            255}));
+    connect(boiPlaEnaDis.yPla, minFloBypHW.yPla) annotation (Line(points={{-257,-160},
+            {-240,-160},{-240,-80},{-92,-80},{-92,-251},{-76,-251}}, color={255,0,
+            255}));
+    connect(cooModCon.yPla, pumSpe.trigger) annotation (Line(points={{1026,
+            -247.333},{1022,-247.333},{1022,-336},{1342,-336},{1342,-260}}, color=
+           {255,0,255}));
+    connect(THWSup.port_a, heaCoi.port_a1) annotation (Line(points={{350,-214},{350,
+            -140},{142,-140},{142,-52},{118,-52}},     color={238,46,47},
+        thickness=0.5));
+    connect(wseOn.y, chiWSE.on[2]) annotation (Line(points={{1347,-154},{1408,-154},
+            {1408,-338},{866,-338},{866,-215.6},{695.6,-215.6}},
+                                                              color={255,0,255}));
+    connect(boiPlaEnaDis.yPla, boiTSup.trigger) annotation (Line(points={{-257,-160},
+            {-238,-160},{-238,-78},{-92,-78},{-92,-292},{-72,-292},{-72,-290}},
+                                                                  color={255,0,
+            255}));
+    connect(plaReqChi.yPlaReq, chiPlaEnaDis.yPlaReq) annotation (Line(points={{1065,
+            -110},{1072,-110},{1072,-114},{1098,-114}},      color={255,127,0}));
+    connect(swiFreSta.y, plaReqBoi.uPlaVal) annotation (Line(points={{42,-130},{58,
+            -130},{58,-70},{-250,-70},{-250,-120},{-340,-120},{-340,-160},{-322,-160}},
+                                                                     color={0,0,
+            127}));
+    connect(minFloBypHW.y, valBypBoi.y) annotation (Line(points={{-53,-248},{-44,-248},
+            {-44,-358},{178,-358},{178,-230},{230,-230},{230,-240}},
+                                                     color={0,0,127}));
+    connect(plaReqBoi.yPlaReq, boiPlaEnaDis.yPlaReq) annotation (Line(points={{-299,
+            -160},{-290,-160},{-290,-164},{-280,-164}},      color={255,127,0}));
+    connect(boiPlaEnaDis.yPla, triResHW.uDevSta) annotation (Line(points={{-257,-160},
+            {-240,-160},{-240,-80},{-182,-80},{-182,-221},{-160,-221}},
+                                                        color={255,0,255}));
+    connect(TOut.y, boiPlaEnaDis.TOut) annotation (Line(points={{-279,180},{-260,
+            180},{-260,-68},{-252,-68},{-252,-118},{-288,-118},{-288,-155.4},{
+            -280,-155.4}},
+          color={0,0,127}));
+    connect(conAHU.ySupFan, boiPlaEnaDis.ySupFan) annotation (Line(points={{424,
+            629.333},{436,629.333},{436,652},{-258,652},{-258,-116},{-292,-116},
+            {-292,-160},{-280,-160}},
+                          color={255,0,255}));
+    connect(swiFreSta.y, proHWVal.u1) annotation (Line(points={{42,-130},{48,-130},
+            {48,-156},{22,-156},{22,-174},{38,-174}}, color={0,0,127}));
+    connect(proHWVal.y, HWVal.y)
+      annotation (Line(points={{62,-180},{86,-180}}, color={0,0,127}));
+    connect(booToReaHW.y, proHWVal.u2) annotation (Line(points={{-197,-160},{-94,-160},
+            {-94,-186},{38,-186}}, color={0,0,127}));
+    connect(proCHWVal.y, watVal.y)
+      annotation (Line(points={{490,-108},{526,-108}}, color={0,0,127}));
+    connect(booToRea.y, proCHWVal.u2) annotation (Line(points={{1189,-116},{1228,-116},
+            {1228,-74},{436,-74},{436,-114},{466,-114}}, color={0,0,127}));
+    connect(plaReqChi.uPlaVal, conAHU.yCoo) annotation (Line(points={{1042,-110},{
+            1016,-110},{1016,-72},{388,-72},{388,44},{448,44},{448,544},{424,544}},
+          color={0,0,127}));
+    connect(conAHU.yCoo, proCHWVal.u1) annotation (Line(points={{424,544},{450,544},
+            {450,-102},{466,-102}}, color={0,0,127}));
+    connect(fanSup.y_actual, chiPlaEnaDis.yFanSpe) annotation (Line(points={{321,
+            -33},{382,-33},{382,-68},{1080,-68},{1080,-117},{1099,-117}}, color={
+            0,0,127}));
+    connect(fanSup.y_actual, boiPlaEnaDis.yFanSpe) annotation (Line(points={{321,
+            -33},{384,-33},{384,28},{16,28},{16,-66},{-256,-66},{-256,-124},{-294,
+            -124},{-294,-167},{-279,-167}}, color={0,0,127}));
+    connect(minFloBypCHW.m_flow, chiWSE.mCHW_flow) annotation (Line(points={{1038,
+            -147},{1012,-147},{1012,-178},{668,-178},{668,-206},{673,-206}},
+          color={0,0,127}));
+    connect(chiPlaEnaDis.yPla, minFloBypCHW.yPla) annotation (Line(points={{1121,
+            -110},{1142,-110},{1142,-128},{1024,-128},{1024,-153},{1038,-153}},
+          color={255,0,255}));
+    connect(yVal6.y, chiWSE.yVal6) annotation (Line(points={{1039,-198},{866,-198},
+            {866,-207.8},{695.6,-207.8}}, color={0,0,127}));
+    connect(yVal7.y, chiWSE.yVal7) annotation (Line(points={{1039,-220},{862,-220},
+            {862,-200.4},{695.6,-200.4}}, color={0,0,127}));
+    annotation (
+      Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-400,-400},{1440,
+              750}})),
+      experiment(
+        StartTime=17625600,
+        StopTime=18230400,
+        __Dymola_Algorithm="Cvode"));
+  end System;
 
   package VAVReheat "Variable air volume flow system with terminal reheat and five thermal zone"
     extends Modelica.Icons.ExamplesPackage;
@@ -5867,8 +6222,7 @@ First implementation.
             Medium =                                                                  Medium)
           "Building pressure measurement"
           annotation (Placement(transformation(extent={{60,240},{40,260}})));
-        Buildings.Fluid.Sources.Outside out(nPorts=1, redeclare package Medium
-            =                                                                    Medium)
+        Buildings.Fluid.Sources.Outside out(nPorts=1, redeclare package Medium = Medium)
           annotation (Placement(transformation(extent={{-58,240},{-38,260}})));
         Modelica.Blocks.Interfaces.RealOutput p_rel
           "Relative pressure signal of building static pressure" annotation (
@@ -6381,8 +6735,8 @@ The envelope thermal properties meet ASHRAE Standard 90.1-2004.
           dp_nominal=50,
           m_flow_nominal=VRoo*1.2/3600) "Resistance model"
           annotation (Placement(transformation(extent={{20,-10},{40,10}})));
-        Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare package Medium
-            = Medium) annotation (Placement(transformation(extent={{90,-10},{110,10}})));
+        Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare package Medium =
+              Medium) annotation (Placement(transformation(extent={{90,-10},{110,10}})));
         Buildings.Fluid.Sources.Outside_CpLowRise
                               amb(redeclare package Medium = Medium, nPorts=1,
           s=s,
@@ -6696,23 +7050,16 @@ as a control signal.
             pAtmSou=Buildings.BoundaryConditions.Types.DataSource.Parameter,
             ceiHeiSou=Buildings.BoundaryConditions.Types.DataSource.Parameter,
             totSkyCovSou=Buildings.BoundaryConditions.Types.DataSource.Parameter,
-
             opaSkyCovSou=Buildings.BoundaryConditions.Types.DataSource.Parameter,
-
             TDryBulSou=Buildings.BoundaryConditions.Types.DataSource.Parameter,
-
             TDewPoiSou=Buildings.BoundaryConditions.Types.DataSource.Parameter,
-
             TBlaSkySou=Buildings.BoundaryConditions.Types.DataSource.Parameter,
-
             TBlaSky=293.15,
             relHumSou=Buildings.BoundaryConditions.Types.DataSource.Parameter,
             winSpeSou=Buildings.BoundaryConditions.Types.DataSource.Parameter,
             winDirSou=Buildings.BoundaryConditions.Types.DataSource.Parameter,
             HInfHorSou=Buildings.BoundaryConditions.Types.DataSource.Parameter,
-
             HSou=Buildings.BoundaryConditions.Types.RadiationDataSource.Input_HGloHor_HDifHor),
-
           use_windPressure=false,
           sampleModel=false,
           flo(gai(K=0*[0.4; 0.4; 0.2])),
@@ -6887,23 +7234,23 @@ used for continuous validation whenever models in the library change.
               rotation=270,
               origin={70,120})));
 
-        Modelica.Fluid.Interfaces.FluidPort_a port_Out(redeclare package Medium
-            = Medium, m_flow(start=0, min=if allowFlowReversal then -Constants.inf else
+        Modelica.Fluid.Interfaces.FluidPort_a port_Out(redeclare package Medium =
+              Medium, m_flow(start=0, min=if allowFlowReversal then -Constants.inf else
                       0))
           "Fluid connector a (positive design flow direction is from port_a to port_b)"
           annotation (Placement(transformation(extent={{-110,50},{-90,70}})));
-        Modelica.Fluid.Interfaces.FluidPort_b port_Exh(redeclare package Medium
-            = Medium, m_flow(start=0, max=if allowFlowReversal then +Constants.inf else
+        Modelica.Fluid.Interfaces.FluidPort_b port_Exh(redeclare package Medium =
+              Medium, m_flow(start=0, max=if allowFlowReversal then +Constants.inf else
                       0))
           "Fluid connector b (positive design flow direction is from port_a to port_b)"
           annotation (Placement(transformation(extent={{-90,-70},{-110,-50}})));
-        Modelica.Fluid.Interfaces.FluidPort_a port_Ret(redeclare package Medium
-            = Medium, m_flow(start=0, min=if allowFlowReversal then -Constants.inf else
+        Modelica.Fluid.Interfaces.FluidPort_a port_Ret(redeclare package Medium =
+              Medium, m_flow(start=0, min=if allowFlowReversal then -Constants.inf else
                       0))
           "Fluid connector a (positive design flow direction is from port_a to port_b)"
           annotation (Placement(transformation(extent={{110,-70},{90,-50}})));
-        Modelica.Fluid.Interfaces.FluidPort_b port_Sup(redeclare package Medium
-            = Medium, m_flow(start=0, max=if allowFlowReversal then +Constants.inf else
+        Modelica.Fluid.Interfaces.FluidPort_b port_Sup(redeclare package Medium =
+              Medium, m_flow(start=0, max=if allowFlowReversal then +Constants.inf else
                       0))
           "Fluid connector b (positive design flow direction is from port_a to port_b)"
           annotation (Placement(transformation(extent={{110,50},{90,70}})));
@@ -7381,8 +7728,8 @@ does not include the flow resistance of the air damper.
               extent={{-10,-10},{10,10}},
               rotation=90,
               origin={132,-120})));
-        Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium
-            = MediumA, m_flow_nominal=m_flow_nominal) "Outside air volume flow rate"
+        Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium =
+              MediumA, m_flow_nominal=m_flow_nominal) "Outside air volume flow rate"
           annotation (Placement(transformation(extent={{-72,-44},{-50,-22}})));
 
         FiveZone.VAVReheat.ThermalZones.VAVBranch cor(
@@ -8227,8 +8574,8 @@ This is for
       block BandDeviationSumTest
         extends Modelica.Icons.Example;
 
-        FiveZone.VAVReheat.BaseClasses.BandDeviationSum bandDevSum(uppThreshold
-            =26 + 273.15, lowThreshold=22 + 273.15)
+        FiveZone.VAVReheat.BaseClasses.BandDeviationSum bandDevSum(uppThreshold=
+             26 + 273.15, lowThreshold=22 + 273.15)
           annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
         Modelica.Blocks.Sources.Sine sine(
           amplitude=5,
@@ -8256,9 +8603,6492 @@ This package contains base classes that are used to construct the models in
 </html>"));
     end BaseClasses;
   end VAVReheat;
+
+  package BaseClasses
+    "Base classes for system-level modeling and fault injection"
+
+    model IntegratedPrimaryLoadSide
+      "Integrated water-side economizer on the load side in a primary-only chilled water system"
+      extends FiveZone.BaseClasses.PartialIntegratedPrimary(final
+          m_flow_nominal={m1_flow_chi_nominal,m2_flow_chi_nominal,
+            m1_flow_wse_nominal,m2_flow_chi_nominal,numChi*m2_flow_chi_nominal,
+            m2_flow_wse_nominal,numChi*m2_flow_chi_nominal}, rhoStd={
+            Medium1.density_pTX(
+                101325,
+                273.15 + 4,
+                Medium1.X_default),Medium2.density_pTX(
+                101325,
+                273.15 + 4,
+                Medium2.X_default),Medium1.density_pTX(
+                101325,
+                273.15 + 4,
+                Medium1.X_default),Medium2.density_pTX(
+                101325,
+                273.15 + 4,
+                Medium2.X_default),Medium2.density_pTX(
+                101325,
+                273.15 + 4,
+                Medium2.X_default),Medium2.density_pTX(
+                101325,
+                273.15 + 4,
+                Medium2.X_default),Medium2.density_pTX(
+                101325,
+                273.15 + 4,
+                Medium2.X_default)});
+
+     //Dynamics
+      parameter Modelica.SIunits.Time tauPump = 1
+        "Time constant of fluid volume for nominal flow in pumps, used if energy or mass balance is dynamic"
+         annotation (Dialog(tab = "Dynamics", group="Pump",
+         enable=not energyDynamics == Modelica.Fluid.Types.Dynamics.SteadyState));
+      //Pump
+      parameter Integer numPum = numChi "Number of pumps"
+        annotation(Dialog(group="Pump"));
+      replaceable parameter Buildings.Fluid.Movers.Data.Generic perPum[numPum]
+       "Performance data for the pumps"
+        annotation (Dialog(group="Pump"),
+              Placement(transformation(extent={{38,78},{58,98}})));
+      parameter Boolean addPowerToMedium = true
+        "Set to false to avoid any power (=heat and flow work) being added to medium (may give simpler equations)"
+        annotation (Dialog(group="Pump"));
+      parameter Modelica.SIunits.Time riseTimePump = 30
+        "Rise time of the filter (time to reach 99.6 % of an opening step)"
+        annotation(Dialog(tab="Dynamics", group="Filtered speed",enable=use_inputFilter));
+      parameter Modelica.Blocks.Types.Init initPum = initValve
+        "Type of initialization (no init/steady state/initial state/initial output)"
+        annotation(Dialog(tab="Dynamics", group="Filtered speed",enable=use_inputFilter));
+      parameter Real[numPum] yPum_start = fill(0,numPum)
+        "Initial value of output:0-closed, 1-fully opened"
+        annotation(Dialog(tab="Dynamics", group="Filtered speed",enable=use_inputFilter));
+      parameter Real[numPum] yValPum_start = fill(0,numPum)
+        "Initial value of output:0-closed, 1-fully opened"
+        annotation(Dialog(tab="Dynamics", group="Filtered opening",enable=use_inputFilter));
+      parameter Real lValPum = 0.0001
+        "Valve leakage, l=Kv(y=0)/Kv(y=1)"
+        annotation(Dialog(group="Pump"));
+      parameter Real kFixedValPum = pum.m_flow_nominal/sqrt(pum.dpValve_nominal)
+        "Flow coefficient of fixed resistance that may be in series with valve,
+    k=m_flow/sqrt(dp), with unit=(kg.m)^(1/2)."
+        annotation(Dialog(group="Pump"));
+      Modelica.Blocks.Interfaces.RealInput yPum[numPum](
+        each final unit = "1",
+        each min=0,
+        each max=1)
+        "Constant normalized rotational speed"
+        annotation (Placement(transformation(extent={{-140,-60},{-100,-20}}),
+            iconTransformation(extent={{-132,-28},{-100,-60}})));
+      Modelica.Blocks.Interfaces.RealOutput powPum[numPum](
+        each final quantity="Power",
+        each final unit="W")
+        "Electrical power consumed by the pumps"
+        annotation (Placement(transformation(extent={{100,-50},{120,-30}})));
+
+      Buildings.Applications.DataCenters.ChillerCooled.Equipment.FlowMachine_y pum(
+        redeclare final package Medium = Medium2,
+        final p_start=p2_start,
+        final T_start=T2_start,
+        final X_start=X2_start,
+        final C_start=C2_start,
+        final C_nominal=C2_nominal,
+        final m_flow_small=m2_flow_small,
+        final show_T=show_T,
+        final per=perPum,
+        addPowerToMedium=addPowerToMedium,
+        final energyDynamics=energyDynamics,
+        final massDynamics=massDynamics,
+        final use_inputFilter=use_inputFilter,
+        final init=initPum,
+        final tau=tauPump,
+        final allowFlowReversal=allowFlowReversal2,
+        final num=numPum,
+        final m_flow_nominal=m2_flow_chi_nominal,
+        dpValve_nominal=6000,
+        final CvData=Buildings.Fluid.Types.CvTypes.OpPoint,
+        final deltaM=deltaM2,
+        final riseTimePump=riseTimePump,
+        final riseTimeValve=riseTimeValve,
+        final yValve_start=yValPum_start,
+        final l=lValPum,
+        final kFixed=kFixedValPum,
+        final yPump_start=yPum_start,
+        final from_dp=from_dp2,
+        final homotopyInitialization=homotopyInitialization,
+        final linearizeFlowResistance=linearizeFlowResistance2)
+        "Pumps"
+        annotation (Placement(transformation(extent={{10,-50},{-10,-30}})));
+
+    equation
+      connect(val5.port_b, pum.port_a)
+        annotation (Line(points={{40,-20},{20,-20},{20,-40},{10,-40}},
+                              color={0,127,255}));
+      connect(pum.port_b,val6.port_a)
+        annotation (Line(points={{-10,-40},{-20,-40},{-20,-20},{-40,-20}},
+                                    color={0,127,255}));
+      connect(yPum, pum.u)
+        annotation (Line(points={{-120,-40},{-30,-40},{-30,-28},{
+              18,-28},{18,-36},{12,-36}}, color={0,0,127}));
+      connect(pum.P, powPum) annotation (Line(points={{-11,-36},{-14,-36},{-14,-66},
+              {86,-66},{86,-40},{110,-40}},
+                                          color={0,0,127}));
+      annotation (Documentation(revisions="<html>
+<ul>
+<li>
+January 12, 2019, by Michael Wetter:<br/>
+Removed wrong use of <code>each</code>.
+</li>
+<li>
+July 1, 2017, by Yangyang Fu:<br/>
+First implementation.
+</li>
+</ul>
+</html>",     info="<html>
+<p>This model implements an integrated water-side economizer (WSE) on the load side of the primary-only chilled water system, as shown in the following figure. In the configuration, users can model multiple chillers with only one integrated WSE. </p>
+<p align=\"center\"><img src=\"modelica://Buildings/Resources/Images/Applications/DataCenters/ChillerCooled/Equipment/IntegraredPrimaryLoadSide.png\" alt=\"image\"/> </p>
+<h4>Implementation</h4>
+<p>The WSE located on the load side can see the warmest return chilled water, and hence can maximize the use time of the heat exchanger. This system have three operation modes: free cooling (FC) mode, partial mechanical cooling (PMC) mode and fully mechanical cooling (FMC) mode. </p>
+<p>There are 6 valves for on/off use and minimum mass flow rate control, which can be controlled in order to switch among FC, PMC and FMC mode. </p>
+<ul>
+<li>V1 and V2 are associated with the chiller. When the chiller is commanded to run, V1 and V2 will be open, and vice versa. Note that when the number of chillers are larger than 1, V1 and V2 are vectored models with the same dimension as the chillers. </li>
+<li>V3 and V4 are associated with the WSE. When the WSE is commanded to run, V3 and V4 will be open, and vice versa. </li>
+<li>V5 is for FMC only. When FMC is on, V5 is commanded to on. Otherwise, V5 is off. </li>
+<li>V6 is for FC only. When FC is on, V6 is commanded to on. Otherwise, V6 is off. </li>
+<li>V7 is controlled to track a minimum flowrate through the chiller. If the cooling load is very small (e.g. when the data center start to be occupied), and the flowrate through the chiller is smaller than the minimum requirement, then V7 is open, and the valve position is controlled to meet the minimum flowrate through the chiller. If the cooling load grows, V7 will eventually be fully closed. </li>
+</ul>
+<p>The details about how to switch among different cooling modes are shown as: </p>
+<p style=\"margin-left: 30px;\">For Free Cooling (FC) Mode: </p>
+<ul>
+<li>V1 and V2 are closed, and V3 and V4 are open; </li>
+<li>V5 is closed; </li>
+<li>V6 is open; </li>
+<li>V7 is closed;</li>
+</ul>
+<p style=\"margin-left: 30px;\">For Partially Mechanical Cooling (PMC) Mode: </p>
+<ul>
+<li>V1 and V2 are open, and V3 and V4 are open; </li>
+<li>V5 is closed; </li>
+<li>V6 is closed; </li>
+<li>V7 is controlled to track a minumum flowrate through the chiller;</li>
+</ul>
+<p style=\"margin-left: 30px;\">For Fully Mechanical Cooling (FMC) Mode: </p>
+<ul>
+<li>V1 and V2 are open, and V3 and V4 are closed; </li>
+<li>V5 is open; </li>
+<li>V6 is closed; </li>
+<li>V7 is controlled to track a minumum flowrate through the chiller;</li>
+</ul>
+<h4>Reference</h4>
+<ul>
+<li>Stein, Jeff. 2009. Waterside Economizing in Data Centers: Design and Control Considerations.<i>ASHRAE Transactions</i>, 115(2). </li>
+</ul>
+</html>"),     Icon(graphics={
+            Polygon(
+              points={{-58,40},{-58,40}},
+              lineColor={0,0,0},
+              fillColor={0,0,0},
+              fillPattern=FillPattern.Solid),
+            Polygon(
+              points={{-7,-6},{9,-6},{0,3},{-7,-6}},
+              lineColor={0,0,0},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid,
+              origin={46,-45},
+              rotation=90),
+            Polygon(
+              points={{-6,-7},{-6,9},{3,0},{-6,-7}},
+              lineColor={0,0,0},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid,
+              origin={42,-45}),
+            Ellipse(
+              extent={{-14,-32},{8,-54}},
+              lineColor={0,0,0},
+              fillPattern=FillPattern.Sphere,
+              fillColor={0,128,255}),
+            Polygon(
+              points={{-14,-44},{-2,-54},{-2,-32},{-14,-44}},
+              lineColor={0,0,0},
+              pattern=LinePattern.None,
+              fillPattern=FillPattern.HorizontalCylinder,
+              fillColor={255,255,255}),
+            Line(points={{12,6},{12,0}}, color={0,128,255}),
+            Line(points={{-70,0}}, color={0,0,0}),
+            Line(points={{-18,-44}}, color={0,0,0}),
+            Line(points={{-18,-44},{-14,-44}}, color={0,128,255}),
+            Line(points={{8,-44},{12,-44}}, color={0,128,255})}));
+    end IntegratedPrimaryLoadSide;
+
+    model PartialIntegratedPrimary
+      "Integrated water-side economizer for primary-only chilled water system"
+      extends
+        Buildings.Applications.DataCenters.ChillerCooled.Equipment.BaseClasses.PartialChillerWSE(
+        final numVal=7);
+
+      //Parameters for the valve used in free cooling mode
+      parameter Real lVal5(min=1e-10,max=1) = 0.0001
+        "Valve leakage, l=Kv(y=0)/Kv(y=1)"
+        annotation(Dialog(group="Two-way valve"));
+      parameter Real lVal6(min=1e-10,max=1) = 0.0001
+        "Valve leakage, l=Kv(y=0)/Kv(y=1)"
+        annotation(Dialog(group="Two-way valve"));
+      parameter Real lVal7(min=1e-10,max=1) = 0.0001
+        "Valve leakage, l=Kv(y=0)/Kv(y=1)"
+        annotation(Dialog(group="Two-way valve"));
+      parameter Real yVal5_start(min=0,max=1) = 0
+        "Initial value of output:0-closed, 1-fully opened"
+        annotation(Dialog(tab="Dynamics", group="Filtered opening",
+          enable=use_inputFilter));
+      parameter Real yVal6_start(min=0,max=1) = 1-yVal5_start
+        "Initial value of output:0-closed, 1-fully opened"
+        annotation(Dialog(tab="Dynamics", group="Filtered opening",
+          enable=use_inputFilter));
+      parameter Real yVal7_start(min=0,max=1) = 0
+        "Initial value of output:0-closed, 1-fully opened"
+        annotation(Dialog(tab="Dynamics", group="Filtered opening",
+          enable=use_inputFilter));
+     Modelica.Blocks.Interfaces.RealInput yVal6(
+       final unit = "1",
+       min=0,
+       max=1)
+        "Actuator position for valve 6 (0: closed, 1: open)"
+        annotation (Placement(
+            transformation(
+            extent={{-20,-20},{20,20}},
+            origin={-120,-10}), iconTransformation(
+            extent={{-16,-16},{16,16}},
+            origin={-116,-2})));
+
+      Modelica.Blocks.Interfaces.RealInput yVal5(
+        final unit= "1",
+        min=0,
+        max=1)
+        "Actuator position for valve 5(0: closed, 1: open)"
+        annotation (Placement(
+            transformation(
+            extent={{-20,-20},{20,20}},
+            origin={-120,20}), iconTransformation(
+            extent={{16,16},{-16,-16}},
+            rotation=180,
+            origin={-116,30})));
+
+      Buildings.Fluid.Actuators.Valves.TwoWayLinear val5(
+        redeclare final package Medium = Medium2,
+        final CvData=Buildings.Fluid.Types.CvTypes.OpPoint,
+        final allowFlowReversal=allowFlowReversal2,
+        final m_flow_nominal=numChi*m2_flow_chi_nominal,
+        final show_T=show_T,
+        final from_dp=from_dp2,
+        final homotopyInitialization=homotopyInitialization,
+        final linearized=linearizeFlowResistance2,
+        final deltaM=deltaM2,
+        final use_inputFilter=use_inputFilter,
+        final riseTime=riseTimeValve,
+        final init=initValve,
+        final dpFixed_nominal=0,
+        final dpValve_nominal=dpValve_nominal[5],
+        final l=lVal5,
+        final kFixed=0,
+        final rhoStd=rhoStd[5],
+        final y_start=yVal5_start)
+        "Bypass valve: closed when fully mechanic cooling is activated;
+    open when fully mechanic cooling is activated"
+        annotation (Placement(transformation(extent={{60,-30},{40,-10}})));
+      Buildings.Fluid.Actuators.Valves.TwoWayLinear val6(
+        redeclare final package Medium = Medium2,
+        final CvData=Buildings.Fluid.Types.CvTypes.OpPoint,
+        final m_flow_nominal=m2_flow_wse_nominal,
+        final allowFlowReversal=allowFlowReversal2,
+        final show_T=show_T,
+        final from_dp=from_dp2,
+        final homotopyInitialization=homotopyInitialization,
+        final linearized=linearizeFlowResistance2,
+        final deltaM=deltaM2,
+        final use_inputFilter=use_inputFilter,
+        final riseTime=riseTimeValve,
+        final init=initValve,
+        final dpFixed_nominal=0,
+        final dpValve_nominal=dpValve_nominal[6],
+        final l=lVal6,
+        final kFixed=0,
+        final rhoStd=rhoStd[6],
+        final y_start=yVal6_start)
+        "Bypass valve: closed when free cooling mode is deactivated;
+    open when free cooling is activated"
+        annotation (Placement(transformation(extent={{-40,-30},{-60,-10}})));
+
+      Buildings.Fluid.Sensors.MassFlowRate bypFlo(redeclare package Medium =
+            Medium2)
+        "Bypass water mass flowrate"
+    annotation (Placement(transformation(extent={{-10,-10},{10,10}},
+            rotation=-90,
+            origin={-80,2})));
+      Modelica.Blocks.Interfaces.RealOutput mCHW_flow "Chiller mass flow rate"
+        annotation (Placement(transformation(extent={{100,-30},{120,-10}}),
+            iconTransformation(extent={{100,-30},{120,-10}})));
+      Buildings.Fluid.Actuators.Valves.TwoWayLinear val7(
+        redeclare final package Medium = Medium2,
+        final CvData=Buildings.Fluid.Types.CvTypes.OpPoint,
+        final allowFlowReversal=allowFlowReversal2,
+        final m_flow_nominal=numChi*m2_flow_chi_nominal,
+        final show_T=show_T,
+        final from_dp=from_dp2,
+        final homotopyInitialization=homotopyInitialization,
+        final linearized=linearizeFlowResistance2,
+        final deltaM=deltaM2,
+        final use_inputFilter=use_inputFilter,
+        final riseTime=riseTimeValve,
+        final init=initValve,
+        final dpFixed_nominal=0,
+        final dpValve_nominal=dpValve_nominal[7],
+        final l=lVal7,
+        final kFixed=0,
+        final rhoStd=rhoStd[7],
+        final y_start=yVal7_start)
+        "Bypass valve: closed when fully mechanic cooling is activated;
+    open when fully mechanic cooling is activated"
+        annotation (Placement(transformation(extent={{10,-90},{-10,-70}})));
+     Modelica.Blocks.Interfaces.RealInput yVal7(
+        final unit="1",
+        min=0,
+        max=1) "Actuator position for valve 7 (0: closed, 1: open)"
+        annotation (Placement(
+            transformation(
+            extent={{-20,-20},{20,20}},
+            origin={-120,-80}), iconTransformation(
+            extent={{-16,-16},{16,16}},
+            origin={-116,-76})));
+    equation
+      connect(port_a2,val5. port_a)
+        annotation (Line(points={{100,-60},{80,-60},{80,-20},{60,-20}},
+          color={0,127,255}));
+      connect(port_a2, wse.port_a2)
+        annotation (Line(points={{100,-60},{88,-60},{80,-60},{80,24},{60,24}},
+          color={0,127,255}));
+      connect(val6.port_a, chiPar.port_a2)
+        annotation (Line(points={{-40,-20},{-20,-20},{-20,24},{-40,24}},
+          color={0,127,255}));
+      connect(val6.port_b, port_b2)
+        annotation (Line(points={{-60,-20},{-80,-20},{-80,-60},{-100,-60}},
+          color={0,127,255}));
+      connect(val5.y, yVal5)
+        annotation (Line(points={{50,-8},{50,16},{-94,16},{-94,20},{-120,20}},
+          color={0,0,127}));
+      connect(yVal6, val6.y)
+        annotation (Line(points={{-120,-10},{-90,-10},{-90,16},{-50,16},{-50,-8}},
+          color={0,0,127}));
+      connect(senTem.port_b, val5.port_b)
+        annotation (Line(points={{8,24},{0,24},{0,-20},{40,-20}},
+          color={0,127,255}));
+      connect(bypFlo.port_a, chiPar.port_b2)
+        annotation (Line(points={{-80,12},{-80,24},{-60,24}}, color={0,127,255}));
+      connect(bypFlo.port_b, port_b2) annotation (Line(points={{-80,-8},{-80,-60},{
+              -100,-60}}, color={0,127,255}));
+      connect(bypFlo.m_flow, mCHW_flow) annotation (Line(points={{-69,2},{90,2},{90,
+              -20},{110,-20}}, color={0,0,127}));
+      connect(port_b2, val7.port_b) annotation (Line(points={{-100,-60},{-40,-60},{
+              -40,-80},{-10,-80}}, color={0,127,255}));
+      connect(yVal7, val7.y) annotation (Line(points={{-120,-80},{-40,-80},{-40,-60},
+              {0,-60},{0,-68}}, color={0,0,127}));
+      connect(val7.port_a, val5.port_b) annotation (Line(points={{10,-80},{20,-80},
+              {20,-20},{40,-20}}, color={0,127,255}));
+      annotation (Documentation(info="<html>
+<p>
+Partial model that implements integrated waterside economizer in primary-ony chilled water system.
+</p>
+</html>",     revisions="<html>
+<ul>
+<li>
+July 1, 2017, by Yangyang Fu:<br/>
+First implementation.
+</li>
+</ul>
+</html>"),    Icon(graphics={
+            Rectangle(
+              extent={{32,42},{34,36}},
+              lineColor={0,0,0},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid),
+            Rectangle(
+              extent={{30,42},{32,36}},
+              lineColor={0,0,0},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid),
+            Rectangle(
+              extent={{30,4},{32,-2}},
+              lineColor={0,0,0},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid),
+            Rectangle(
+              extent={{54,42},{56,36}},
+              lineColor={0,0,0},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid),
+            Rectangle(
+              extent={{56,42},{58,36}},
+              lineColor={0,0,0},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid),
+            Polygon(
+              points={{-7,-6},{9,-6},{0,3},{-7,-6}},
+              lineColor={0,0,0},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid,
+              origin={-42,-45},
+              rotation=90),
+            Polygon(
+              points={{-6,-7},{-6,9},{3,0},{-6,-7}},
+              lineColor={0,0,0},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid,
+              origin={-46,-45}),
+            Polygon(
+              points={{-7,-6},{9,-6},{0,3},{-7,-6}},
+              lineColor={0,0,0},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid,
+              origin={46,-45},
+              rotation=90),
+            Polygon(
+              points={{-6,-7},{-6,9},{3,0},{-6,-7}},
+              lineColor={0,0,0},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid,
+              origin={42,-45}),
+            Line(points={{90,-60},{78,-60},{78,-44},{52,-44}}, color={0,128,255}),
+            Line(points={{36,-44},{12,-44}},color={0,128,255}),
+            Line(points={{-18,-44},{-36,-44}}, color={0,128,255}),
+            Line(points={{-94,-60},{-78,-60},{-78,-44},{-52,-44}}, color={0,128,255}),
+            Line(points={{78,-44},{78,0},{64,0}}, color={0,128,255}),
+            Line(points={{24,0},{14,0},{12,0},{12,-44}}, color={0,128,255}),
+            Line(points={{12,6},{12,0}}, color={0,128,255}),
+            Line(points={{-70,0}}, color={0,0,0}),
+            Line(points={{-72,0},{-78,0},{-78,-54}}, color={0,128,255}),
+            Line(points={{-24,0},{-18,0},{-18,-44}}, color={0,128,255})}));
+    end PartialIntegratedPrimary;
+
+    partial model PartialWaterside
+      "Partial model that implements water-side cooling system"
+      package MediumA = Buildings.Media.Air "Medium model for air";
+      package MediumW = Buildings.Media.Water "Medium model for water";
+
+      // Chiller parameters
+      parameter Integer numChi=1 "Number of chillers";
+      parameter Modelica.SIunits.MassFlowRate m1_flow_chi_nominal= -QEva_nominal*(1+1/COP_nominal)/4200/6.5
+        "Nominal mass flow rate at condenser water in the chillers";
+      parameter Modelica.SIunits.MassFlowRate m2_flow_chi_nominal= QEva_nominal/4200/(5.56-11.56)
+        "Nominal mass flow rate at evaporator water in the chillers";
+      parameter Modelica.SIunits.PressureDifference dp1_chi_nominal = 46.2*1000
+        "Nominal pressure";
+      parameter Modelica.SIunits.PressureDifference dp2_chi_nominal = 44.8*1000
+        "Nominal pressure";
+        parameter Modelica.SIunits.Power QEva_nominal
+        "Nominal cooling capaciaty(Negative means cooling)";
+     // WSE parameters
+      parameter Modelica.SIunits.MassFlowRate m1_flow_wse_nominal= m1_flow_chi_nominal
+        "Nominal mass flow rate at condenser water in the chillers";
+      parameter Modelica.SIunits.MassFlowRate m2_flow_wse_nominal= m2_flow_chi_nominal
+        "Nominal mass flow rate at condenser water in the chillers";
+      parameter Modelica.SIunits.PressureDifference dp1_wse_nominal = 33.1*1000
+        "Nominal pressure";
+      parameter Modelica.SIunits.PressureDifference dp2_wse_nominal = 34.5*1000
+        "Nominal pressure";
+      parameter Real COP_nominal=5.9 "COP";
+      parameter FiveZone.Data.Chiller[numChi] perChi(
+        each QEva_flow_nominal=QEva_nominal,
+        each COP_nominal=COP_nominal,
+        each mEva_flow_nominal=m2_flow_chi_nominal,
+        each mCon_flow_nominal=m1_flow_chi_nominal);
+
+      parameter Buildings.Fluid.Movers.Data.Generic perPumCW(
+        each pressure=
+              Buildings.Fluid.Movers.BaseClasses.Characteristics.flowParameters(
+              V_flow=m1_flow_chi_nominal/1000*{0.2,0.6,1.0,1.2},
+              dp=(dp1_chi_nominal+133500+30000+6000)*{1.2,1.1,1.0,0.6}))
+        "Performance data for condenser water pumps";
+
+      // Set point
+      parameter Modelica.SIunits.Temperature TCHWSet = 273.15 + 6
+        "Chilled water temperature setpoint";
+      parameter Modelica.SIunits.Pressure dpSetPoi = 36000
+        "Differential pressure setpoint at cooling coil";
+
+      FiveZone.Controls.ChillerStage chiStaCon(
+        tWai=0) "Chiller staging control"
+        annotation (Placement(transformation(extent={{1286,-138},{1306,-118}})));
+      Modelica.Blocks.Math.RealToBoolean chiOn "Real value to boolean value"
+        annotation (Placement(transformation(extent={{1326,-138},{1346,-118}})));
+      Modelica.Blocks.Math.IntegerToBoolean intToBoo(
+        threshold=Integer(FiveZone.Types.CoolingModes.FullMechanical))
+        "Inverse on/off signal for the WSE"
+        annotation (Placement(transformation(extent={{1286,-164},{1306,-144}})));
+      Modelica.Blocks.Logical.Not wseOn "True: WSE is on; False: WSE is off "
+        annotation (Placement(transformation(extent={{1326,-164},{1346,-144}})));
+      FiveZone.Controls.ConstantSpeedPumpStage
+        CWPumCon(tWai=0)
+        "Condenser water pump controller"
+        annotation (Placement(transformation(extent={{1284,-216},{1304,-196}})));
+      Modelica.Blocks.Sources.IntegerExpression chiNumOn(
+        y=integer(chiStaCon.y))
+        "The number of running chillers"
+        annotation (Placement(transformation(extent={{1196,-222},{1218,-200}})));
+      Modelica.Blocks.Math.Gain gai(each k=1)
+                                             "Gain effect"
+        annotation (Placement(transformation(extent={{1326,-216},{1346,-196}})));
+      FiveZone.Controls.CoolingTowerSpeed cooTowSpeCon(
+        controllerType=Modelica.Blocks.Types.SimpleController.PI,
+        yMin=0,
+        Ti=60,
+        k=0.1) "Cooling tower speed control"
+        annotation (Placement(transformation(extent={{1286,-106},{1306,-90}})));
+      Modelica.Blocks.Sources.RealExpression TCWSupSet(
+         y=min(29.44 + 273.15, max(273.15+ 15.56, cooTow.TAir + 3)))
+        "Condenser water supply temperature setpoint"
+        annotation (Placement(transformation(extent={{1196,-100},{1216,-80}})));
+      replaceable Buildings.Applications.DataCenters.ChillerCooled.Equipment.BaseClasses.PartialChillerWSE chiWSE(
+        redeclare replaceable package Medium1 = MediumW,
+        redeclare replaceable package Medium2 = MediumW,
+        numChi=numChi,
+        m1_flow_chi_nominal=m1_flow_chi_nominal,
+        m2_flow_chi_nominal=m2_flow_chi_nominal,
+        m1_flow_wse_nominal=m1_flow_wse_nominal,
+        m2_flow_wse_nominal=m2_flow_wse_nominal,
+        dp1_chi_nominal=dp1_chi_nominal,
+        dp1_wse_nominal=dp1_wse_nominal,
+        dp2_chi_nominal=dp2_chi_nominal,
+        dp2_wse_nominal=dp2_wse_nominal,
+        perChi = perChi,
+        use_inputFilter=false,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+        use_controller=false)
+        "Chillers and waterside economizer"
+        annotation (Placement(transformation(extent={{694,-198},{674,-218}})));
+      Buildings.Fluid.Sources.Boundary_pT expVesCW(redeclare replaceable
+          package Medium =
+                   MediumW, nPorts=1)
+        "Expansion tank"
+        annotation (Placement(transformation(extent={{-9,-9.5},{9,9.5}},
+            rotation=180,
+            origin={969,-299.5})));
+      Buildings.Fluid.HeatExchangers.CoolingTowers.Merkel   cooTow(
+        redeclare each replaceable package Medium = MediumW,
+        ratWatAir_nominal=1.5,
+        each TAirInWB_nominal(displayUnit="degC") = 273.15 + 25.55,
+        each energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyStateInitial,
+        each dp_nominal=30000,
+        each m_flow_nominal=m1_flow_chi_nominal,
+        TWatIn_nominal=273.15 + 35,
+        TWatOut_nominal=((273.15 + 35) - 273.15 - 5.56) + 273.15,
+        each PFan_nominal=4300)  "Cooling tower" annotation (Placement(
+            transformation(extent={{-10,-10},{10,10}}, origin={748,-316})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TCHWSup(redeclare replaceable
+          package Medium = MediumW, m_flow_nominal=numChi*m2_flow_chi_nominal)
+        "Chilled water supply temperature"
+        annotation (Placement(transformation(extent={{778,-138},{758,-118}})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TCWSup(redeclare replaceable
+          package Medium = MediumW, m_flow_nominal=numChi*m1_flow_chi_nominal)
+        "Condenser water supply temperature"
+        annotation (Placement(transformation(extent={{818,-326},{838,-306}})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TCWRet(redeclare replaceable
+          package Medium = MediumW, m_flow_nominal=numChi*m1_flow_chi_nominal)
+        "Condenser water return temperature"
+        annotation (Placement(transformation(extent={{534,-326},{554,-306}})));
+      Buildings.Fluid.Movers.SpeedControlled_y     pumCW(
+        redeclare each replaceable package Medium = MediumW,
+        addPowerToMedium=false,
+        per=perPumCW,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
+                                    "Condenser water pump" annotation (Placement(
+            transformation(
+            extent={{10,10},{-10,-10}},
+            rotation=-90,
+            origin={910,-288})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TCHWRet(redeclare replaceable
+          package Medium = MediumW, m_flow_nominal=numChi*m2_flow_chi_nominal)
+        "Chilled water return temperature"
+        annotation (Placement(transformation(extent={{618,-198},{598,-178}})));
+      Buildings.Fluid.Sources.Boundary_pT expVesChi(redeclare replaceable
+          package Medium =
+                   MediumW, nPorts=1)
+        "Expansion tank"
+        annotation (Placement(transformation(extent={{10,-10},{-10,10}},
+            rotation=180,
+            origin={512,-179})));
+      Buildings.Fluid.Sensors.RelativePressure senRelPre(redeclare replaceable
+          package Medium = MediumW)
+        "Differential pressure"
+        annotation (Placement(transformation(extent={{578,-130},{558,-150}})));
+      Buildings.Fluid.Actuators.Valves.TwoWayLinear val(
+        redeclare each package Medium = MediumW,
+        m_flow_nominal=m1_flow_chi_nominal,
+        dpValve_nominal=6000,
+        dpFixed_nominal=133500) "Shutoff valves"
+        annotation (Placement(transformation(extent={{636,-326},{656,-306}})));
+      Buildings.Controls.Continuous.LimPID pumSpe(
+        controllerType=Modelica.Blocks.Types.SimpleController.PI,
+        Ti=40,
+        yMin=0.2,
+        k=0.1,
+        reset=Buildings.Types.Reset.Parameter,
+        y_reset=0)
+               "Pump speed controller"
+        annotation (Placement(transformation(extent={{1340,-258},{1360,-238}})));
+      Modelica.Blocks.Math.Gain dpGai(k=1/dpSetPoi) "Gain effect"
+        annotation (Placement(transformation(extent={{1256,-292},{1276,-272}})));
+      Buildings.Fluid.Actuators.Valves.TwoWayEqualPercentage     watVal
+        "Two-way valve"
+         annotation (
+          Placement(transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=270,
+            origin={538,-108})));
+      Buildings.Fluid.FixedResistances.PressureDrop resCHW(
+        m_flow_nominal=m2_flow_chi_nominal,
+        redeclare package Medium = MediumW,
+        dp_nominal=150000) "Resistance in chilled water loop"
+        annotation (Placement(transformation(extent={{630,-198},{650,-178}})));
+      FiveZone.Controls.TemperatureDifferentialPressureReset
+        temDifPreRes(
+        dpMin(displayUnit="Pa"),
+        dpMax(displayUnit="Pa"),
+        TMin(displayUnit="K"),
+        TMax(displayUnit="K"))
+        annotation (Placement(transformation(extent={{1196,-254},{1216,-234}})));
+      Modelica.Blocks.Math.Gain dpSetGai(k=1/dpSetPoi) "Gain effect"
+        annotation (Placement(transformation(extent={{1256,-258},{1276,-238}})));
+    equation
+
+      connect(chiStaCon.y,chiOn. u)
+        annotation (Line(
+          points={{1307,-128},{1324,-128}},
+          color={0,0,127}));
+      connect(intToBoo.y,wseOn. u)
+        annotation (Line(
+          points={{1307,-154},{1324,-154}},
+          color={255,0,255}));
+      connect(TCWSupSet.y,cooTowSpeCon. TCWSupSet)
+        annotation (Line(
+          points={{1217,-90},{1284,-90}},
+          color={0,0,127}));
+      connect(chiNumOn.y,CWPumCon. numOnChi)
+        annotation (Line(
+          points={{1219.1,-211},{1282,-211}},
+          color={255,127,0}));
+      connect(dpGai.y, pumSpe.u_m) annotation (Line(points={{1277,-282},{1350,-282},
+              {1350,-260}},                     color={0,0,127}));
+
+      connect(val.port_b,cooTow. port_a)
+        annotation (Line(points={{656,-316},{738,-316}}, color={0,0,255},
+          thickness=0.5));
+      connect(TCWSup.port_b, expVesCW.ports[1]) annotation (Line(points={{838,-316},
+              {938,-316},{938,-299.5},{960,-299.5}}, color={0,0,255},
+          thickness=0.5));
+      connect(senRelPre.p_rel, dpGai.u) annotation (Line(points={{568,-131},{568,
+              -18},{1182,-18},{1182,-282},{1254,-282}},
+                                                     color={0,0,127}));
+      connect(CWPumCon.y[1], gai.u) annotation (Line(points={{1305,-206.5},{1306,
+              -206.5},{1306,-206},{1324,-206}},
+                                        color={0,0,127}));
+      connect(chiWSE.port_a1, pumCW.port_b) annotation (Line(points={{694,-214},{
+              708,-214},{708,-228},{910,-228},{910,-278}},
+                                     color={0,0,255},
+          thickness=0.5));
+      connect(TCWSup.port_b, pumCW.port_a) annotation (Line(points={{838,-316},{910,
+              -316},{910,-298}}, color={0,0,255},
+          thickness=0.5));
+      connect(cooTow.port_b, TCWSup.port_a)
+        annotation (Line(points={{758,-316},{818,-316}}, color={0,0,255},
+          thickness=0.5));
+      connect(TCWRet.port_b, val.port_a)
+        annotation (Line(points={{554,-316},{636,-316}}, color={0,0,255},
+          thickness=0.5));
+      connect(dpSetGai.y, pumSpe.u_s)
+        annotation (Line(points={{1277,-248},{1338,-248}}, color={0,0,127}));
+      connect(temDifPreRes.dpSet, dpSetGai.u) annotation (Line(points={{1217,-239},
+              {1236.5,-239},{1236.5,-248},{1254,-248}}, color={0,0,127}));
+      connect(chiWSE.port_b2,TCHWSup. port_a)
+        annotation (Line(
+          points={{694,-202},{718,-202},{718,-188},{906,-188},{906,-128},{778,-128}},
+          color={28,108,200},
+          thickness=0.5));
+      connect(senRelPre.port_b, TCHWRet.port_b) annotation (Line(points={{558,-140},
+              {538,-140},{538,-188},{598,-188}}, color={28,108,200},
+          thickness=0.5));
+      connect(TCWRet.port_a,chiWSE. port_b1) annotation (Line(points={{534,-316},{
+              502,-316},{502,-228},{664,-228},{664,-214},{674,-214}},
+                                            color={0,0,255},
+          thickness=0.5));
+      connect(watVal.port_b, TCHWRet.port_b) annotation (Line(points={{538,-118},{
+              538,-188},{598,-188}}, color={28,108,200},
+          thickness=0.5));
+      connect(expVesChi.ports[1], TCHWRet.port_b) annotation (Line(points={{522,
+              -179},{538,-179},{538,-188},{598,-188}}, color={28,108,200},
+          thickness=0.5));
+      connect(senRelPre.port_a, TCHWSup.port_b) annotation (Line(points={{578,-140},
+              {594,-140},{594,-128},{758,-128}}, color={28,108,200},
+          thickness=0.5));
+      connect(TCHWRet.port_a, resCHW.port_a)
+        annotation (Line(points={{618,-188},{630,-188}}, color={28,108,200},
+          thickness=0.5));
+      connect(resCHW.port_b, chiWSE.port_a2) annotation (Line(points={{650,-188},{
+              662,-188},{662,-202},{674,-202}}, color={28,108,200},
+          thickness=0.5));
+      annotation (Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-400,
+                -500},{650,20}})), Documentation(info="<html>
+<p>
+This is a partial model that describes the chilled water cooling system in a data center. The sizing data
+are collected from the reference.
+</p>
+<h4>Reference </h4>
+<ul>
+<li>
+Taylor, S. T. (2014). How to design &amp; control waterside economizers. ASHRAE Journal, 56(6), 30-36.
+</li>
+</ul>
+</html>",     revisions="<html>
+<ul>
+<li>
+January 12, 2019, by Michael Wetter:<br/>
+Removed wrong <code>each</code>.
+</li>
+<li>
+December 1, 2017, by Yangyang Fu:<br/>
+Used scaled differential pressure to control the speed of pumps. This can avoid retuning gains
+in PID when changing the differential pressure setpoint.
+</li>
+<li>
+September 2, 2017, by Michael Wetter:<br/>
+Changed expansion vessel to use the more efficient implementation.
+</li>
+<li>
+July 30, 2017, by Yangyang Fu:<br/>
+First implementation.
+</li>
+</ul>
+</html>"));
+    end PartialWaterside;
+
+    partial model PartialHotWaterside
+      "Partial model that implements hot water-side system"
+      package MediumA = Buildings.Media.Air "Medium model for air";
+      package MediumW = Buildings.Media.Water "Medium model for water";
+
+      // Boiler parameters
+      parameter Modelica.SIunits.MassFlowRate m_flow_boi_nominal= Q_flow_boi_nominal/4200/5
+        "Nominal water mass flow rate at boiler";
+      parameter Modelica.SIunits.Power Q_flow_boi_nominal
+        "Nominal heating capaciaty(Positive means heating)";
+      parameter Modelica.SIunits.Pressure dpSetPoiHW = 36000
+        "Differential pressure setpoint at heating coil";
+      parameter Buildings.Fluid.Movers.Data.Generic perPumHW(
+              pressure=Buildings.Fluid.Movers.BaseClasses.Characteristics.flowParameters(
+              V_flow=m_flow_boi_nominal/1000*{0.2,0.6,1.0,1.2},
+              dp=(85000+60000+6000+6000)*{1.5,1.3,1.0,0.6}))
+        "Performance data for primary pumps";
+
+      Buildings.Fluid.Actuators.Valves.TwoWayEqualPercentage HWVal(
+        redeclare package Medium = MediumW,
+        m_flow_nominal=m_flow_boi_nominal,
+        dpValve_nominal=6000) "Two-way valve"
+        annotation (Placement(transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=270,
+            origin={98,-180})));
+      Buildings.Fluid.Sources.Boundary_pT expVesBoi(redeclare replaceable
+          package Medium =
+                   MediumW,
+        T=318.15,           nPorts=1)
+        "Expansion tank"
+        annotation (Placement(transformation(extent={{10,-10},{-10,10}},
+            rotation=180,
+            origin={58,-319})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort THWRet(redeclare replaceable
+          package Medium = MediumW, m_flow_nominal=m_flow_boi_nominal)
+        "Boiler plant water return temperature"
+        annotation (Placement(transformation(extent={{10,-10},{-10,10}},
+            rotation=90,
+            origin={98,-226})));
+      Buildings.Fluid.FixedResistances.PressureDrop resHW(
+        m_flow_nominal=m_flow_boi_nominal,
+        redeclare package Medium = MediumW,
+        dp_nominal=85000)  "Resistance in hot water loop" annotation (Placement(
+            transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=-90,
+            origin={350,-260})));
+      Buildings.Fluid.Boilers.BoilerPolynomial boi(
+        redeclare package Medium = MediumW,
+        m_flow_nominal=m_flow_boi_nominal,
+        dp_nominal=60000,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+        Q_flow_nominal=Q_flow_boi_nominal,
+        T_nominal=318.15,
+        fue=Buildings.Fluid.Data.Fuels.NaturalGasLowerHeatingValue())
+        annotation (Placement(transformation(extent={{130,-330},{150,-310}})));
+      Buildings.Fluid.Actuators.Valves.TwoWayLinear boiIsoVal(
+        redeclare each package Medium = MediumW,
+        m_flow_nominal=m_flow_boi_nominal,
+        dpValve_nominal=6000) "Boiler Isolation Valve"
+        annotation (Placement(transformation(extent={{282,-330},{302,-310}})));
+      Buildings.Fluid.Movers.SpeedControlled_y pumHW(
+        redeclare package Medium = MediumW,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+        per=perPumHW,
+        addPowerToMedium=false)
+        annotation (Placement(transformation(extent={{198,-330},{218,-310}})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort THWSup(redeclare replaceable
+          package Medium = MediumW, m_flow_nominal=m_flow_boi_nominal)
+        "Hot water supply temperature" annotation (Placement(transformation(
+            extent={{10,-10},{-10,10}},
+            rotation=90,
+            origin={350,-224})));
+      Buildings.Fluid.Actuators.Valves.TwoWayEqualPercentage valBypBoi(
+        redeclare package Medium = MediumW,
+        m_flow_nominal=m_flow_boi_nominal,
+        dpValve_nominal=6000,
+        y_start=0,
+        use_inputFilter=false,
+        from_dp=true) "Bypass valve for boiler." annotation (Placement(
+            transformation(extent={{-10,-10},{10,10}}, origin={230,-252})));
+      Buildings.Fluid.Sensors.RelativePressure senRelPreHW(redeclare
+          replaceable package Medium =
+                           MediumW) "Differential pressure"
+        annotation (Placement(transformation(extent={{208,-196},{188,-216}})));
+
+      Modelica.Blocks.Math.Gain dpSetGaiHW(k=1/dpSetPoiHW) "Gain effect"
+        annotation (Placement(transformation(extent={{-120,-310},{-100,-290}})));
+      Modelica.Blocks.Math.Gain dpGaiHW(k=1/dpSetPoiHW) "Gain effect"
+        annotation (Placement(transformation(extent={{-120,-350},{-100,-330}})));
+      Buildings.Controls.Continuous.LimPID pumSpeHW(
+        controllerType=Modelica.Blocks.Types.SimpleController.PI,
+        Ti=40,
+        yMin=0.2,
+        k=0.1) "Pump speed controller"
+        annotation (Placement(transformation(extent={{-70,-330},{-50,-310}})));
+      Buildings.Controls.OBC.CDL.Continuous.Product proPumHW
+        annotation (Placement(transformation(extent={{-32,-324},{-12,-304}})));
+      FiveZone.Controls.MinimumFlowBypassValve
+        minFloBypHW(
+          controllerType=Modelica.Blocks.Types.SimpleController.PI)
+        "Hot water loop minimum bypass valve control"
+        annotation (Placement(transformation(extent={{-74,-258},{-54,-238}})));
+      Buildings.Fluid.Sensors.MassFlowRate   senHWFlo(redeclare package Medium =
+            MediumW)
+        "Sensor for hot water flow rate" annotation (Placement(transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=-90,
+            origin={98,-278})));
+      Buildings.Controls.Continuous.LimPID boiTSup(
+        Td=1,
+        k=0.5,
+        controllerType=Modelica.Blocks.Types.SimpleController.PI,
+        Ti=100) "Boiler supply water temperature"
+        annotation (Placement(transformation(extent={{-74,-288},{-54,-268}})));
+      Buildings.Controls.OBC.CDL.Continuous.Product proBoi
+        annotation (Placement(transformation(extent={{-32,-282},{-12,-262}})));
+      FiveZone.Controls.TrimResponse triResHW(
+        uTri=0.9,
+        dpMin(displayUnit="kPa") = 0.5*dpSetPoiHW,
+        dpMax(displayUnit="kPa") = dpSetPoiHW)
+        annotation (Placement(transformation(extent={{-156,-236},{-136,-216}})));
+    equation
+      connect(HWVal.port_b, THWRet.port_a)
+        annotation (Line(points={{98,-190},{98,-216}},
+                                                     color={238,46,47},
+          thickness=0.5));
+      connect(boi.port_b, pumHW.port_a)
+        annotation (Line(points={{150,-320},{198,-320}},color={238,46,47},
+          thickness=0.5));
+      connect(pumHW.port_b, boiIsoVal.port_a)
+        annotation (Line(points={{218,-320},{282,-320}}, color={238,46,47},
+          thickness=0.5));
+      connect(THWRet.port_a, senRelPreHW.port_b)
+        annotation (Line(points={{98,-216},{98,-206},{188,-206}},
+                                                      color={238,46,47},
+          thickness=0.5));
+      connect(senRelPreHW.port_a, THWSup.port_a)
+        annotation (Line(points={{208,-206},{350,-206},{350,-214}},
+                                                       color={238,46,47},
+          thickness=0.5));
+      connect(dpSetGaiHW.y, pumSpeHW.u_s)
+        annotation (Line(points={{-99,-300},{-86,-300},{-86,-320},{-72,-320}},
+                                                           color={0,0,127}));
+      connect(dpGaiHW.y, pumSpeHW.u_m) annotation (Line(points={{-99,-340},{-60,
+              -340},{-60,-332}},
+                            color={0,0,127}));
+      connect(senRelPreHW.p_rel, dpGaiHW.u) annotation (Line(points={{198,-197},{
+              198,-68},{-182,-68},{-182,-340},{-122,-340}},
+                                                      color={0,0,127}));
+      connect(pumSpeHW.y, proPumHW.u2)
+        annotation (Line(points={{-49,-320},{-34,-320}}, color={0,0,127}));
+      connect(proPumHW.y, pumHW.y) annotation (Line(points={{-10,-314},{10,-314},{
+              10,-360},{180,-360},{180,-300},{208,-300},{208,-308}},
+                                               color={0,0,127}));
+      connect(THWSup.port_b, resHW.port_a)
+        annotation (Line(points={{350,-234},{350,-250}},
+                                                       color={238,46,47},
+          thickness=1));
+      connect(resHW.port_b, boiIsoVal.port_b) annotation (Line(points={{350,-270},{
+              350,-320},{302,-320}},       color={238,46,47},
+          thickness=0.5));
+      connect(expVesBoi.ports[1], boi.port_a) annotation (Line(points={{68,-319},{
+              100,-319},{100,-320},{130,-320}},
+                                          color={238,46,47},
+          thickness=0.5));
+      connect(boiTSup.u_m, boi.T) annotation (Line(points={{-64,-290},{-64,-296},{
+              -98,-296},{-98,-64},{160,-64},{160,-312},{151,-312}},
+                                             color={0,0,127}));
+      connect(senHWFlo.m_flow, minFloBypHW.m_flow) annotation (Line(points={{87,-278},
+              {72,-278},{72,-70},{-96,-70},{-96,-245},{-76,-245}}, color={0,0,127}));
+      connect(valBypBoi.port_a, senHWFlo.port_a) annotation (Line(points={{220,-252},
+              {98,-252},{98,-268}}, color={238,46,47},
+          thickness=0.5));
+      connect(THWRet.port_b, senHWFlo.port_a)
+        annotation (Line(points={{98,-236},{98,-268}}, color={238,46,47},
+          thickness=0.5));
+      connect(senHWFlo.port_b, boi.port_a) annotation (Line(points={{98,-288},{98,
+              -320},{130,-320}}, color={238,46,47},
+          thickness=0.5));
+      connect(valBypBoi.port_b, resHW.port_b) annotation (Line(points={{240,-252},{
+              320,-252},{320,-290},{350,-290},{350,-270}}, color={238,46,47},
+          thickness=0.5));
+      connect(boiTSup.y, proBoi.u2)
+        annotation (Line(points={{-53,-278},{-34,-278}}, color={0,0,127}));
+      connect(proBoi.y, boi.y) annotation (Line(points={{-10,-272},{12,-272},{12,
+              -358},{120,-358},{120,-312},{128,-312}},
+                                 color={0,0,127}));
+      connect(triResHW.dpSet, dpSetGaiHW.u) annotation (Line(points={{-135,-221},{
+              -128,-221},{-128,-300},{-122,-300}}, color={0,0,127}));
+      connect(triResHW.TSet, boiTSup.u_s) annotation (Line(points={{-135,-231},{
+              -100,-231},{-100,-278},{-76,-278}},
+                                            color={0,0,127}));
+      connect(HWVal.y_actual, triResHW.u) annotation (Line(points={{91,-185},{91,
+              -200},{70,-200},{70,-66},{-180,-66},{-180,-226},{-158,-226}},
+                                                          color={0,0,127}));
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-200,
+                -380},{350,-60}})),                                  Diagram(
+            coordinateSystem(preserveAspectRatio=false, extent={{-200,-380},{350,
+                -60}})));
+    end PartialHotWaterside;
+
+    partial model PartialPhysicalAirside
+      "Partial model of variable air volume flow system with terminal reheat and five 
+  thermal zones: this is a copy of Buildings.Examples.VAVReheat.BaseClasses.PartialOpenLoop"
+
+      package MediumA = Buildings.Media.Air "Medium model for air";
+      package MediumW = Buildings.Media.Water "Medium model for water";
+
+      constant Integer numZon=5 "Total number of served VAV boxes";
+
+      parameter Modelica.SIunits.Volume VRooCor=AFloCor*flo.hRoo
+        "Room volume corridor";
+      parameter Modelica.SIunits.Volume VRooSou=AFloSou*flo.hRoo
+        "Room volume south";
+      parameter Modelica.SIunits.Volume VRooNor=AFloNor*flo.hRoo
+        "Room volume north";
+      parameter Modelica.SIunits.Volume VRooEas=AFloEas*flo.hRoo "Room volume east";
+      parameter Modelica.SIunits.Volume VRooWes=AFloWes*flo.hRoo "Room volume west";
+
+      parameter Modelica.SIunits.Area AFloCor=flo.cor.AFlo "Floor area corridor";
+      parameter Modelica.SIunits.Area AFloSou=flo.sou.AFlo "Floor area south";
+      parameter Modelica.SIunits.Area AFloNor=flo.nor.AFlo "Floor area north";
+      parameter Modelica.SIunits.Area AFloEas=flo.eas.AFlo "Floor area east";
+      parameter Modelica.SIunits.Area AFloWes=flo.wes.AFlo "Floor area west";
+
+      parameter Modelica.SIunits.Area AFlo[numZon]={flo.cor.AFlo,flo.sou.AFlo,flo.eas.AFlo,
+          flo.nor.AFlo,flo.wes.AFlo} "Floor area of each zone";
+      final parameter Modelica.SIunits.Area ATot=sum(AFlo) "Total floor area";
+
+      constant Real conv=1.2/3600 "Conversion factor for nominal mass flow rate";
+      parameter Modelica.SIunits.MassFlowRate mCor_flow_nominal=6*VRooCor*conv
+        "Design mass flow rate core";
+      parameter Modelica.SIunits.MassFlowRate mSou_flow_nominal=6*VRooSou*conv
+        "Design mass flow rate perimeter 1";
+      parameter Modelica.SIunits.MassFlowRate mEas_flow_nominal=9*VRooEas*conv
+        "Design mass flow rate perimeter 2";
+      parameter Modelica.SIunits.MassFlowRate mNor_flow_nominal=6*VRooNor*conv
+        "Design mass flow rate perimeter 3";
+      parameter Modelica.SIunits.MassFlowRate mWes_flow_nominal=7*VRooWes*conv
+        "Design mass flow rate perimeter 4";
+      parameter Modelica.SIunits.MassFlowRate m_flow_nominal=0.7*(mCor_flow_nominal
+           + mSou_flow_nominal + mEas_flow_nominal + mNor_flow_nominal +
+          mWes_flow_nominal) "Nominal mass flow rate";
+      parameter Modelica.SIunits.Angle lat=41.98*3.14159/180 "Latitude";
+
+      parameter Modelica.SIunits.Temperature THeaOn=293.15
+        "Heating setpoint during on";
+      parameter Modelica.SIunits.Temperature THeaOff=285.15
+        "Heating setpoint during off";
+      parameter Modelica.SIunits.Temperature TCooOn=297.15
+        "Cooling setpoint during on";
+      parameter Modelica.SIunits.Temperature TCooOff=303.15
+        "Cooling setpoint during off";
+      parameter Modelica.SIunits.PressureDifference dpBuiStaSet(min=0) = 12
+        "Building static pressure";
+      parameter Real yFanMin = 0.1 "Minimum fan speed";
+
+    //  parameter Modelica.SIunits.HeatFlowRate QHeaCoi_nominal= 2.5*yFanMin*m_flow_nominal*1000*(20 - 4)
+    //    "Nominal capacity of heating coil";
+
+      parameter Boolean allowFlowReversal=true
+        "= false to simplify equations, assuming, but not enforcing, no flow reversal"
+        annotation (Evaluate=true);
+
+      parameter Boolean use_windPressure=true "Set to true to enable wind pressure";
+
+      parameter Boolean sampleModel=true
+        "Set to true to time-sample the model, which can give shorter simulation time if there is already time sampling in the system model"
+        annotation (Evaluate=true, Dialog(tab=
+              "Experimental (may be changed in future releases)"));
+
+      // sizing parameter
+      parameter Modelica.SIunits.HeatFlowRate designCoolLoad = -m_flow_nominal*1000*15 "Design cooling load";
+      parameter Modelica.SIunits.HeatFlowRate designHeatLoad = 0.6*m_flow_nominal*1006*(18 - 8) "Design heating load";
+
+      Buildings.Fluid.Sources.Outside amb(redeclare package Medium = MediumA,
+          nPorts=3) "Ambient conditions"
+        annotation (Placement(transformation(extent={{-136,-56},{-114,-34}})));
+    //  Buildings.Fluid.HeatExchangers.DryCoilCounterFlow heaCoi(
+    //    redeclare package Medium1 = MediumW,
+    //    redeclare package Medium2 = MediumA,
+    //    UA_nominal = QHeaCoi_nominal/Buildings.Fluid.HeatExchangers.BaseClasses.lmtd(
+    //      T_a1=45,
+    //      T_b1=35,
+    //      T_a2=3,
+    //      T_b2=20),
+    //    m2_flow_nominal=m_flow_nominal,
+    //    allowFlowReversal1=false,
+    //    allowFlowReversal2=allowFlowReversal,
+    //    dp1_nominal=0,
+    //    dp2_nominal=200 + 200 + 100 + 40,
+    //    m1_flow_nominal=QHeaCoi_nominal/4200/10,
+    //    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
+    //    "Heating coil"
+    //    annotation (Placement(transformation(extent={{118,-36},{98,-56}})));
+
+      Buildings.Fluid.HeatExchangers.DryCoilEffectivenessNTU heaCoi(
+        redeclare package Medium1 = MediumW,
+        redeclare package Medium2 = MediumA,
+        m1_flow_nominal=designHeatLoad/4200/5,
+        m2_flow_nominal=0.6*m_flow_nominal,
+        configuration=Buildings.Fluid.Types.HeatExchangerConfiguration.CounterFlow,
+        Q_flow_nominal=designHeatLoad,
+        dp1_nominal=0,
+        dp2_nominal=200 + 200 + 100 + 40,
+        allowFlowReversal1=false,
+        allowFlowReversal2=allowFlowReversal,
+        T_a1_nominal=318.15,
+        T_a2_nominal=281.65) "Heating coil"
+        annotation (Placement(transformation(extent={{118,-36},{98,-56}})));
+
+      Buildings.Fluid.HeatExchangers.WetCoilCounterFlow cooCoi(
+        UA_nominal=-designCoolLoad/
+            Buildings.Fluid.HeatExchangers.BaseClasses.lmtd(
+            T_a1=26.2,
+            T_b1=12.8,
+            T_a2=6,
+            T_b2=12),
+        redeclare package Medium1 = MediumW,
+        redeclare package Medium2 = MediumA,
+        m1_flow_nominal=-designCoolLoad/4200/6,
+        m2_flow_nominal=m_flow_nominal,
+        dp2_nominal=0,
+        dp1_nominal=30000,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+        allowFlowReversal1=false,
+        allowFlowReversal2=allowFlowReversal) "Cooling coil"
+        annotation (Placement(transformation(extent={{210,-36},{190,-56}})));
+      Buildings.Fluid.FixedResistances.PressureDrop dpRetDuc(
+        m_flow_nominal=m_flow_nominal,
+        redeclare package Medium = MediumA,
+        allowFlowReversal=allowFlowReversal,
+        dp_nominal=490)
+                       "Pressure drop for return duct"
+        annotation (Placement(transformation(extent={{400,130},{380,150}})));
+      Buildings.Fluid.Movers.SpeedControlled_y fanSup(
+        redeclare package Medium = MediumA,
+        per(pressure(V_flow=m_flow_nominal/1.2*{0.2,0.6,1.0,1.2}, dp=(1030 + 220 +
+                10 + 20 + dpBuiStaSet)*{1.2,1.1,1.0,0.6})),
+        energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+        addPowerToMedium=false) "Supply air fan"
+        annotation (Placement(transformation(extent={{300,-50},{320,-30}})));
+
+      Buildings.Fluid.Sensors.VolumeFlowRate senSupFlo(redeclare package Medium =
+            MediumA, m_flow_nominal=m_flow_nominal)
+        "Sensor for supply fan flow rate"
+        annotation (Placement(transformation(extent={{400,-50},{420,-30}})));
+
+      Buildings.Fluid.Sensors.VolumeFlowRate senRetFlo(redeclare package Medium =
+            MediumA, m_flow_nominal=m_flow_nominal)
+        "Sensor for return fan flow rate"
+        annotation (Placement(transformation(extent={{360,130},{340,150}})));
+
+      Modelica.Blocks.Routing.RealPassThrough TOut(y(
+          final quantity="ThermodynamicTemperature",
+          final unit="K",
+          displayUnit="degC",
+          min=0))
+        annotation (Placement(transformation(extent={{-300,170},{-280,190}})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
+        redeclare package Medium = MediumA,
+        m_flow_nominal=m_flow_nominal,
+        allowFlowReversal=allowFlowReversal)
+        annotation (Placement(transformation(extent={{330,-50},{350,-30}})));
+      Buildings.Fluid.Sensors.RelativePressure dpDisSupFan(redeclare package
+          Medium =
+            MediumA) "Supply fan static discharge pressure" annotation (Placement(
+            transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=90,
+            origin={320,0})));
+      Buildings.Controls.SetPoints.OccupancySchedule occSch(occupancy=3600*{6,19})
+        "Occupancy schedule"
+        annotation (Placement(transformation(extent={{-318,-80},{-298,-60}})));
+      Buildings.Utilities.Math.Min min(nin=5) "Computes lowest room temperature"
+        annotation (Placement(transformation(extent={{1200,440},{1220,460}})));
+      Buildings.Utilities.Math.Average ave(nin=5)
+        "Compute average of room temperatures"
+        annotation (Placement(transformation(extent={{1200,410},{1220,430}})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TRet(
+        redeclare package Medium = MediumA,
+        m_flow_nominal=m_flow_nominal,
+        allowFlowReversal=allowFlowReversal) "Return air temperature sensor"
+        annotation (Placement(transformation(extent={{110,130},{90,150}})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TMix(
+        redeclare package Medium = MediumA,
+        m_flow_nominal=m_flow_nominal,
+        allowFlowReversal=allowFlowReversal) "Mixed air temperature sensor"
+        annotation (Placement(transformation(extent={{30,-50},{50,-30}})));
+      Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium =
+            MediumA, m_flow_nominal=m_flow_nominal) "Outside air volume flow rate"
+        annotation (Placement(transformation(extent={{-72,-44},{-50,-22}})));
+
+      FiveZone.VAVReheat.ThermalZones.VAVBranch cor(
+        redeclare package MediumA = MediumA,
+        redeclare package MediumW = MediumW,
+        m_flow_nominal=mCor_flow_nominal,
+        VRoo=VRooCor,
+        allowFlowReversal=allowFlowReversal)
+        "Zone for core of buildings (azimuth will be neglected)"
+        annotation (Placement(transformation(extent={{570,22},{610,62}})));
+      FiveZone.VAVReheat.ThermalZones.VAVBranch sou(
+        redeclare package MediumA = MediumA,
+        redeclare package MediumW = MediumW,
+        m_flow_nominal=mSou_flow_nominal,
+        VRoo=VRooSou,
+        allowFlowReversal=allowFlowReversal) "South-facing thermal zone"
+        annotation (Placement(transformation(extent={{750,20},{790,60}})));
+      FiveZone.VAVReheat.ThermalZones.VAVBranch eas(
+        redeclare package MediumA = MediumA,
+        redeclare package MediumW = MediumW,
+        m_flow_nominal=mEas_flow_nominal,
+        VRoo=VRooEas,
+        allowFlowReversal=allowFlowReversal) "East-facing thermal zone"
+        annotation (Placement(transformation(extent={{930,20},{970,60}})));
+      FiveZone.VAVReheat.ThermalZones.VAVBranch nor(
+        redeclare package MediumA = MediumA,
+        redeclare package MediumW = MediumW,
+        m_flow_nominal=mNor_flow_nominal,
+        VRoo=VRooNor,
+        allowFlowReversal=allowFlowReversal) "North-facing thermal zone"
+        annotation (Placement(transformation(extent={{1090,20},{1130,60}})));
+      FiveZone.VAVReheat.ThermalZones.VAVBranch wes(
+        redeclare package MediumA = MediumA,
+        redeclare package MediumW = MediumW,
+        m_flow_nominal=mWes_flow_nominal,
+        VRoo=VRooWes,
+        allowFlowReversal=allowFlowReversal) "West-facing thermal zone"
+        annotation (Placement(transformation(extent={{1290,20},{1330,60}})));
+      Buildings.Fluid.FixedResistances.Junction splRetRoo1(
+        redeclare package Medium = MediumA,
+        m_flow_nominal={m_flow_nominal,m_flow_nominal - mCor_flow_nominal,
+            mCor_flow_nominal},
+        from_dp=false,
+        linearized=true,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+        dp_nominal(each displayUnit="Pa") = {0,0,0},
+        portFlowDirection_1=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Leaving,
+        portFlowDirection_2=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Entering,
+        portFlowDirection_3=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Entering)
+        "Splitter for room return"
+        annotation (Placement(transformation(extent={{630,10},{650,-10}})));
+      Buildings.Fluid.FixedResistances.Junction splRetSou(
+        redeclare package Medium = MediumA,
+        m_flow_nominal={mSou_flow_nominal + mEas_flow_nominal + mNor_flow_nominal
+             + mWes_flow_nominal,mEas_flow_nominal + mNor_flow_nominal +
+            mWes_flow_nominal,mSou_flow_nominal},
+        from_dp=false,
+        linearized=true,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+        dp_nominal(each displayUnit="Pa") = {0,0,0},
+        portFlowDirection_1=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Leaving,
+        portFlowDirection_2=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Entering,
+        portFlowDirection_3=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Entering)
+        "Splitter for room return"
+        annotation (Placement(transformation(extent={{812,10},{832,-10}})));
+      Buildings.Fluid.FixedResistances.Junction splRetEas(
+        redeclare package Medium = MediumA,
+        m_flow_nominal={mEas_flow_nominal + mNor_flow_nominal + mWes_flow_nominal,
+            mNor_flow_nominal + mWes_flow_nominal,mEas_flow_nominal},
+        from_dp=false,
+        linearized=true,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+        dp_nominal(each displayUnit="Pa") = {0,0,0},
+        portFlowDirection_1=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Leaving,
+        portFlowDirection_2=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Entering,
+        portFlowDirection_3=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Entering)
+        "Splitter for room return"
+        annotation (Placement(transformation(extent={{992,10},{1012,-10}})));
+      Buildings.Fluid.FixedResistances.Junction splRetNor(
+        redeclare package Medium = MediumA,
+        m_flow_nominal={mNor_flow_nominal + mWes_flow_nominal,mWes_flow_nominal,
+            mNor_flow_nominal},
+        from_dp=false,
+        linearized=true,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+        dp_nominal(each displayUnit="Pa") = {0,0,0},
+        portFlowDirection_1=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Leaving,
+        portFlowDirection_2=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Entering,
+        portFlowDirection_3=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Entering)
+        "Splitter for room return"
+        annotation (Placement(transformation(extent={{1142,10},{1162,-10}})));
+      Buildings.Fluid.FixedResistances.Junction splSupRoo1(
+        redeclare package Medium = MediumA,
+        m_flow_nominal={m_flow_nominal,m_flow_nominal - mCor_flow_nominal,
+            mCor_flow_nominal},
+        from_dp=true,
+        linearized=true,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+        dp_nominal(each displayUnit="Pa") = {0,0,0},
+        portFlowDirection_1=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Entering,
+        portFlowDirection_2=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Leaving,
+        portFlowDirection_3=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Leaving)
+        "Splitter for room supply"
+        annotation (Placement(transformation(extent={{570,-30},{590,-50}})));
+      Buildings.Fluid.FixedResistances.Junction splSupSou(
+        redeclare package Medium = MediumA,
+        m_flow_nominal={mSou_flow_nominal + mEas_flow_nominal + mNor_flow_nominal
+             + mWes_flow_nominal,mEas_flow_nominal + mNor_flow_nominal +
+            mWes_flow_nominal,mSou_flow_nominal},
+        from_dp=true,
+        linearized=true,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+        dp_nominal(each displayUnit="Pa") = {0,0,0},
+        portFlowDirection_1=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Entering,
+        portFlowDirection_2=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Leaving,
+        portFlowDirection_3=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Leaving)
+        "Splitter for room supply"
+        annotation (Placement(transformation(extent={{750,-30},{770,-50}})));
+      Buildings.Fluid.FixedResistances.Junction splSupEas(
+        redeclare package Medium = MediumA,
+        m_flow_nominal={mEas_flow_nominal + mNor_flow_nominal + mWes_flow_nominal,
+            mNor_flow_nominal + mWes_flow_nominal,mEas_flow_nominal},
+        from_dp=true,
+        linearized=true,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+        dp_nominal(each displayUnit="Pa") = {0,0,0},
+        portFlowDirection_1=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Entering,
+        portFlowDirection_2=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Leaving,
+        portFlowDirection_3=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Leaving)
+        "Splitter for room supply"
+        annotation (Placement(transformation(extent={{930,-30},{950,-50}})));
+      Buildings.Fluid.FixedResistances.Junction splSupNor(
+        redeclare package Medium = MediumA,
+        m_flow_nominal={mNor_flow_nominal + mWes_flow_nominal,mWes_flow_nominal,
+            mNor_flow_nominal},
+        from_dp=true,
+        linearized=true,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+        dp_nominal(each displayUnit="Pa") = {0,0,0},
+        portFlowDirection_1=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Entering,
+        portFlowDirection_2=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Leaving,
+        portFlowDirection_3=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+             else Modelica.Fluid.Types.PortFlowDirection.Leaving)
+        "Splitter for room supply"
+        annotation (Placement(transformation(extent={{1090,-30},{1110,-50}})));
+      Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(filNam=
+            Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
+        annotation (Placement(transformation(extent={{-360,170},{-340,190}})));
+      Buildings.BoundaryConditions.WeatherData.Bus weaBus "Weather Data Bus"
+        annotation (Placement(transformation(extent={{-330,170},{-310,190}}),
+            iconTransformation(extent={{-360,170},{-340,190}})));
+      FiveZone.VAVReheat.ThermalZones.Floor flo(
+        redeclare final package Medium = MediumA,
+        final lat=lat,
+        final use_windPressure=use_windPressure,
+        final sampleModel=sampleModel)
+        "Model of a floor of the building that is served by this VAV system"
+        annotation (Placement(transformation(extent={{772,396},{1100,616}})));
+      Modelica.Blocks.Routing.DeMultiplex5 TRooAir(u(each unit="K", each
+            displayUnit="degC")) "Demultiplex for room air temperature"
+        annotation (Placement(transformation(extent={{490,160},{510,180}})));
+
+      Buildings.Fluid.Sensors.TemperatureTwoPort TSupCor(
+        redeclare package Medium = MediumA,
+        initType=Modelica.Blocks.Types.Init.InitialState,
+        m_flow_nominal=mCor_flow_nominal,
+        allowFlowReversal=allowFlowReversal) "Discharge air temperature"
+        annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=90,
+            origin={580,92})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TSupSou(
+        redeclare package Medium = MediumA,
+        initType=Modelica.Blocks.Types.Init.InitialState,
+        m_flow_nominal=mSou_flow_nominal,
+        allowFlowReversal=allowFlowReversal) "Discharge air temperature"
+        annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=90,
+            origin={760,92})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TSupEas(
+        redeclare package Medium = MediumA,
+        initType=Modelica.Blocks.Types.Init.InitialState,
+        m_flow_nominal=mEas_flow_nominal,
+        allowFlowReversal=allowFlowReversal) "Discharge air temperature"
+        annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=90,
+            origin={940,90})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TSupNor(
+        redeclare package Medium = MediumA,
+        initType=Modelica.Blocks.Types.Init.InitialState,
+        m_flow_nominal=mNor_flow_nominal,
+        allowFlowReversal=allowFlowReversal) "Discharge air temperature"
+        annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=90,
+            origin={1100,94})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TSupWes(
+        redeclare package Medium = MediumA,
+        initType=Modelica.Blocks.Types.Init.InitialState,
+        m_flow_nominal=mWes_flow_nominal,
+        allowFlowReversal=allowFlowReversal) "Discharge air temperature"
+        annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=90,
+            origin={1300,90})));
+      Buildings.Fluid.Sensors.VolumeFlowRate VSupCor_flow(
+        redeclare package Medium = MediumA,
+        initType=Modelica.Blocks.Types.Init.InitialState,
+        m_flow_nominal=mCor_flow_nominal,
+        allowFlowReversal=allowFlowReversal) "Discharge air flow rate" annotation (
+          Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=90,
+            origin={580,130})));
+      Buildings.Fluid.Sensors.VolumeFlowRate VSupSou_flow(
+        redeclare package Medium = MediumA,
+        initType=Modelica.Blocks.Types.Init.InitialState,
+        m_flow_nominal=mSou_flow_nominal,
+        allowFlowReversal=allowFlowReversal) "Discharge air flow rate" annotation (
+          Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=90,
+            origin={760,130})));
+      Buildings.Fluid.Sensors.VolumeFlowRate VSupEas_flow(
+        redeclare package Medium = MediumA,
+        initType=Modelica.Blocks.Types.Init.InitialState,
+        m_flow_nominal=mEas_flow_nominal,
+        allowFlowReversal=allowFlowReversal) "Discharge air flow rate" annotation (
+          Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=90,
+            origin={940,128})));
+      Buildings.Fluid.Sensors.VolumeFlowRate VSupNor_flow(
+        redeclare package Medium = MediumA,
+        initType=Modelica.Blocks.Types.Init.InitialState,
+        m_flow_nominal=mNor_flow_nominal,
+        allowFlowReversal=allowFlowReversal) "Discharge air flow rate" annotation (
+          Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=90,
+            origin={1100,132})));
+      Buildings.Fluid.Sensors.VolumeFlowRate VSupWes_flow(
+        redeclare package Medium = MediumA,
+        initType=Modelica.Blocks.Types.Init.InitialState,
+        m_flow_nominal=mWes_flow_nominal,
+        allowFlowReversal=allowFlowReversal) "Discharge air flow rate" annotation (
+          Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=90,
+            origin={1300,128})));
+      FiveZone.VAVReheat.BaseClasses.MixingBox eco(
+        redeclare package Medium = MediumA,
+        mOut_flow_nominal=m_flow_nominal,
+        dpOut_nominal=10,
+        mRec_flow_nominal=m_flow_nominal,
+        dpRec_nominal=10,
+        mExh_flow_nominal=m_flow_nominal,
+        dpExh_nominal=10,
+        from_dp=false) "Economizer" annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=0,
+            origin={-10,-46})));
+
+      Results res(
+        final A=ATot,
+        PFan=fanSup.P + 0,
+        PHea=heaCoi.Q2_flow + cor.terHea.Q1_flow + nor.terHea.Q1_flow + wes.terHea.Q1_flow
+             + eas.terHea.Q1_flow + sou.terHea.Q1_flow,
+        PCooSen=cooCoi.QSen2_flow,
+        PCooLat=cooCoi.QLat2_flow) "Results of the simulation";
+      /*fanRet*/
+
+    protected
+      model Results "Model to store the results of the simulation"
+        parameter Modelica.SIunits.Area A "Floor area";
+        input Modelica.SIunits.Power PFan "Fan energy";
+        input Modelica.SIunits.Power PHea "Heating energy";
+        input Modelica.SIunits.Power PCooSen "Sensible cooling energy";
+        input Modelica.SIunits.Power PCooLat "Latent cooling energy";
+
+        Real EFan(
+          unit="J/m2",
+          start=0,
+          nominal=1E5,
+          fixed=true) "Fan energy";
+        Real EHea(
+          unit="J/m2",
+          start=0,
+          nominal=1E5,
+          fixed=true) "Heating energy";
+        Real ECooSen(
+          unit="J/m2",
+          start=0,
+          nominal=1E5,
+          fixed=true) "Sensible cooling energy";
+        Real ECooLat(
+          unit="J/m2",
+          start=0,
+          nominal=1E5,
+          fixed=true) "Latent cooling energy";
+        Real ECoo(unit="J/m2") "Total cooling energy";
+      equation
+
+        A*der(EFan) = PFan;
+        A*der(EHea) = PHea;
+        A*der(ECooSen) = PCooSen;
+        A*der(ECooLat) = PCooLat;
+        ECoo = ECooSen + ECooLat;
+
+      end Results;
+    public
+      Buildings.Controls.OBC.CDL.Logical.OnOffController freSta(bandwidth=1)
+        "Freeze stat for heating coil"
+        annotation (Placement(transformation(extent={{0,-102},{20,-82}})));
+      Buildings.Controls.OBC.CDL.Continuous.Sources.Constant freStaTSetPoi(k=273.15
+             + 3) "Freeze stat set point for heating coil"
+        annotation (Placement(transformation(extent={{-40,-96},{-20,-76}})));
+
+    equation
+      connect(fanSup.port_b, dpDisSupFan.port_a) annotation (Line(
+          points={{320,-40},{320,-10}},
+          color={0,0,0},
+          smooth=Smooth.None,
+          pattern=LinePattern.Dot));
+      connect(TSup.port_a, fanSup.port_b) annotation (Line(
+          points={{330,-40},{320,-40}},
+          color={0,127,255},
+          smooth=Smooth.None,
+          thickness=0.5));
+      connect(amb.ports[1], VOut1.port_a) annotation (Line(
+          points={{-114,-42.0667},{-94,-42.0667},{-94,-33},{-72,-33}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splRetRoo1.port_1, dpRetDuc.port_a) annotation (Line(
+          points={{630,0},{430,0},{430,140},{400,140}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splRetNor.port_1, splRetEas.port_2) annotation (Line(
+          points={{1142,0},{1110,0},{1110,0},{1078,0},{1078,0},{1012,0}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splRetEas.port_1, splRetSou.port_2) annotation (Line(
+          points={{992,0},{952,0},{952,0},{912,0},{912,0},{832,0}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splRetSou.port_1, splRetRoo1.port_2) annotation (Line(
+          points={{812,0},{650,0}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splSupRoo1.port_3, cor.port_a) annotation (Line(
+          points={{580,-30},{580,22}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splSupRoo1.port_2, splSupSou.port_1) annotation (Line(
+          points={{590,-40},{750,-40}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splSupSou.port_3, sou.port_a) annotation (Line(
+          points={{760,-30},{760,20}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splSupSou.port_2, splSupEas.port_1) annotation (Line(
+          points={{770,-40},{930,-40}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splSupEas.port_3, eas.port_a) annotation (Line(
+          points={{940,-30},{940,20}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splSupEas.port_2, splSupNor.port_1) annotation (Line(
+          points={{950,-40},{1090,-40}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splSupNor.port_3, nor.port_a) annotation (Line(
+          points={{1100,-30},{1100,20}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splSupNor.port_2, wes.port_a) annotation (Line(
+          points={{1110,-40},{1300,-40},{1300,20}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(weaDat.weaBus, weaBus) annotation (Line(
+          points={{-340,180},{-320,180}},
+          color={255,204,51},
+          thickness=0.5,
+          smooth=Smooth.None));
+      connect(weaBus.TDryBul, TOut.u) annotation (Line(
+          points={{-320,180},{-302,180}},
+          color={255,204,51},
+          thickness=0.5,
+          smooth=Smooth.None));
+      connect(amb.weaBus, weaBus) annotation (Line(
+          points={{-136,-44.78},{-320,-44.78},{-320,180}},
+          color={255,204,51},
+          thickness=0.5,
+          smooth=Smooth.None));
+      connect(splRetRoo1.port_3, flo.portsCor[2]) annotation (Line(
+          points={{640,10},{640,364},{874,364},{874,472},{898,472},{898,449.533},
+              {924.286,449.533}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splRetSou.port_3, flo.portsSou[2]) annotation (Line(
+          points={{822,10},{822,350},{900,350},{900,420.2},{924.286,420.2}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splRetEas.port_3, flo.portsEas[2]) annotation (Line(
+          points={{1002,10},{1002,368},{1067.2,368},{1067.2,445.867}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splRetNor.port_3, flo.portsNor[2]) annotation (Line(
+          points={{1152,10},{1152,446},{924.286,446},{924.286,478.867}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(splRetNor.port_2, flo.portsWes[2]) annotation (Line(
+          points={{1162,0},{1342,0},{1342,394},{854,394},{854,449.533}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(weaBus, flo.weaBus) annotation (Line(
+          points={{-320,180},{-320,506},{988.714,506}},
+          color={255,204,51},
+          thickness=0.5,
+          smooth=Smooth.None));
+      connect(flo.TRooAir, min.u) annotation (Line(
+          points={{1094.14,491.333},{1164.7,491.333},{1164.7,450},{1198,450}},
+          color={0,0,127},
+          smooth=Smooth.None,
+          pattern=LinePattern.Dash));
+      connect(flo.TRooAir, ave.u) annotation (Line(
+          points={{1094.14,491.333},{1166,491.333},{1166,420},{1198,420}},
+          color={0,0,127},
+          smooth=Smooth.None,
+          pattern=LinePattern.Dash));
+      connect(TRooAir.u, flo.TRooAir) annotation (Line(
+          points={{488,170},{480,170},{480,538},{1164,538},{1164,491.333},{
+              1094.14,491.333}},
+          color={0,0,127},
+          smooth=Smooth.None,
+          pattern=LinePattern.Dash));
+
+      connect(cooCoi.port_b2, fanSup.port_a) annotation (Line(
+          points={{210,-40},{300,-40}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(cor.port_b, TSupCor.port_a) annotation (Line(
+          points={{580,62},{580,82}},
+          color={170,213,255},
+          thickness=0.5));
+
+      connect(sou.port_b, TSupSou.port_a) annotation (Line(
+          points={{760,60},{760,82}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(eas.port_b, TSupEas.port_a) annotation (Line(
+          points={{940,60},{940,80}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(nor.port_b, TSupNor.port_a) annotation (Line(
+          points={{1100,60},{1100,84}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(wes.port_b, TSupWes.port_a) annotation (Line(
+          points={{1300,60},{1300,80}},
+          color={170,213,255},
+          thickness=0.5));
+
+      connect(TSupCor.port_b, VSupCor_flow.port_a) annotation (Line(
+          points={{580,102},{580,120}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(TSupSou.port_b, VSupSou_flow.port_a) annotation (Line(
+          points={{760,102},{760,120}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(TSupEas.port_b, VSupEas_flow.port_a) annotation (Line(
+          points={{940,100},{940,100},{940,118}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(TSupNor.port_b, VSupNor_flow.port_a) annotation (Line(
+          points={{1100,104},{1100,122}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(TSupWes.port_b, VSupWes_flow.port_a) annotation (Line(
+          points={{1300,100},{1300,118}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(VSupCor_flow.port_b, flo.portsCor[1]) annotation (Line(
+          points={{580,140},{580,372},{866,372},{866,480},{912.571,480},{
+              912.571,449.533}},
+          color={170,213,255},
+          thickness=0.5));
+
+      connect(VSupSou_flow.port_b, flo.portsSou[1]) annotation (Line(
+          points={{760,140},{760,356},{912.571,356},{912.571,420.2}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(VSupEas_flow.port_b, flo.portsEas[1]) annotation (Line(
+          points={{940,138},{940,376},{1055.49,376},{1055.49,445.867}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(VSupNor_flow.port_b, flo.portsNor[1]) annotation (Line(
+          points={{1100,142},{1100,498},{912.571,498},{912.571,478.867}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(VSupWes_flow.port_b, flo.portsWes[1]) annotation (Line(
+          points={{1300,138},{1300,384},{842.286,384},{842.286,449.533}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(VOut1.port_b, eco.port_Out) annotation (Line(
+          points={{-50,-33},{-42,-33},{-42,-40},{-20,-40}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(eco.port_Sup, TMix.port_a) annotation (Line(
+          points={{0,-40},{30,-40}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(eco.port_Exh, amb.ports[2]) annotation (Line(
+          points={{-20,-52},{-96,-52},{-96,-45},{-114,-45}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(eco.port_Ret, TRet.port_b) annotation (Line(
+          points={{0,-52},{10,-52},{10,140},{90,140}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(senRetFlo.port_a, dpRetDuc.port_b)
+        annotation (Line(points={{360,140},{380,140}}, color={170,213,255},
+          thickness=0.5));
+      connect(TSup.port_b, senSupFlo.port_a)
+        annotation (Line(points={{350,-40},{400,-40}}, color={170,213,255},
+          thickness=0.5));
+      connect(senSupFlo.port_b, splSupRoo1.port_1)
+        annotation (Line(points={{420,-40},{570,-40}}, color={170,213,255},
+          thickness=0.5));
+      connect(dpDisSupFan.port_b, amb.ports[3]) annotation (Line(
+          points={{320,10},{320,14},{-88,14},{-88,-47.9333},{-114,-47.9333}},
+          color={0,0,0},
+          pattern=LinePattern.Dot));
+      connect(senRetFlo.port_b, TRet.port_a) annotation (Line(points={{340,140},{
+              226,140},{110,140}}, color={170,213,255},
+          thickness=0.5));
+      connect(freStaTSetPoi.y, freSta.reference)
+        annotation (Line(points={{-18,-86},{-2,-86}}, color={0,0,127}));
+      connect(freSta.u, TMix.T) annotation (Line(points={{-2,-98},{-10,-98},{-10,-70},
+              {20,-70},{20,-20},{40,-20},{40,-29}}, color={0,0,127}));
+      connect(TMix.port_b, heaCoi.port_a2) annotation (Line(
+          points={{50,-40},{98,-40}},
+          color={170,213,255},
+          thickness=0.5));
+      connect(heaCoi.port_b2, cooCoi.port_a2) annotation (Line(
+          points={{118,-40},{190,-40}},
+          color={170,213,255},
+          thickness=0.5));
+      annotation (Diagram(coordinateSystem(preserveAspectRatio=false, extent={{-380,
+                -400},{1420,600}})), Documentation(info="<html>
+<p>
+This model consist of an HVAC system, a building envelope model and a model
+for air flow through building leakage and through open doors.
+</p>
+<p>
+The HVAC system is a variable air volume (VAV) flow system with economizer
+and a heating and cooling coil in the air handler unit. There is also a
+reheat coil and an air damper in each of the five zone inlet branches.
+The figure below shows the schematic diagram of the HVAC system
+</p>
+<p align=\"center\">
+<img alt=\"image\" src=\"modelica://Buildings/Resources/Images/Examples/VAVReheat/vavSchematics.png\" border=\"1\"/>
+</p>
+<p>
+Most of the HVAC control in this model is open loop.
+Two models that extend this model, namely
+<a href=\"modelica://Buildings.Examples.VAVReheat.ASHRAE2006\">
+Buildings.Examples.VAVReheat.ASHRAE2006</a>
+and
+<a href=\"modelica://Buildings.Examples.VAVReheat.Guideline36\">
+Buildings.Examples.VAVReheat.Guideline36</a>
+add closed loop control. See these models for a description of
+the control sequence.
+</p>
+<p>
+To model the heat transfer through the building envelope,
+a model of five interconnected rooms is used.
+The five room model is representative of one floor of the
+new construction medium office building for Chicago, IL,
+as described in the set of DOE Commercial Building Benchmarks
+(Deru et al, 2009). There are four perimeter zones and one core zone.
+The envelope thermal properties meet ASHRAE Standard 90.1-2004.
+The thermal room model computes transient heat conduction through
+walls, floors and ceilings and long-wave radiative heat exchange between
+surfaces. The convective heat transfer coefficient is computed based
+on the temperature difference between the surface and the room air.
+There is also a layer-by-layer short-wave radiation,
+long-wave radiation, convection and conduction heat transfer model for the
+windows. The model is similar to the
+Window 5 model and described in TARCOG 2006.
+</p>
+<p>
+Each thermal zone can have air flow from the HVAC system, through leakages of the building envelope (except for the core zone) and through bi-directional air exchange through open doors that connect adjacent zones. The bi-directional air exchange is modeled based on the differences in static pressure between adjacent rooms at a reference height plus the difference in static pressure across the door height as a function of the difference in air density.
+Infiltration is a function of the
+flow imbalance of the HVAC system.
+</p>
+<h4>References</h4>
+<p>
+Deru M., K. Field, D. Studer, K. Benne, B. Griffith, P. Torcellini,
+ M. Halverson, D. Winiarski, B. Liu, M. Rosenberg, J. Huang, M. Yazdanian, and D. Crawley.
+<i>DOE commercial building research benchmarks for commercial buildings</i>.
+Technical report, U.S. Department of Energy, Energy Efficiency and
+Renewable Energy, Office of Building Technologies, Washington, DC, 2009.
+</p>
+<p>
+TARCOG 2006: Carli, Inc., TARCOG: Mathematical models for calculation
+of thermal performance of glazing systems with our without
+shading devices, Technical Report, Oct. 17, 2006.
+</p>
+</html>",     revisions="<html>
+<ul>
+<li>
+September 26, 2017, by Michael Wetter:<br/>
+Separated physical model from control to facilitate implementation of alternate control
+sequences.
+</li>
+<li>
+May 19, 2016, by Michael Wetter:<br/>
+Changed chilled water supply temperature to <i>6&deg;C</i>.
+This is
+for <a href=\"https://github.com/ibpsa/modelica-ibpsa/issues/509\">#509</a>.
+</li>
+<li>
+April 26, 2016, by Michael Wetter:<br/>
+Changed controller for freeze protection as the old implementation closed
+the outdoor air damper during summer.
+This is
+for <a href=\"https://github.com/ibpsa/modelica-ibpsa/issues/511\">#511</a>.
+</li>
+<li>
+January 22, 2016, by Michael Wetter:<br/>
+Corrected type declaration of pressure difference.
+This is
+for <a href=\"https://github.com/ibpsa/modelica-ibpsa/issues/404\">#404</a>.
+</li>
+<li>
+September 24, 2015 by Michael Wetter:<br/>
+Set default temperature for medium to avoid conflicting
+start values for alias variables of the temperature
+of the building and the ambient air.
+This is for
+<a href=\"https://github.com/lbl-srg/modelica-buildings/issues/426\">issue 426</a>.
+</li>
+</ul>
+</html>"));
+    end PartialPhysicalAirside;
+
+    partial model PartialAirside
+      "Variable air volume flow system with terminal reheat and five thermal zones"
+      extends FiveZone.BaseClasses.PartialPhysicalAirside(heaCoi(dp1_nominal=
+              30000));
+
+      parameter Modelica.SIunits.VolumeFlowRate VPriSysMax_flow=m_flow_nominal/1.2
+        "Maximum expected system primary airflow rate at design stage";
+      parameter Modelica.SIunits.VolumeFlowRate minZonPriFlo[numZon]={
+          mCor_flow_nominal,mSou_flow_nominal,mEas_flow_nominal,mNor_flow_nominal,
+          mWes_flow_nominal}/1.2 "Minimum expected zone primary flow rate";
+      parameter Modelica.SIunits.Time samplePeriod=120
+        "Sample period of component, set to the same value as the trim and respond that process yPreSetReq";
+      parameter Modelica.SIunits.PressureDifference dpDisRetMax=40
+        "Maximum return fan discharge static pressure setpoint";
+
+      Buildings.Controls.OBC.ASHRAE.G36_PR1.TerminalUnits.Controller conVAVCor(
+        V_flow_nominal=mCor_flow_nominal/1.2,
+        AFlo=AFloCor,
+        final samplePeriod=samplePeriod) "Controller for terminal unit corridor"
+        annotation (Placement(transformation(extent={{530,32},{550,52}})));
+      Buildings.Controls.OBC.ASHRAE.G36_PR1.TerminalUnits.Controller conVAVSou(
+        V_flow_nominal=mSou_flow_nominal/1.2,
+        AFlo=AFloSou,
+        final samplePeriod=samplePeriod) "Controller for terminal unit south"
+        annotation (Placement(transformation(extent={{700,30},{720,50}})));
+      Buildings.Controls.OBC.ASHRAE.G36_PR1.TerminalUnits.Controller conVAVEas(
+        V_flow_nominal=mEas_flow_nominal/1.2,
+        AFlo=AFloEas,
+        final samplePeriod=samplePeriod) "Controller for terminal unit east"
+        annotation (Placement(transformation(extent={{880,30},{900,50}})));
+      Buildings.Controls.OBC.ASHRAE.G36_PR1.TerminalUnits.Controller conVAVNor(
+        V_flow_nominal=mNor_flow_nominal/1.2,
+        AFlo=AFloNor,
+        final samplePeriod=samplePeriod) "Controller for terminal unit north"
+        annotation (Placement(transformation(extent={{1040,30},{1060,50}})));
+      Buildings.Controls.OBC.ASHRAE.G36_PR1.TerminalUnits.Controller conVAVWes(
+        V_flow_nominal=mWes_flow_nominal/1.2,
+        AFlo=AFloWes,
+        final samplePeriod=samplePeriod) "Controller for terminal unit west"
+        annotation (Placement(transformation(extent={{1240,28},{1260,48}})));
+      Modelica.Blocks.Routing.Multiplex5 TDis "Discharge air temperatures"
+        annotation (Placement(transformation(extent={{220,270},{240,290}})));
+      Modelica.Blocks.Routing.Multiplex5 VDis_flow
+        "Air flow rate at the terminal boxes"
+        annotation (Placement(transformation(extent={{220,230},{240,250}})));
+      Buildings.Controls.OBC.CDL.Integers.MultiSum TZonResReq(nin=5)
+        "Number of zone temperature requests"
+        annotation (Placement(transformation(extent={{300,360},{320,380}})));
+      Buildings.Controls.OBC.CDL.Integers.MultiSum PZonResReq(nin=5)
+        "Number of zone pressure requests"
+        annotation (Placement(transformation(extent={{300,330},{320,350}})));
+      Buildings.Controls.OBC.CDL.Continuous.Sources.Constant yOutDam(k=1)
+        "Outdoor air damper control signal"
+        annotation (Placement(transformation(extent={{-40,-20},{-20,0}})));
+      Buildings.Controls.OBC.CDL.Logical.Switch swiFreSta "Switch for freeze stat"
+        annotation (Placement(transformation(extent={{20,-140},{40,-120}})));
+      Buildings.Controls.OBC.CDL.Continuous.Sources.Constant yFreHeaCoi(final k=0.3)
+        "Flow rate signal for heating coil when freeze stat is on"
+        annotation (Placement(transformation(extent={{-80,-132},{-60,-112}})));
+      Buildings.Controls.OBC.ASHRAE.G36_PR1.TerminalUnits.ModeAndSetPoints TZonSet[
+        numZon](
+        final TZonHeaOn=fill(THeaOn, numZon),
+        final TZonHeaOff=fill(THeaOff, numZon),
+        TZonCooOn=fill(TCooOn, numZon),
+        final TZonCooOff=fill(TCooOff, numZon)) "Zone setpoint temperature"
+        annotation (Placement(transformation(extent={{60,300},{80,320}})));
+      Buildings.Controls.OBC.CDL.Routing.BooleanReplicator booRep(
+        final nout=numZon)
+        "Replicate boolean input"
+        annotation (Placement(transformation(extent={{-120,280},{-100,300}})));
+      Buildings.Controls.OBC.CDL.Routing.RealReplicator reaRep(
+        final nout=numZon)
+        "Replicate real input"
+        annotation (Placement(transformation(extent={{-120,320},{-100,340}})));
+      Buildings.Controls.OBC.ASHRAE.G36_PR1.AHUs.MultiZone.VAV.Controller conAHU(
+        final pMaxSet=410,
+        final yFanMin=yFanMin,
+        final VPriSysMax_flow=VPriSysMax_flow,
+        final peaSysPop=1.2*sum({0.05*AFlo[i] for i in 1:numZon})) "AHU controller"
+        annotation (Placement(transformation(extent={{340,512},{420,640}})));
+      Buildings.Controls.OBC.ASHRAE.G36_PR1.AHUs.MultiZone.VAV.SetPoints.OutdoorAirFlow.Zone
+        zonOutAirSet[numZon](
+        final AFlo=AFlo,
+        final have_occSen=fill(false, numZon),
+        final have_winSen=fill(false, numZon),
+        final desZonPop={0.05*AFlo[i] for i in 1:numZon},
+        final minZonPriFlo=minZonPriFlo)
+        "Zone level calculation of the minimum outdoor airflow setpoint"
+        annotation (Placement(transformation(extent={{220,580},{240,600}})));
+      Buildings.Controls.OBC.ASHRAE.G36_PR1.AHUs.MultiZone.VAV.SetPoints.OutdoorAirFlow.SumZone
+        zonToSys(final numZon=numZon) "Sum up zone calculation output"
+        annotation (Placement(transformation(extent={{280,570},{300,590}})));
+      Buildings.Controls.OBC.CDL.Routing.RealReplicator reaRep1(final nout=numZon)
+        "Replicate design uncorrected minimum outdoor airflow setpoint"
+        annotation (Placement(transformation(extent={{460,580},{480,600}})));
+      Buildings.Controls.OBC.CDL.Routing.BooleanReplicator booRep1(final nout=numZon)
+        "Replicate signal whether the outdoor airflow is required"
+        annotation (Placement(transformation(extent={{460,550},{480,570}})));
+
+      Modelica.Blocks.Logical.And andFreSta
+        annotation (Placement(transformation(extent={{-20,-140},{0,-120}})));
+    equation
+      connect(fanSup.port_b, dpDisSupFan.port_a) annotation (Line(
+          points={{320,-40},{320,0},{320,-10},{320,-10}},
+          color={0,0,0},
+          smooth=Smooth.None,
+          pattern=LinePattern.Dot));
+      connect(conVAVCor.TZon, TRooAir.y5[1]) annotation (Line(
+          points={{528,42},{520,42},{520,162},{511,162}},
+          color={0,0,127},
+          pattern=LinePattern.Dash));
+      connect(conVAVSou.TZon, TRooAir.y1[1]) annotation (Line(
+          points={{698,40},{690,40},{690,40},{680,40},{680,178},{511,178}},
+          color={0,0,127},
+          pattern=LinePattern.Dash));
+      connect(TRooAir.y2[1], conVAVEas.TZon) annotation (Line(
+          points={{511,174},{868,174},{868,40},{878,40}},
+          color={0,0,127},
+          pattern=LinePattern.Dash));
+      connect(TRooAir.y3[1], conVAVNor.TZon) annotation (Line(
+          points={{511,170},{1028,170},{1028,40},{1038,40}},
+          color={0,0,127},
+          pattern=LinePattern.Dash));
+      connect(TRooAir.y4[1], conVAVWes.TZon) annotation (Line(
+          points={{511,166},{1220,166},{1220,38},{1238,38}},
+          color={0,0,127},
+          pattern=LinePattern.Dash));
+      connect(conVAVCor.TDis, TSupCor.T) annotation (Line(points={{528,36},{522,36},
+              {522,40},{514,40},{514,92},{569,92}}, color={0,0,127}));
+      connect(TSupSou.T, conVAVSou.TDis) annotation (Line(points={{749,92},{688,92},
+              {688,34},{698,34}}, color={0,0,127}));
+      connect(TSupEas.T, conVAVEas.TDis) annotation (Line(points={{929,90},{872,90},
+              {872,34},{878,34}}, color={0,0,127}));
+      connect(TSupNor.T, conVAVNor.TDis) annotation (Line(points={{1089,94},{1032,
+              94},{1032,34},{1038,34}}, color={0,0,127}));
+      connect(TSupWes.T, conVAVWes.TDis) annotation (Line(points={{1289,90},{1228,
+              90},{1228,32},{1238,32}}, color={0,0,127}));
+      connect(cor.yVAV, conVAVCor.yDam) annotation (Line(points={{566,50},{556,50},{
+              556,48},{552,48}}, color={0,0,127}));
+      connect(cor.yVal, conVAVCor.yVal) annotation (Line(points={{566,34},{560,34},{
+              560,43},{552,43}}, color={0,0,127}));
+      connect(conVAVSou.yDam, sou.yVAV) annotation (Line(points={{722,46},{730,46},{
+              730,48},{746,48}}, color={0,0,127}));
+      connect(conVAVSou.yVal, sou.yVal) annotation (Line(points={{722,41},{732.5,41},
+              {732.5,32},{746,32}}, color={0,0,127}));
+      connect(conVAVEas.yVal, eas.yVal) annotation (Line(points={{902,41},{912.5,41},
+              {912.5,32},{926,32}}, color={0,0,127}));
+      connect(conVAVEas.yDam, eas.yVAV) annotation (Line(points={{902,46},{910,46},{
+              910,48},{926,48}}, color={0,0,127}));
+      connect(conVAVNor.yDam, nor.yVAV) annotation (Line(points={{1062,46},{1072.5,46},
+              {1072.5,48},{1086,48}},     color={0,0,127}));
+      connect(conVAVNor.yVal, nor.yVal) annotation (Line(points={{1062,41},{1072.5,41},
+              {1072.5,32},{1086,32}},     color={0,0,127}));
+      connect(conVAVWes.yVal, wes.yVal) annotation (Line(points={{1262,39},{1272.5,39},
+              {1272.5,32},{1286,32}},     color={0,0,127}));
+      connect(wes.yVAV, conVAVWes.yDam) annotation (Line(points={{1286,48},{1274,48},
+              {1274,44},{1262,44}}, color={0,0,127}));
+      connect(conVAVCor.yZonTemResReq, TZonResReq.u[1]) annotation (Line(points={{552,38},
+              {554,38},{554,220},{280,220},{280,375.6},{298,375.6}},         color=
+              {255,127,0}));
+      connect(conVAVSou.yZonTemResReq, TZonResReq.u[2]) annotation (Line(points={{722,36},
+              {726,36},{726,220},{280,220},{280,372.8},{298,372.8}},         color=
+              {255,127,0}));
+      connect(conVAVEas.yZonTemResReq, TZonResReq.u[3]) annotation (Line(points={{902,36},
+              {904,36},{904,220},{280,220},{280,370},{298,370}},         color={255,
+              127,0}));
+      connect(conVAVNor.yZonTemResReq, TZonResReq.u[4]) annotation (Line(points={{1062,36},
+              {1064,36},{1064,220},{280,220},{280,367.2},{298,367.2}},
+            color={255,127,0}));
+      connect(conVAVWes.yZonTemResReq, TZonResReq.u[5]) annotation (Line(points={{1262,34},
+              {1266,34},{1266,220},{280,220},{280,364.4},{298,364.4}},
+            color={255,127,0}));
+      connect(conVAVCor.yZonPreResReq, PZonResReq.u[1]) annotation (Line(points={{552,34},
+              {558,34},{558,214},{288,214},{288,345.6},{298,345.6}},         color=
+              {255,127,0}));
+      connect(conVAVSou.yZonPreResReq, PZonResReq.u[2]) annotation (Line(points={{722,32},
+              {728,32},{728,214},{288,214},{288,342.8},{298,342.8}},         color=
+              {255,127,0}));
+      connect(conVAVEas.yZonPreResReq, PZonResReq.u[3]) annotation (Line(points={{902,32},
+              {906,32},{906,214},{288,214},{288,340},{298,340}},         color={255,
+              127,0}));
+      connect(conVAVNor.yZonPreResReq, PZonResReq.u[4]) annotation (Line(points={{1062,32},
+              {1066,32},{1066,214},{288,214},{288,337.2},{298,337.2}},
+            color={255,127,0}));
+      connect(conVAVWes.yZonPreResReq, PZonResReq.u[5]) annotation (Line(points={{1262,30},
+              {1268,30},{1268,214},{288,214},{288,334.4},{298,334.4}},
+            color={255,127,0}));
+      connect(VSupCor_flow.V_flow, VDis_flow.u1[1]) annotation (Line(points={{569,130},
+              {472,130},{472,206},{180,206},{180,250},{218,250}},      color={0,0,
+              127}));
+      connect(VSupSou_flow.V_flow, VDis_flow.u2[1]) annotation (Line(points={{749,130},
+              {742,130},{742,206},{180,206},{180,245},{218,245}},      color={0,0,
+              127}));
+      connect(VSupEas_flow.V_flow, VDis_flow.u3[1]) annotation (Line(points={{929,128},
+              {914,128},{914,206},{180,206},{180,240},{218,240}},      color={0,0,
+              127}));
+      connect(VSupNor_flow.V_flow, VDis_flow.u4[1]) annotation (Line(points={{1089,132},
+              {1080,132},{1080,206},{180,206},{180,235},{218,235}},      color={0,0,
+              127}));
+      connect(VSupWes_flow.V_flow, VDis_flow.u5[1]) annotation (Line(points={{1289,128},
+              {1284,128},{1284,206},{180,206},{180,230},{218,230}},      color={0,0,
+              127}));
+      connect(TSupCor.T, TDis.u1[1]) annotation (Line(points={{569,92},{466,92},{466,
+              210},{176,210},{176,290},{218,290}},     color={0,0,127}));
+      connect(TSupSou.T, TDis.u2[1]) annotation (Line(points={{749,92},{688,92},{688,
+              210},{176,210},{176,285},{218,285}},                       color={0,0,
+              127}));
+      connect(TSupEas.T, TDis.u3[1]) annotation (Line(points={{929,90},{872,90},{872,
+              210},{176,210},{176,280},{218,280}},     color={0,0,127}));
+      connect(TSupNor.T, TDis.u4[1]) annotation (Line(points={{1089,94},{1032,94},{1032,
+              210},{176,210},{176,275},{218,275}},      color={0,0,127}));
+      connect(TSupWes.T, TDis.u5[1]) annotation (Line(points={{1289,90},{1228,90},{1228,
+              210},{176,210},{176,270},{218,270}},      color={0,0,127}));
+      connect(conVAVCor.VDis_flow, VSupCor_flow.V_flow) annotation (Line(points={{528,40},
+              {522,40},{522,130},{569,130}}, color={0,0,127}));
+      connect(VSupSou_flow.V_flow, conVAVSou.VDis_flow) annotation (Line(points={{749,130},
+              {690,130},{690,38},{698,38}},      color={0,0,127}));
+      connect(VSupEas_flow.V_flow, conVAVEas.VDis_flow) annotation (Line(points={{929,128},
+              {874,128},{874,38},{878,38}},      color={0,0,127}));
+      connect(VSupNor_flow.V_flow, conVAVNor.VDis_flow) annotation (Line(points={{1089,
+              132},{1034,132},{1034,38},{1038,38}}, color={0,0,127}));
+      connect(VSupWes_flow.V_flow, conVAVWes.VDis_flow) annotation (Line(points={{1289,
+              128},{1230,128},{1230,36},{1238,36}}, color={0,0,127}));
+      connect(TSup.T, conVAVCor.TSupAHU) annotation (Line(points={{340,-29},{340,
+              -20},{514,-20},{514,34},{528,34}},
+                                            color={0,0,127}));
+      connect(TSup.T, conVAVSou.TSupAHU) annotation (Line(points={{340,-29},{340,
+              -20},{686,-20},{686,32},{698,32}},
+                                            color={0,0,127}));
+      connect(TSup.T, conVAVEas.TSupAHU) annotation (Line(points={{340,-29},{340,
+              -20},{864,-20},{864,32},{878,32}},
+                                            color={0,0,127}));
+      connect(TSup.T, conVAVNor.TSupAHU) annotation (Line(points={{340,-29},{340,
+              -20},{1028,-20},{1028,32},{1038,32}},
+                                               color={0,0,127}));
+      connect(TSup.T, conVAVWes.TSupAHU) annotation (Line(points={{340,-29},{340,
+              -20},{1224,-20},{1224,30},{1238,30}},
+                                               color={0,0,127}));
+      connect(yOutDam.y, eco.yExh)
+        annotation (Line(points={{-18,-10},{-3,-10},{-3,-34}}, color={0,0,127}));
+      connect(yFreHeaCoi.y, swiFreSta.u1) annotation (Line(points={{-58,-122},{18,
+              -122}},               color={0,0,127}));
+      connect(TZonSet[1].yOpeMod, conVAVCor.uOpeMod) annotation (Line(points={{82,303},
+              {130,303},{130,180},{420,180},{420,14},{520,14},{520,32},{528,32}},
+            color={255,127,0}));
+      connect(flo.TRooAir, TZonSet.TZon) annotation (Line(points={{1094.14,
+              491.333},{1164,491.333},{1164,666},{50,666},{50,313},{58,313}},
+                                                                     color={0,0,127}));
+      connect(occSch.occupied, booRep.u) annotation (Line(points={{-297,-76},{-160,
+              -76},{-160,290},{-122,290}},  color={255,0,255}));
+      connect(occSch.tNexOcc, reaRep.u) annotation (Line(points={{-297,-64},{-180,
+              -64},{-180,330},{-122,330}},
+                                      color={0,0,127}));
+      connect(reaRep.y, TZonSet.tNexOcc) annotation (Line(points={{-98,330},{-20,330},
+              {-20,319},{58,319}}, color={0,0,127}));
+      connect(booRep.y, TZonSet.uOcc) annotation (Line(points={{-98,290},{-20,290},{
+              -20,316.025},{58,316.025}}, color={255,0,255}));
+      connect(TZonSet[1].TZonHeaSet, conVAVCor.TZonHeaSet) annotation (Line(points={{82,310},
+              {524,310},{524,52},{528,52}},          color={0,0,127}));
+      connect(TZonSet[1].TZonCooSet, conVAVCor.TZonCooSet) annotation (Line(points={{82,317},
+              {524,317},{524,50},{528,50}},          color={0,0,127}));
+      connect(TZonSet[2].TZonHeaSet, conVAVSou.TZonHeaSet) annotation (Line(points={{82,310},
+              {694,310},{694,50},{698,50}},          color={0,0,127}));
+      connect(TZonSet[2].TZonCooSet, conVAVSou.TZonCooSet) annotation (Line(points={{82,317},
+              {694,317},{694,48},{698,48}},          color={0,0,127}));
+      connect(TZonSet[3].TZonHeaSet, conVAVEas.TZonHeaSet) annotation (Line(points={{82,310},
+              {860,310},{860,50},{878,50}},          color={0,0,127}));
+      connect(TZonSet[3].TZonCooSet, conVAVEas.TZonCooSet) annotation (Line(points={{82,317},
+              {860,317},{860,48},{878,48}},          color={0,0,127}));
+      connect(TZonSet[4].TZonCooSet, conVAVNor.TZonCooSet) annotation (Line(points={{82,317},
+              {1020,317},{1020,48},{1038,48}},          color={0,0,127}));
+      connect(TZonSet[4].TZonHeaSet, conVAVNor.TZonHeaSet) annotation (Line(points={{82,310},
+              {1020,310},{1020,50},{1038,50}},          color={0,0,127}));
+      connect(TZonSet[5].TZonCooSet, conVAVWes.TZonCooSet) annotation (Line(points={{82,317},
+              {1200,317},{1200,46},{1238,46}},          color={0,0,127}));
+      connect(TZonSet[5].TZonHeaSet, conVAVWes.TZonHeaSet) annotation (Line(points={{82,310},
+              {1200,310},{1200,48},{1238,48}},          color={0,0,127}));
+      connect(TZonSet[1].yOpeMod, conVAVSou.uOpeMod) annotation (Line(points={{82,303},
+              {130,303},{130,180},{420,180},{420,14},{680,14},{680,30},{698,30}},
+            color={255,127,0}));
+      connect(TZonSet[1].yOpeMod, conVAVEas.uOpeMod) annotation (Line(points={{82,303},
+              {130,303},{130,180},{420,180},{420,14},{860,14},{860,30},{878,30}},
+            color={255,127,0}));
+      connect(TZonSet[1].yOpeMod, conVAVNor.uOpeMod) annotation (Line(points={{82,303},
+              {130,303},{130,180},{420,180},{420,14},{1020,14},{1020,30},{1038,30}},
+            color={255,127,0}));
+      connect(TZonSet[1].yOpeMod, conVAVWes.uOpeMod) annotation (Line(points={{82,303},
+              {130,303},{130,180},{420,180},{420,14},{1220,14},{1220,28},{1238,28}},
+            color={255,127,0}));
+      connect(zonToSys.ySumDesZonPop, conAHU.sumDesZonPop) annotation (Line(points={{302,589},
+              {308,589},{308,609.778},{336,609.778}},           color={0,0,127}));
+      connect(zonToSys.VSumDesPopBreZon_flow, conAHU.VSumDesPopBreZon_flow)
+        annotation (Line(points={{302,586},{310,586},{310,604.444},{336,604.444}},
+            color={0,0,127}));
+      connect(zonToSys.VSumDesAreBreZon_flow, conAHU.VSumDesAreBreZon_flow)
+        annotation (Line(points={{302,583},{312,583},{312,599.111},{336,599.111}},
+            color={0,0,127}));
+      connect(zonToSys.yDesSysVenEff, conAHU.uDesSysVenEff) annotation (Line(points={{302,580},
+              {314,580},{314,593.778},{336,593.778}},           color={0,0,127}));
+      connect(zonToSys.VSumUncOutAir_flow, conAHU.VSumUncOutAir_flow) annotation (
+          Line(points={{302,577},{316,577},{316,588.444},{336,588.444}}, color={0,0,
+              127}));
+      connect(zonToSys.VSumSysPriAir_flow, conAHU.VSumSysPriAir_flow) annotation (
+          Line(points={{302,571},{318,571},{318,583.111},{336,583.111}}, color={0,0,
+              127}));
+      connect(zonToSys.uOutAirFra_max, conAHU.uOutAirFra_max) annotation (Line(
+            points={{302,574},{320,574},{320,577.778},{336,577.778}}, color={0,0,127}));
+      connect(zonOutAirSet.yDesZonPeaOcc, zonToSys.uDesZonPeaOcc) annotation (Line(
+            points={{242,599},{270,599},{270,588},{278,588}},     color={0,0,127}));
+      connect(zonOutAirSet.VDesPopBreZon_flow, zonToSys.VDesPopBreZon_flow)
+        annotation (Line(points={{242,596},{268,596},{268,586},{278,586}},
+                                                         color={0,0,127}));
+      connect(zonOutAirSet.VDesAreBreZon_flow, zonToSys.VDesAreBreZon_flow)
+        annotation (Line(points={{242,593},{266,593},{266,584},{278,584}},
+            color={0,0,127}));
+      connect(zonOutAirSet.yDesPriOutAirFra, zonToSys.uDesPriOutAirFra) annotation (
+         Line(points={{242,590},{264,590},{264,578},{278,578}},     color={0,0,127}));
+      connect(zonOutAirSet.VUncOutAir_flow, zonToSys.VUncOutAir_flow) annotation (
+          Line(points={{242,587},{262,587},{262,576},{278,576}},     color={0,0,127}));
+      connect(zonOutAirSet.yPriOutAirFra, zonToSys.uPriOutAirFra)
+        annotation (Line(points={{242,584},{260,584},{260,574},{278,574}},
+                                                         color={0,0,127}));
+      connect(zonOutAirSet.VPriAir_flow, zonToSys.VPriAir_flow) annotation (Line(
+            points={{242,581},{258,581},{258,572},{278,572}},     color={0,0,127}));
+      connect(conAHU.yAveOutAirFraPlu, zonToSys.yAveOutAirFraPlu) annotation (Line(
+            points={{424,586.667},{440,586.667},{440,468},{270,468},{270,582},{
+              278,582}},
+            color={0,0,127}));
+      connect(conAHU.VDesUncOutAir_flow, reaRep1.u) annotation (Line(points={{424,
+              597.333},{440,597.333},{440,590},{458,590}},
+                                                  color={0,0,127}));
+      connect(reaRep1.y, zonOutAirSet.VUncOut_flow_nominal) annotation (Line(points={{482,590},
+              {490,590},{490,464},{210,464},{210,581},{218,581}},          color={0,
+              0,127}));
+      connect(conAHU.yReqOutAir, booRep1.u) annotation (Line(points={{424,
+              565.333},{444,565.333},{444,560},{458,560}},
+                                                 color={255,0,255}));
+      connect(booRep1.y, zonOutAirSet.uReqOutAir) annotation (Line(points={{482,560},
+              {496,560},{496,460},{206,460},{206,593},{218,593}}, color={255,0,255}));
+      connect(flo.TRooAir, zonOutAirSet.TZon) annotation (Line(points={{1094.14,
+              491.333},{1166,491.333},{1166,672},{210,672},{210,590},{218,590}},
+                                                                        color={0,0,127}));
+      connect(TDis.y, zonOutAirSet.TDis) annotation (Line(points={{241,280},{252,280},
+              {252,340},{200,340},{200,587},{218,587}}, color={0,0,127}));
+      connect(VDis_flow.y, zonOutAirSet.VDis_flow) annotation (Line(points={{241,240},
+              {260,240},{260,346},{194,346},{194,584},{218,584}}, color={0,0,127}));
+      connect(TZonSet[1].yOpeMod, conAHU.uOpeMod) annotation (Line(points={{82,303},
+              {140,303},{140,531.556},{336,531.556}}, color={255,127,0}));
+      connect(TZonResReq.y, conAHU.uZonTemResReq) annotation (Line(points={{322,370},
+              {330,370},{330,526.222},{336,526.222}}, color={255,127,0}));
+      connect(PZonResReq.y, conAHU.uZonPreResReq) annotation (Line(points={{322,340},
+              {326,340},{326,520.889},{336,520.889}}, color={255,127,0}));
+      connect(TZonSet[1].TZonHeaSet, conAHU.TZonHeaSet) annotation (Line(points={{82,310},
+              {110,310},{110,636.444},{336,636.444}},      color={0,0,127}));
+      connect(TZonSet[1].TZonCooSet, conAHU.TZonCooSet) annotation (Line(points={{82,317},
+              {120,317},{120,631.111},{336,631.111}},      color={0,0,127}));
+      connect(TOut.y, conAHU.TOut) annotation (Line(points={{-279,180},{-260,
+              180},{-260,625.778},{336,625.778}},
+                                       color={0,0,127}));
+      connect(dpDisSupFan.p_rel, conAHU.ducStaPre) annotation (Line(points={{311,0},
+              {160,0},{160,620.444},{336,620.444}}, color={0,0,127}));
+      connect(TSup.T, conAHU.TSup) annotation (Line(points={{340,-29},{340,-20},
+              {152,-20},{152,567.111},{336,567.111}},
+                                                 color={0,0,127}));
+      connect(TRet.T, conAHU.TOutCut) annotation (Line(points={{100,151},{100,
+              561.778},{336,561.778}},
+                              color={0,0,127}));
+      connect(VOut1.V_flow, conAHU.VOut_flow) annotation (Line(points={{-61,
+              -20.9},{-61,545.778},{336,545.778}},
+                                           color={0,0,127}));
+      connect(TMix.T, conAHU.TMix) annotation (Line(points={{40,-29},{40,
+              538.667},{336,538.667}},
+                         color={0,0,127}));
+      connect(conAHU.yOutDamPos, eco.yOut) annotation (Line(points={{424,
+              522.667},{448,522.667},{448,36},{-10,36},{-10,-34}},
+                                                     color={0,0,127}));
+      connect(conAHU.yRetDamPos, eco.yRet) annotation (Line(points={{424,
+              533.333},{442,533.333},{442,40},{-16.8,40},{-16.8,-34}},
+                                                         color={0,0,127}));
+      connect(conAHU.yHea, swiFreSta.u3) annotation (Line(points={{424,554.667},
+              {452,554.667},{452,32},{22,32},{22,-108},{10,-108},{10,-138},{18,
+              -138}},                                             color={0,0,127}));
+      connect(conAHU.ySupFanSpe, fanSup.y) annotation (Line(points={{424,
+              618.667},{432,618.667},{432,-14},{310,-14},{310,-28}},
+                                                       color={0,0,127}));
+      connect(cor.y_actual,conVAVCor.yDam_actual)  annotation (Line(points={{612,58},
+              {620,58},{620,74},{518,74},{518,38},{528,38}}, color={0,0,127}));
+      connect(sou.y_actual,conVAVSou.yDam_actual)  annotation (Line(points={{792,56},
+              {800,56},{800,76},{684,76},{684,36},{698,36}}, color={0,0,127}));
+      connect(eas.y_actual,conVAVEas.yDam_actual)  annotation (Line(points={{972,56},
+              {980,56},{980,74},{864,74},{864,36},{878,36}}, color={0,0,127}));
+      connect(nor.y_actual,conVAVNor.yDam_actual)  annotation (Line(points={{1132,
+              56},{1140,56},{1140,74},{1024,74},{1024,36},{1038,36}}, color={0,0,
+              127}));
+      connect(wes.y_actual,conVAVWes.yDam_actual)  annotation (Line(points={{1332,
+              56},{1340,56},{1340,74},{1224,74},{1224,34},{1238,34}}, color={0,0,
+              127}));
+      connect(andFreSta.y, swiFreSta.u2)
+        annotation (Line(points={{1,-130},{18,-130}},  color={255,0,255}));
+      connect(freSta.y, andFreSta.u1) annotation (Line(points={{22,-92},{28,-92},{
+              28,-112},{-40,-112},{-40,-130},{-22,-130}},
+                                                     color={255,0,255}));
+      annotation (
+        Diagram(coordinateSystem(preserveAspectRatio=false,extent={{-380,-320},{1400,
+                680}})),
+        Documentation(info="<html>
+<p>
+This model consist of an HVAC system, a building envelope model and a model
+for air flow through building leakage and through open doors.
+</p>
+<p>
+The HVAC system is a variable air volume (VAV) flow system with economizer
+and a heating and cooling coil in the air handler unit. There is also a
+reheat coil and an air damper in each of the five zone inlet branches.
+</p>
+<p>
+See the model
+<a href=\"modelica://Buildings.Examples.VAVReheat.BaseClasses.PartialOpenLoop\">
+Buildings.Examples.VAVReheat.BaseClasses.PartialOpenLoop</a>
+for a description of the HVAC system and the building envelope.
+</p>
+<p>
+The control is based on ASHRAE Guideline 36, and implemented
+using the sequences from the library
+<a href=\"modelica://Buildings.Controls.OBC.ASHRAE.G36_PR1\">
+Buildings.Controls.OBC.ASHRAE.G36_PR1</a> for
+multi-zone VAV systems with economizer. The schematic diagram of the HVAC and control
+sequence is shown in the figure below.
+</p>
+<p align=\"center\">
+<img alt=\"image\" src=\"modelica://Buildings/Resources/Images/Examples/VAVReheat/vavControlSchematics.png\" border=\"1\"/>
+</p>
+<p>
+A similar model but with a different control sequence can be found in
+<a href=\"modelica://Buildings.Examples.VAVReheat.ASHRAE2006\">
+Buildings.Examples.VAVReheat.ASHRAE2006</a>.
+Note that this model, because of the frequent time sampling,
+has longer computing time than
+<a href=\"modelica://Buildings.Examples.VAVReheat.ASHRAE2006\">
+Buildings.Examples.VAVReheat.ASHRAE2006</a>.
+The reason is that the time integrator cannot make large steps
+because it needs to set a time step each time the control samples
+its input.
+</p>
+</html>",     revisions="<html>
+<ul>
+<li>
+April 20, 2020, by Jianjun Hu:<br/>
+Exported actual VAV damper position as the measured input data for terminal controller.<br/>
+This is
+for <a href=\"https://github.com/lbl-srg/modelica-buildings/issues/1873\">issue #1873</a>
+</li>
+<li>
+March 20, 2020, by Jianjun Hu:<br/>
+Replaced the AHU controller with reimplemented one. The new controller separates the
+zone level calculation from the system level calculation and does not include
+vector-valued calculations.<br/>
+This is
+for <a href=\"https://github.com/ibpsa/modelica-ibpsa/issues/1829\">#1829</a>.
+</li>
+<li>
+March 09, 2020, by Jianjun Hu:<br/>
+Replaced the block that calculates operation mode and zone temperature setpoint,
+with the new one that does not include vector-valued calculations.<br/>
+This is
+for <a href=\"https://github.com/ibpsa/modelica-ibpsa/issues/1709\">#1709</a>.
+</li>
+<li>
+May 19, 2016, by Michael Wetter:<br/>
+Changed chilled water supply temperature to <i>6&deg;C</i>.
+This is
+for <a href=\"https://github.com/ibpsa/modelica-ibpsa/issues/509\">#509</a>.
+</li>
+<li>
+April 26, 2016, by Michael Wetter:<br/>
+Changed controller for freeze protection as the old implementation closed
+the outdoor air damper during summer.
+This is
+for <a href=\"https://github.com/ibpsa/modelica-ibpsa/issues/511\">#511</a>.
+</li>
+<li>
+January 22, 2016, by Michael Wetter:<br/>
+Corrected type declaration of pressure difference.
+This is
+for <a href=\"https://github.com/ibpsa/modelica-ibpsa/issues/404\">#404</a>.
+</li>
+<li>
+September 24, 2015 by Michael Wetter:<br/>
+Set default temperature for medium to avoid conflicting
+start values for alias variables of the temperature
+of the building and the ambient air.
+This is for
+<a href=\"https://github.com/lbl-srg/modelica-buildings/issues/426\">issue 426</a>.
+</li>
+</ul>
+</html>"),
+        __Dymola_Commands(file=
+              "modelica://Buildings/Resources/Scripts/Dymola/Examples/VAVReheat/Guideline36.mos"
+            "Simulate and plot"),
+        experiment(StopTime=172800, Tolerance=1e-06),
+        Icon(coordinateSystem(extent={{-100,-100},{100,100}})));
+    end PartialAirside;
+
+    partial model EnergyMeter "System example for fault injection"
+
+     Modelica.Blocks.Sources.RealExpression eleSupFan "Pow of fan"
+        annotation (Placement(transformation(extent={{1280,578},{1300,598}})));
+      Modelica.Blocks.Sources.RealExpression eleChi
+        "Power of chiller"
+        annotation (Placement(transformation(extent={{1280,558},{1300,578}})));
+      Modelica.Blocks.Sources.RealExpression eleCHWP
+        "Power of chilled water pump"
+        annotation (Placement(transformation(extent={{1280,538},{1300,558}})));
+      Modelica.Blocks.Sources.RealExpression eleCWP "Power of CWP"
+        annotation (Placement(transformation(extent={{1280,518},{1300,538}})));
+      Modelica.Blocks.Sources.RealExpression eleCT
+        "Power of cooling tower"
+        annotation (Placement(transformation(extent={{1280,498},{1300,518}})));
+      Modelica.Blocks.Sources.RealExpression eleHWP
+        "Power of hot water pump"
+        annotation (Placement(transformation(extent={{1280,478},{1300,498}})));
+      Modelica.Blocks.Sources.RealExpression eleCoiVAV
+        "Power of VAV terminal reheat coil"
+        annotation (Placement(transformation(extent={{1280,600},{1300,620}})));
+      Modelica.Blocks.Sources.RealExpression gasBoi
+        "Gas consumption of gas boiler"
+        annotation (Placement(transformation(extent={{1280,450},{1300,470}})));
+      Modelica.Blocks.Math.MultiSum eleTot(nu=7) "Electricity in total"
+        annotation (Placement(transformation(extent={{1344,604},{1356,616}})));
+
+    equation
+      connect(eleCoiVAV.y, eleTot.u[1]) annotation (Line(points={{1301,610},{1322,
+              610},{1322,613.6},{1344,613.6}}, color={0,0,127}));
+      connect(eleSupFan.y, eleTot.u[2]) annotation (Line(points={{1301,588},{1322.5,
+              588},{1322.5,612.4},{1344,612.4}}, color={0,0,127}));
+      connect(eleChi.y, eleTot.u[3]) annotation (Line(points={{1301,568},{1324,568},
+              {1324,611.2},{1344,611.2}}, color={0,0,127}));
+      connect(eleCHWP.y, eleTot.u[4]) annotation (Line(points={{1301,548},{1326,548},
+              {1326,610},{1344,610}}, color={0,0,127}));
+      connect(eleCWP.y, eleTot.u[5]) annotation (Line(points={{1301,528},{1328,528},
+              {1328,608.8},{1344,608.8}}, color={0,0,127}));
+      connect(eleCT.y, eleTot.u[6]) annotation (Line(points={{1301,508},{1330,508},
+              {1330,607.6},{1344,607.6}}, color={0,0,127}));
+      connect(eleHWP.y, eleTot.u[7]) annotation (Line(points={{1301,488},{1332,488},
+              {1332,606.4},{1344,606.4}}, color={0,0,127}));
+      annotation (Diagram(coordinateSystem(extent={{-100,-100},{1580,700}})), Icon(
+            coordinateSystem(extent={{-100,-100},{1580,700}})));
+    end EnergyMeter;
+  end BaseClasses;
+
+  package Controls
+    extends Modelica.Icons.Package;
+
+    model ChillerStage "Chiller staging control logic"
+      extends Modelica.Blocks.Icons.Block;
+
+      parameter Modelica.SIunits.Time tWai "Waiting time";
+
+      Modelica.Blocks.Interfaces.IntegerInput cooMod
+        "Cooling mode signal, integer value of
+    Buildings.Applications.DataCenters.Types.CoolingMode"
+        annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
+      Modelica.Blocks.Interfaces.RealOutput y
+        "On/off signal for the chillers - 0: off; 1: on"
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+
+      Modelica.StateGraph.Transition con1(
+        enableTimer=true,
+        waitTime=tWai,
+        condition=cooMod > Integer(FiveZone.Types.CoolingModes.FreeCooling)
+             and cooMod < Integer(FiveZone.Types.CoolingModes.Off))
+        "Fire condition 1: free cooling to partially mechanical cooling"
+        annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=-90,
+            origin={-50,42})));
+      Modelica.StateGraph.StepWithSignal oneOn(nIn=2, nOut=2)
+        "One chiller is commanded on"
+        annotation (Placement(transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=-90,
+            origin={-50,10})));
+      Modelica.StateGraph.InitialStep off(nIn=1) "Free cooling mode"
+        annotation (Placement(transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=-90,
+            origin={-50,70})));
+      Modelica.StateGraph.Transition con4(
+        enableTimer=true,
+        waitTime=tWai,
+        condition=cooMod == Integer(FiveZone.Types.CoolingModes.FreeCooling)
+             or cooMod == Integer(FiveZone.Types.CoolingModes.Off))
+        "Fire condition 4: partially mechanical cooling to free cooling"
+        annotation (Placement(transformation(
+            extent={{10,-10},{-10,10}},
+            rotation=-90,
+            origin={-20,52})));
+      inner Modelica.StateGraph.StateGraphRoot stateGraphRoot
+        annotation (Placement(transformation(extent={{40,60},{60,80}})));
+
+      Buildings.Controls.OBC.CDL.Conversions.BooleanToReal    booToRea
+        annotation (Placement(transformation(extent={{20,-10},{40,10}})));
+    equation
+      connect(off.outPort[1], con1.inPort)
+        annotation (Line(
+          points={{-50,59.5},{-50,46}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con1.outPort, oneOn.inPort[1])
+        annotation (Line(
+          points={{-50,40.5},{-50,26},{-50.5,26},{-50.5,21}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con4.outPort, off.inPort[1])
+        annotation (Line(
+          points={{-20,53.5},{-20,90},{-50,90},{-50,81}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con4.inPort, oneOn.outPort[2])
+        annotation (Line(
+          points={{-20,48},{-20,-10},{-49.75,-10},{-49.75,-0.5}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(oneOn.active, booToRea.u) annotation (Line(points={{-39,10},{-12,10},{
+              -12,0},{18,0}}, color={255,0,255}));
+      connect(booToRea.y, y)
+        annotation (Line(points={{42,0},{70,0},{70,0},{110,0}}, color={0,0,127}));
+      annotation (Documentation(info="<html>
+<p>
+This is a chiller staging control that works as follows:
+</p>
+<ul>
+<li>
+The chillers are all off when cooling mode is Free Cooling.
+</li>
+<li>
+One chiller is commanded on when cooling mode is not Free Cooling.
+</li>
+<li>
+Two chillers are commanded on when cooling mode is not Free Cooling
+and the cooling load addressed by each chiller is larger than
+a critical value.
+</li>
+</ul>
+</html>",     revisions="<html>
+<ul>
+<li>
+September 11, 2017, by Michael Wetter:<br/>
+Revised switch that selects the operation mode for
+<a href=\"https://github.com/lbl-srg/modelica-buildings/issues/921\">issue 921</a>
+</li>
+<li>
+July 30, 2017, by Yangyang Fu:<br/>
+First implementation.
+</li>
+</ul>
+</html>"));
+    end ChillerStage;
+
+    model ChillerPlantEnableDisable
+      "Chilled water plant enable disable control sequence"
+      extends Modelica.Blocks.Icons.Block;
+
+      parameter Integer numIgn=0 "Number of ignored plant requests";
+
+      parameter Real yFanSpeMin(min=0.1, max=1, unit="1") = 0.15
+        "Lowest allowed fan speed if fan is on";
+
+      parameter Modelica.SIunits.Time shoCycTim=15*60 "Time duration to avoid short cycling of equipment";
+
+      parameter Modelica.SIunits.Time plaReqTim=3*60 "Time duration of plant requests";
+
+      parameter Modelica.SIunits.Time tWai=60 "Waiting time";
+
+      parameter Modelica.SIunits.Temperature TOutPla = 13+273.15
+        "The outdoor air lockout temperature below/over which the chiller/boiler plant is prevented from operating.
+    It is typically 13°C for chiller plants serving systems with airside economizers. 
+    For boiler plant, it is normally 18°C";
+
+      Modelica.StateGraph.Transition con1(
+        condition=yPlaReq > numIgn and TOut > TOutPla and ySupFan and offTim.y >=
+            shoCycTim,
+        enableTimer=true,
+        waitTime=tWai)
+        "Fire condition 1: plant off to on"
+        annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=-90,
+            origin={-50,32})));
+      Modelica.StateGraph.StepWithSignal On(nIn=1, nOut=1) "Plant is commanded on"
+        annotation (Placement(transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=-90,
+            origin={-50,0})));
+      Modelica.StateGraph.InitialStepWithSignal
+                                      off(nIn=1) "Plant is off"
+        annotation (Placement(transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=-90,
+            origin={-50,60})));
+      Modelica.StateGraph.Transition con2(
+        condition=(lesEquReq.y >= plaReqTim and onTim.y >= shoCycTim and lesEquSpe.y
+             >= plaReqTim) or ((TOut < TOutPla - 1 or not ySupFan) and onTim.y >=
+            shoCycTim),
+        enableTimer=true,
+        waitTime=0) "Fire condition 2: plant on to off" annotation (Placement(
+            transformation(
+            extent={{10,-10},{-10,10}},
+            rotation=-90,
+            origin={-18,34})));
+      inner Modelica.StateGraph.StateGraphRoot stateGraphRoot
+        annotation (Placement(transformation(extent={{40,60},{60,80}})));
+
+      Buildings.Controls.OBC.CDL.Interfaces.RealInput TOut(final unit="K", final
+          quantity="ThermodynamicTemperature")     "Outdoor air temperature"
+        annotation (Placement(transformation(extent={{-140,26},{-100,66}}),
+            iconTransformation(extent={{-140,26},{-100,66}})));
+      Buildings.Controls.OBC.CDL.Interfaces.BooleanInput ySupFan
+        "Supply fan on status"
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}}),
+            iconTransformation(extent={{-140,-20},{-100,20}})));
+      Buildings.Controls.OBC.CDL.Interfaces.IntegerInput yPlaReq "Plant request"
+        annotation (Placement(transformation(extent={{-140,50},{-100,90}}),
+          iconTransformation(extent={{-140,-60},{-100,-20}})));
+      Modelica.Blocks.Logical.Timer offTim
+        "Timer for the state where equipment is off"
+        annotation (Placement(transformation(extent={{-8,50},{12,70}})));
+      Modelica.Blocks.Logical.Timer onTim
+        "Timer for the state where equipment is on"
+        annotation (Placement(transformation(extent={{-10,-40},{10,-20}})));
+      FiveZone.Controls.BaseClasses.TimeLessEqual lesEquReq(threshold=numIgn)
+        annotation (Placement(transformation(extent={{-90,60},{-70,80}})));
+
+      Modelica.Blocks.Interfaces.BooleanOutput yPla
+        "On/off signal for the plant - 0: off; 1: on"
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+      Modelica.Blocks.Interfaces.RealInput yFanSpe(unit="1")
+        "Constant normalized rotational speed" annotation (Placement(transformation(
+            extent={{-20,-20},{20,20}},
+            rotation=0,
+            origin={-120,-40}), iconTransformation(
+            extent={{-10,-10},{10,10}},
+            rotation=0,
+            origin={-110,-70})));
+      BaseClasses.TimeLessEqualRea lesEquSpe(threshold=yFanSpeMin)
+        annotation (Placement(transformation(extent={{-90,-50},{-70,-30}})));
+    equation
+      connect(off.outPort[1], con1.inPort)
+        annotation (Line(
+          points={{-50,49.5},{-50,36}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con1.outPort, On.inPort[1]) annotation (Line(
+          points={{-50,30.5},{-50,16},{-50,16},{-50,11}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con2.outPort, off.inPort[1])
+        annotation (Line(
+          points={{-18,35.5},{-18,80},{-50,80},{-50,71}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(off.active, offTim.u)
+        annotation (Line(points={{-39,60},{-10,60}}, color={255,0,255}));
+      connect(On.active, onTim.u) annotation (Line(points={{-39,0},{-30,0},{-30,-30},
+              {-12,-30}}, color={255,0,255}));
+      connect(yPlaReq, lesEquReq.u1)
+        annotation (Line(points={{-120,70},{-92,70}}, color={255,127,0}));
+      connect(On.active, yPla) annotation (Line(points={{-39,-1.9984e-15},{8,
+              -1.9984e-15},{8,0},{110,0}},   color={255,0,255}));
+      connect(On.outPort[1], con2.inPort) annotation (Line(
+          points={{-50,-10.5},{-50,-20},{-18,-20},{-18,30}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(yFanSpe, lesEquSpe.u1)
+        annotation (Line(points={{-120,-40},{-92,-40}}, color={0,0,127}));
+      annotation (Documentation(info="<html>
+<p>This is a chilled plant enable disable control that works as follows: </p>
+<p>Enable the plant in the lowest stage when the plant has been disabled for at least 15 minutes and: </p>
+<ol>
+<li>Number of Chiller Plant Requests &gt; I (I = Ignores shall default to 0, adjustable), and </li>
+<li>OAT&gt;CH-LOT, and </li>
+<li>The chiller plant enable schedule is active. </li>
+</ol>
+<p>Disable the plant when it has been enabled for at least 15 minutes and: </p>
+<ol>
+<li>Number of Chiller Plant Requests <span style=\"font-family: TimesNewRomanPSMT;\">&le; </span>I for 3 minutes, or </li>
+<li>OAT&lt;CH-LOT<span style=\"font-family: TimesNewRomanPSMT;\">-</span>1&deg;F, or </li>
+<li>The chiller plant enable schedule is inactive. </li>
+</ol>
+</html>",     revisions="<html>
+<ul>
+<li>Aug 30, 2020, by Xing Lu:<br>First implementation. </li>
+</ul>
+</html>"));
+    end ChillerPlantEnableDisable;
+
+    model CoolingMode
+      "Mode controller for integrated waterside economizer and chiller"
+      extends Modelica.Blocks.Icons.Block;
+
+      parameter Modelica.SIunits.Time tWai "Waiting time";
+      parameter Modelica.SIunits.TemperatureDifference deaBan1
+        "Dead band width 1 for switching chiller on ";
+      parameter Modelica.SIunits.TemperatureDifference deaBan2
+        "Dead band width 2 for switching waterside economizer off";
+      parameter Modelica.SIunits.TemperatureDifference deaBan3
+        "Dead band width 3 for switching waterside economizer on ";
+      parameter Modelica.SIunits.TemperatureDifference deaBan4
+        "Dead band width 4 for switching chiller off";
+
+      Modelica.Blocks.Interfaces.RealInput TCHWRetWSE(
+        final quantity="ThermodynamicTemperature",
+        final unit="K",
+        displayUnit="degC")
+        "Temperature of entering chilled water that flows to waterside economizer "
+        annotation (Placement(transformation(extent={{-140,-100},{-100,-60}})));
+      Modelica.Blocks.Interfaces.RealInput TCHWSupWSE(
+        final quantity="ThermodynamicTemperature",
+        final unit="K",
+        displayUnit="degC")
+        "Temperature of leaving chilled water that flows out from waterside economizer"
+        annotation (Placement(transformation(extent={{-140,-70},{-100,-30}})));
+      Modelica.Blocks.Interfaces.RealInput TCHWSupSet(
+        final quantity="ThermodynamicTemperature",
+        final unit="K",
+        displayUnit="degC") "Supply chilled water temperature setpoint "
+        annotation (Placement(transformation(extent={{-140,22},{-100,62}}),
+            iconTransformation(extent={{-140,22},{-100,62}})));
+      Modelica.Blocks.Interfaces.RealInput TApp(
+        final quantity="TemperatureDifference",
+        final unit="K",
+        displayUnit="degC") "Approach temperature in the cooling tower"
+        annotation (Placement(transformation(extent={{-140,-40},{-100,0}})));
+      Modelica.Blocks.Interfaces.IntegerOutput y
+        "Cooling mode signal, integer value of Buildings.Applications.DataCenters.Types.CoolingMode"
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+
+      Modelica.StateGraph.Transition con4(
+        enableTimer=true,
+        waitTime=tWai,
+        condition=TCHWSupWSE > TCHWSupSet + deaBan1 and yPla)
+        "Fire condition 4: free cooling to partially mechanical cooling"
+        annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=-90,
+            origin={-10,28})));
+      Modelica.StateGraph.StepWithSignal parMecCoo(nIn=2, nOut=3)
+        "Partial mechanical cooling mode"
+        annotation (Placement(transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=-90,
+            origin={-10,-2})));
+      Modelica.StateGraph.StepWithSignal        freCoo(nIn=1, nOut=2)
+        "Free cooling mode"
+        annotation (Placement(transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=-90,
+            origin={-10,58})));
+      Modelica.StateGraph.StepWithSignal fulMecCoo(nIn=2,
+                                                   nOut=2)
+                                                   "Fully mechanical cooling mode"
+        annotation (Placement(transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=-90,
+            origin={-10,-44})));
+      Modelica.StateGraph.Transition con5(
+        enableTimer=true,
+        waitTime=tWai,
+        condition=TCHWRetWSE < TCHWSupWSE + deaBan2 and yPla)
+        "Fire condition 5: partially mechanical cooling to fully mechanical cooling"
+        annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=-90,
+            origin={-10,-24})));
+      Modelica.StateGraph.Transition con2(
+        enableTimer=true,
+        waitTime=tWai,
+        condition=TCHWRetWSE > TWetBul + TApp + deaBan3)
+        "Fire condition 2: fully mechanical cooling to partially mechanical cooling"
+        annotation (Placement(transformation(
+            extent={{10,-10},{-10,10}},
+            rotation=-90,
+            origin={30,-20})));
+      Modelica.StateGraph.Transition con3(
+        enableTimer=true,
+        waitTime=tWai,
+        condition=TCHWSupWSE <= TCHWSupSet + deaBan4)
+        "Fire condition 3: partially mechanical cooling to free cooling"
+        annotation (Placement(transformation(
+            extent={{10,-10},{-10,10}},
+            rotation=-90,
+            origin={20,34})));
+      inner Modelica.StateGraph.StateGraphRoot stateGraphRoot
+        annotation (Placement(transformation(extent={{60,60},{80,80}})));
+      Modelica.Blocks.Interfaces.RealInput TWetBul(
+        final quantity="ThermodynamicTemperature",
+        final unit="K",
+        displayUnit="degC")
+        "Wet bulb temperature of outdoor air"
+        annotation (Placement(transformation(extent={{-140,-10},{-100,30}})));
+
+      Modelica.Blocks.MathInteger.MultiSwitch swi(
+        y_default=0,
+        expr={Integer(FiveZone.Types.CoolingModes.FreeCooling),
+            Integer(FiveZone.Types.CoolingModes.PartialMechanical),
+            Integer(FiveZone.Types.CoolingModes.FullMechanical),
+            Integer(FiveZone.Types.CoolingModes.Off)},
+        nu=4)
+        "Switch boolean signals to real signal"
+        annotation (Placement(transformation(extent={{68,-6},{92,6}})));
+
+      Modelica.Blocks.Interfaces.BooleanInput            yPla "Plant on/off signal"
+        annotation (Placement(transformation(extent={{-140,48},{-100,88}}),
+            iconTransformation(extent={{-140,48},{-100,88}})));
+      Modelica.StateGraph.InitialStepWithSignal off(nIn=3) "Off" annotation (
+          Placement(transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=-90,
+            origin={-10,-80})));
+      Modelica.StateGraph.Transition con8(
+        enableTimer=true,
+        waitTime=0,
+        condition=not yPla) "Fire condition 8: fully mechanical cooling to off"
+        annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=-90,
+            origin={80,-60})));
+      Modelica.StateGraph.Transition con7(
+        enableTimer=true,
+        waitTime=0,
+        condition=not yPla) "Fire condition 7: partially mechanical cooling to off"
+        annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=-90,
+            origin={70,-34})));
+      Modelica.StateGraph.Transition con1(
+        enableTimer=true,
+        waitTime=0,
+        condition=yPla) "Fire condition 1: off to free cooling"
+        annotation (Placement(transformation(
+            extent={{10,-10},{-10,10}},
+            rotation=-90,
+            origin={40,-80})));
+      Modelica.StateGraph.Transition con6(
+        enableTimer=true,
+        waitTime=0,
+        condition=not yPla) "Fire condition 6: free cooling to off"
+        annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=-90,
+            origin={60,20})));
+    equation
+      connect(freCoo.outPort[1], con4.inPort) annotation (Line(
+          points={{-10.25,47.5},{-10.25,32},{-10,32}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con4.outPort, parMecCoo.inPort[1]) annotation (Line(
+          points={{-10,26.5},{-10,18},{-10.5,18},{-10.5,9}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con5.inPort, parMecCoo.outPort[1])
+        annotation (Line(
+          points={{-10,-20},{-10.3333,-20},{-10.3333,-12.5}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con5.outPort, fulMecCoo.inPort[1])
+        annotation (Line(
+          points={{-10,-25.5},{-10,-30},{-10,-33},{-10.5,-33}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(fulMecCoo.outPort[1],con2. inPort)
+        annotation (Line(
+          points={{-10.25,-54.5},{-10.25,-58},{30,-58},{30,-24}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con2.outPort, parMecCoo.inPort[2])
+        annotation (Line(
+          points={{30,-18.5},{30,16},{-9.5,16},{-9.5,9}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con3.inPort, parMecCoo.outPort[2]) annotation (Line(
+          points={{20,30},{20,-16},{-10,-16},{-10,-12.5}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(swi.y, y)
+        annotation (Line(points={{92.6,0},{110,0}}, color={255,127,0}));
+      connect(parMecCoo.outPort[3],con7. inPort) annotation (Line(
+          points={{-9.66667,-12.5},{-9.66667,-14},{70,-14},{70,-30}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con7.outPort, off.inPort[2]) annotation (Line(
+          points={{70,-35.5},{70,-64},{-10,-64},{-10,-69}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con8.outPort, off.inPort[3]) annotation (Line(
+          points={{80,-61.5},{80,-66},{-10,-66},{-10,-69},{-9.33333,-69}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(freCoo.outPort[2], con6.inPort) annotation (Line(
+          points={{-9.75,47.5},{-9.75,42},{60,42},{60,24}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con6.outPort, off.inPort[1]) annotation (Line(
+          points={{60,18.5},{60,-62},{-10.6667,-62},{-10.6667,-69}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(fulMecCoo.outPort[2], con8.inPort) annotation (Line(
+          points={{-9.75,-54.5},{-9.75,-56},{80,-56}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(off.outPort[1], con1.inPort) annotation (Line(
+          points={{-10,-90.5},{-10,-96},{40,-96},{40,-84}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con1.outPort, fulMecCoo.inPort[2]) annotation (Line(
+          points={{40,-78.5},{40,-28},{-9.5,-28},{-9.5,-33}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(freCoo.active, swi.u[1]) annotation (Line(points={{1,58},{42,58},{42,
+              1.35},{68,1.35}}, color={255,0,255}));
+      connect(parMecCoo.active, swi.u[2]) annotation (Line(points={{1,-2},{46,-2},{
+              46,0.45},{68,0.45}}, color={255,0,255}));
+      connect(fulMecCoo.active, swi.u[3]) annotation (Line(points={{1,-44},{48,-44},
+              {48,-0.45},{68,-0.45}}, color={255,0,255}));
+      connect(off.active, swi.u[4]) annotation (Line(points={{1,-80},{20,-80},{20,
+              -46},{50,-46},{50,-1.2},{68,-1.2},{68,-1.35}}, color={255,0,255}));
+      connect(con3.outPort, freCoo.inPort[1]) annotation (Line(
+          points={{20,35.5},{20,76},{-10,76},{-10,69}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      annotation (    Documentation(info="<html>
+<p>Controller that outputs if the chilled water system is in off mode,  Free Cooling (FC) mode, Partially Mechanical Cooling (PMC) mode or Fully Mechanical Cooling (FMC) mode. </p>
+<p>The waterside economizer is enabled when </p>
+<ol>
+<li>The waterside economizer has been disabled for at least 20 minutes, and </li>
+<li><i>T<sub>CHWR</sub> &gt; T<sub>WetBul</sub> + T<sub>TowApp</sub> + deaBan1 </i></li>
+</ol>
+<p>The waterside economizer is disabled when </p>
+<ol>
+<li>The waterside economizer has been enabled for at least 20 minutes, and </li>
+<li><i>T<sub>WSE_CHWST</sub> &gt; T<sub>WSE_CHWRT</sub> - deaBan2 </i></li>
+</ol>
+<p>The chiller is enabled when </p>
+<ol>
+<li>The chiller has been disabled for at leat 20 minutes, and </li>
+<li><i>T<sub>WSE_CHWST</sub> &gt; T<sub>CHWSTSet</sub> + deaBan3 </i></li>
+</ol>
+<p>The chiller is disabled when </p>
+<ol>
+<li>The chiller has been enabled for at leat 20 minutes, and </li>
+<li><i>T<sub>WSE_CHWST</sub> &le; T<sub>CHWSTSet</sub> + deaBan4 </i></li>
+</ol>
+<p>where <i>T<sub>WSE_CHWST</i></sub> is the chilled water supply temperature for the WSE, <i>T<sub>WetBul</i></sub> is the wet bulb temperature, <i>T<sub>TowApp</i></sub> is the cooling tower approach, <i>T<sub>WSE_CHWRT</i></sub> is the chilled water return temperature for the WSE, and <i>T<sub>CHWSTSet</i></sub> is the chilled water supply temperature setpoint for the system. <i>deaBan 1-4</i> are deadbands for each switching point. </p>
+<h4>References</h4>
+<ul>
+<li>Stein, Jeff. Waterside Economizing in Data Centers: Design and Control Considerations. ASHRAE Transactions 115.2 (2009). </li>
+</ul>
+</html>",            revisions="<html>
+<ul>
+<li>
+July 24, 2017, by Yangyang Fu:<br/>
+First implementation.
+</li>
+</ul>
+</html>"),
+        Diagram(coordinateSystem(extent={{-100,-100},{100,80}})),
+        Icon(coordinateSystem(extent={{-100,-100},{100,80}})));
+    end CoolingMode;
+
+    model ConstantSpeedPumpStage "Staging control for constant speed pumps"
+      extends Modelica.Blocks.Icons.Block;
+
+      parameter Modelica.SIunits.Time tWai "Waiting time";
+
+      Modelica.Blocks.Interfaces.IntegerInput cooMod
+        "Cooling mode - 0:off,  1: free cooling mode; 2: partially mechanical cooling; 3: fully mechanical cooling"
+        annotation (Placement(transformation(extent={{-140,30},{-100,70}})));
+      Modelica.Blocks.Interfaces.IntegerInput numOnChi
+        "The number of running chillers"
+        annotation (Placement(transformation(extent={{-140,-70},{-100,-30}})));
+      Modelica.Blocks.Interfaces.RealOutput y[2] "On/off signal - 0: off; 1: on"
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+
+      Modelica.StateGraph.Transition con1(
+        enableTimer=true,
+        waitTime=tWai,
+        condition=cooMod == Integer(FiveZone.Types.CoolingModes.FreeCooling)
+             or cooMod == Integer(FiveZone.Types.CoolingModes.PartialMechanical)
+             or cooMod == Integer(FiveZone.Types.CoolingModes.FullMechanical))
+        "Fire condition 1: free cooling to partially mechanical cooling"
+        annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=-90,
+            origin={-40,40})));
+      Modelica.StateGraph.StepWithSignal oneOn(nIn=2, nOut=2)
+        "One chiller is commanded on" annotation (Placement(transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=-90,
+            origin={-40,10})));
+      Modelica.StateGraph.InitialStep off(nIn=1) "Free cooling mode"
+        annotation (Placement(transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=-90,
+            origin={-40,70})));
+      Modelica.StateGraph.StepWithSignal twoOn "Two chillers are commanded on"
+        annotation (Placement(transformation(
+            extent={{-10,10},{10,-10}},
+            rotation=-90,
+            origin={-40,-80})));
+      Modelica.StateGraph.Transition con2(
+        enableTimer=true,
+        waitTime=tWai,
+        condition=cooMod == Integer(FiveZone.Types.CoolingModes.FreeCooling)
+             or cooMod == Integer(FiveZone.Types.CoolingModes.PartialMechanical)
+             or (cooMod == Integer(FiveZone.Types.CoolingModes.FullMechanical)
+             and numOnChi > 1))
+        "Fire condition 2: partially mechanical cooling to fully mechanical cooling"
+        annotation (Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=-90,
+            origin={-40,-40})));
+      Modelica.StateGraph.Transition con3(
+        enableTimer=true,
+        waitTime=tWai,
+        condition=cooMod == Integer(FiveZone.Types.CoolingModes.FullMechanical)
+        and numOnChi < 2)
+        "Fire condition 3: fully mechanical cooling to partially mechanical cooling"
+        annotation (Placement(transformation(
+            extent={{10,-10},{-10,10}},
+            rotation=-90,
+            origin={-10,-40})));
+      Modelica.StateGraph.Transition con4(
+        enableTimer=true,
+        waitTime=tWai,
+        condition=cooMod == Integer(FiveZone.Types.CoolingModes.Off))
+        "Fire condition 4: partially mechanical cooling to free cooling"
+        annotation (Placement(transformation(
+            extent={{10,-10},{-10,10}},
+            rotation=-90,
+            origin={-8,70})));
+      inner Modelica.StateGraph.StateGraphRoot stateGraphRoot
+        annotation (Placement(transformation(extent={{60,60},{80,80}})));
+      Modelica.Blocks.Tables.CombiTable1Ds combiTable1Ds(table=[0,0,0; 1,1,0; 2,1,1])
+        annotation (Placement(transformation(extent={{70,-10},{90,10}})));
+
+      Buildings.Controls.OBC.CDL.Conversions.BooleanToInteger booToInt(
+        final integerTrue=1,
+        final integerFalse=0)
+        annotation (Placement(transformation(extent={{20,-50},{40,-30}})));
+      Buildings.Controls.OBC.CDL.Conversions.BooleanToInteger booToInt1(
+        final integerFalse=0, final integerTrue=2)
+        annotation (Placement(transformation(extent={{20,-90},{40,-70}})));
+      Buildings.Controls.OBC.CDL.Integers.Add addInt
+        annotation (Placement(transformation(extent={{60,-70},{80,-50}})));
+      Buildings.Controls.OBC.CDL.Conversions.IntegerToReal intToRea
+        annotation (Placement(transformation(extent={{40,-10},{60,10}})));
+
+    equation
+      connect(off.outPort[1], con1.inPort)
+        annotation (Line(
+          points={{-40,59.5},{-40,44}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con1.outPort, oneOn.inPort[1])
+        annotation (Line(
+          points={{-40,38.5},{-40,26},{-40.5,26},{-40.5,21}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con2.inPort, oneOn.outPort[1])
+        annotation (Line(
+          points={{-40,-36},{-40,-10},{-40.25,-10},{-40.25,-0.5}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con2.outPort, twoOn.inPort[1])
+        annotation (Line(
+          points={{-40,-41.5},{-40,-69}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(twoOn.outPort[1], con3.inPort)
+        annotation (Line(
+          points={{-40,-90.5},{-40,-98},{-10,-98},{-10,-44}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con4.outPort, off.inPort[1])
+        annotation (Line(
+          points={{-8,71.5},{-8,94},{-40,94},{-40,81}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con3.outPort, oneOn.inPort[2])
+        annotation (Line(
+          points={{-10,-38.5},{-10,26},{-39.5,26},{-39.5,21}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(con4.inPort, oneOn.outPort[2])
+        annotation (Line(
+          points={{-8,66},{-8,-10},{-39.75,-10},{-39.75,-0.5}},
+          color={0,0,0},
+          pattern=LinePattern.Dash));
+      connect(combiTable1Ds.y, y)
+        annotation (Line(points={{91,0},{91,0},{110,0}},
+                                                  color={0,0,127}));
+      connect(oneOn.active, booToInt.u) annotation (Line(points={{-29,10},{12,10},{
+              12,-40},{18,-40}},         color={255,0,255}));
+      connect(twoOn.active, booToInt1.u)
+        annotation (Line(points={{-29,-80},{18,-80}},          color={255,0,255}));
+      connect(booToInt.y, addInt.u1) annotation (Line(points={{42,-40},{48,-40},{48,
+              -54},{58,-54}}, color={255,127,0}));
+      connect(booToInt1.y, addInt.u2) annotation (Line(points={{42,-80},{48,-80},{
+              48,-66},{58,-66}}, color={255,127,0}));
+      connect(intToRea.y, combiTable1Ds.u)
+        annotation (Line(points={{62,0},{68,0}}, color={0,0,127}));
+      connect(addInt.y, intToRea.u) annotation (Line(points={{82,-60},{88,-60},{88,
+              -20},{30,-20},{30,0},{38,0}}, color={255,127,0}));
+      annotation (                   Documentation(info="<html>
+<p>
+This model describes a simple staging control for two constant-speed pumps in
+a chilled water plant with two chillers and a waterside economizer (WSE). The staging sequence
+is shown as below.
+</p>
+<ul>
+<li>
+When WSE is enabled, all the constant speed pumps are commanded on.
+</li>
+<li>
+When fully mechanical cooling (FMC) mode is enabled, the number of running constant speed pumps
+equals to the number of running chillers.
+</li>
+</ul>
+</html>",     revisions="<html>
+<ul>
+<li>
+September 11, 2017, by Michael Wetter:<br/>
+Revised switch that selects the operation mode for
+<a href=\"https://github.com/lbl-srg/modelica-buildings/issues/921\">issue 921</a>
+</li>
+<li>
+September 2, 2017, by Michael Wetter:<br/>
+Changed implementation to use
+<a href=\"modelica://FaultInjection.Experimental.SystemLevelFaults.Types.CoolingModes\">
+FaultInjection.Experimental.SystemLevelFaults.Types.CoolingModes</a>.
+</li>
+<li>
+July 30, 2017, by Yangyang Fu:<br/>
+First implementation.
+</li>
+</ul>
+</html>"));
+    end ConstantSpeedPumpStage;
+
+    model CoolingTowerSpeed "Controller for the fan speed in cooling towers"
+      extends Modelica.Blocks.Icons.Block;
+
+      parameter Modelica.Blocks.Types.SimpleController controllerType=
+        Modelica.Blocks.Types.SimpleController.PID
+        "Type of controller"
+        annotation(Dialog(tab="Controller"));
+      parameter Real k(min=0, unit="1") = 1
+        "Gain of controller"
+        annotation(Dialog(tab="Controller"));
+      parameter Modelica.SIunits.Time Ti(min=Modelica.Constants.small)=0.5
+        "Time constant of integrator block"
+         annotation (Dialog(enable=
+              (controllerType == Modelica.Blocks.Types.SimpleController.PI or
+              controllerType == Modelica.Blocks.Types.SimpleController.PID),tab="Controller"));
+      parameter Modelica.SIunits.Time Td(min=0)=0.1
+        "Time constant of derivative block"
+         annotation (Dialog(enable=
+              (controllerType == Modelica.Blocks.Types.SimpleController.PD or
+              controllerType == Modelica.Blocks.Types.SimpleController.PID),tab="Controller"));
+      parameter Real yMax(start=1)=1
+       "Upper limit of output"
+        annotation(Dialog(tab="Controller"));
+      parameter Real yMin=0
+       "Lower limit of output"
+        annotation(Dialog(tab="Controller"));
+      parameter Boolean reverseAction = true
+        "Set to true for throttling the water flow rate through a cooling coil controller"
+        annotation(Dialog(tab="Controller"));
+      Modelica.Blocks.Interfaces.RealInput TCHWSupSet(
+        final quantity="ThermodynamicTemperature",
+        final unit="K",
+        displayUnit="degC") "Chilled water supply temperature setpoint"
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      Modelica.Blocks.Interfaces.RealInput TCWSupSet(
+        final quantity="ThermodynamicTemperature",
+        final unit="K",
+        displayUnit="degC") "Condenser water supply temperature setpoint"
+        annotation (Placement(transformation(extent={{-140,60},{-100,100}})));
+      Modelica.Blocks.Interfaces.RealInput TCHWSup(
+        final quantity="ThermodynamicTemperature",
+        final unit="K",
+        displayUnit="degC") "Chilled water supply temperature " annotation (
+          Placement(transformation(
+            extent={{-20,-20},{20,20}},
+            origin={-120,-74}), iconTransformation(extent={{-140,-100},{-100,-60}})));
+      Modelica.Blocks.Interfaces.RealInput TCWSup(
+        final quantity="ThermodynamicTemperature",
+        final unit="K",
+        displayUnit="degC") "Condenser water supply temperature " annotation (
+          Placement(transformation(
+            extent={{20,20},{-20,-20}},
+            rotation=180,
+            origin={-120,-40})));
+      Modelica.Blocks.Interfaces.RealOutput y
+        "Speed signal for cooling tower fans"
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+
+      Modelica.Blocks.Sources.Constant uni(k=1) "Unit"
+        annotation (Placement(transformation(extent={{-10,70},{10,90}})));
+      Modelica.Blocks.Sources.BooleanExpression pmcMod(
+        y= cooMod == Integer(FiveZone.Types.CoolingModes.PartialMechanical))
+        "Partially mechanical cooling mode"
+        annotation (Placement(transformation(extent={{-8,-10},{12,10}})));
+
+      Modelica.Blocks.Interfaces.IntegerInput cooMod
+        "Cooling mode signal, integer value of
+    Buildings.Applications.DataCenters.Types.CoolingMode"
+        annotation (Placement(transformation(extent={{-140,20},{-100,60}})));
+      Buildings.Controls.Continuous.LimPID conPID(
+        controllerType=controllerType,
+        k=k,
+        Ti=Ti,
+        Td=Td,
+        yMax=yMax,
+        yMin=yMin,
+        reverseAction=reverseAction,
+        reset=Buildings.Types.Reset.Parameter,
+        y_reset=0)
+        "PID controller"
+        annotation (Placement(transformation(extent={{-10,-50},{10,-30}})));
+      Modelica.Blocks.Math.IntegerToBoolean fmcMod(threshold=Integer(FiveZone.Types.CoolingModes.FullMechanical))
+        "Fully mechanical cooling mode"
+        annotation (Placement(transformation(extent={{-90,30},{-70,50}})));
+
+      Modelica.Blocks.Sources.BooleanExpression offMod(y=cooMod == Integer(
+            FiveZone.Types.CoolingModes.Off))
+        "off mode" annotation (Placement(transformation(extent={{30,22},{50,42}})));
+      Modelica.Blocks.Sources.Constant off(k=0) "zero"
+        annotation (Placement(transformation(extent={{30,54},{50,74}})));
+      Buildings.Controls.OBC.CDL.Integers.LessThreshold notOff(threshold=Integer(
+            FiveZone.Types.CoolingModes.Off))
+        annotation (Placement(transformation(extent={{-88,-100},{-68,-80}})));
+    protected
+      Modelica.Blocks.Logical.Switch swi1
+        "Switch 1"
+        annotation (Placement(transformation(extent={{-46,30},{-26,50}})));
+      Modelica.Blocks.Logical.Switch swi2
+        "Switch 2"
+        annotation (Placement(transformation(extent={{-10,-10},{10,10}},
+            origin={-34,-60})));
+      Modelica.Blocks.Logical.Switch swi3
+        "Switch 3"
+        annotation (Placement(transformation(extent={{-10,-10},{10,10}},
+            origin={42,0})));
+
+      Modelica.Blocks.Logical.Switch swi4
+        "Switch 3"
+        annotation (Placement(transformation(extent={{-10,-10},{10,10}},
+            origin={80,32})));
+    equation
+      connect(TCWSupSet, swi1.u1)
+        annotation (Line(points={{-120,80},{-58,80},{-58,48},{-48,48}},
+                             color={0,0,127}));
+      connect(TCHWSupSet, swi1.u3)
+        annotation (Line(points={{-120,0},{-58,0},{-58,32},{-48,32}},
+                             color={0,0,127}));
+      connect(swi1.y, conPID.u_s)
+        annotation (Line(points={{-25,40},{-20,40},{-20,-40},{-12,-40}},
+                     color={0,0,127}));
+      connect(fmcMod.y, swi2.u2)
+        annotation (Line(points={{-69,40},{-64,40},{-64,-60},{-46,-60}},
+                          color={255,0,255}));
+      connect(TCWSup, swi2.u1)
+        annotation (Line(points={{-120,-40},{-60,-40},{-60,-52},{-46,-52}},
+                          color={0,0,127}));
+      connect(swi2.y, conPID.u_m)
+        annotation (Line(points={{-23,-60},{0,-60},{0,-52}},   color={0,0,127}));
+      connect(pmcMod.y, swi3.u2)
+        annotation (Line(points={{13,0},{30,0}},          color={255,0,255}));
+      connect(uni.y, swi3.u1)
+        annotation (Line(points={{11,80},{20,80},{20,8},{30,8}}, color={0,0,127}));
+      connect(fmcMod.y, swi1.u2)
+        annotation (Line(points={{-69,40},{-48,40}},
+                         color={255,0,255}));
+      connect(cooMod, fmcMod.u)
+        annotation (Line(points={{-120,40},{-92,40}},
+                    color={255,127,0}));
+      connect(conPID.y, swi3.u3) annotation (Line(points={{11,-40},{20,-40},{20,-8},
+              {30,-8}}, color={0,0,127}));
+      connect(offMod.y, swi4.u2)
+        annotation (Line(points={{51,32},{68,32}}, color={255,0,255}));
+      connect(off.y, swi4.u1) annotation (Line(points={{51,64},{60,64},{60,40},{68,
+              40}}, color={0,0,127}));
+      connect(swi3.y, swi4.u3)
+        annotation (Line(points={{53,0},{60,0},{60,24},{68,24}}, color={0,0,127}));
+      connect(swi4.y, y) annotation (Line(points={{91,32},{96,32},{96,0},{110,0}},
+            color={0,0,127}));
+      connect(cooMod, notOff.u) annotation (Line(points={{-120,40},{-96,40},{-96,
+              -90},{-90,-90}}, color={255,127,0}));
+      connect(TCHWSup, swi2.u3) annotation (Line(points={{-120,-74},{-60,-74},{-60,
+              -68},{-46,-68}}, color={0,0,127}));
+      connect(notOff.y, conPID.trigger)
+        annotation (Line(points={{-66,-90},{-8,-90},{-8,-52}}, color={255,0,255}));
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,
+                -100},{100,80}})),    Documentation(info="<html>
+<p>This model describes a simple cooling tower speed controller for
+a chilled water system with integrated waterside economizers.
+</p>
+<p>The control logics are described in the following:</p>
+<ul>
+<li>When the system is in Fully Mechanical Cooling (FMC) mode,
+the cooling tower fan speed is controlled to maintain the condener water supply temperature (CWST)
+at or around the setpoint.
+</li>
+<li>When the system is in Partially Mechanical Cooling (PMC) mode,
+the cooling tower fan speed is set as 100% to make condenser water
+as cold as possible and maximize the waterside economzier output.
+</li>
+<li>When the system is in Free Cooling (FC) mode,
+the cooling tower fan speed is controlled to maintain the chilled water supply temperature (CHWST)
+at or around its setpoint.
+</li>
+</ul>
+</html>",     revisions="<html>
+<ul>
+<li>
+July 30, 2017, by Yangyang Fu:<br/>
+First implementation.
+</li>
+</ul>
+</html>"));
+    end CoolingTowerSpeed;
+
+    model TemperatureDifferentialPressureReset
+      "CHWST and CHW DP reset control for chillers"
+      extends Modelica.Blocks.Icons.Block;
+      parameter Modelica.SIunits.Time samplePeriod=120 "Sample period of component";
+      parameter Real uTri=0 "Value to triggering the request for actuator";
+      parameter Real yEqu0=0 "y setpoint when equipment starts";
+      parameter Real yDec=-0.03 "y decrement (must be negative)";
+      parameter Real yInc=0.03 "y increment (must be positive)";
+      parameter Real x1=0.5 "First interval [x0, x1] and second interval (x1, x2]"
+      annotation(Dialog(tab="Pressure and temperature reset points"));
+      parameter Modelica.SIunits.Pressure dpMin = 100 "dpmin"
+      annotation(Dialog(tab="Pressure and temperature reset points"));
+      parameter Modelica.SIunits.Pressure dpMax =  300 "dpmax"
+      annotation(Dialog(tab="Pressure and temperature reset points"));
+      parameter Modelica.SIunits.ThermodynamicTemperature TMin=273.15+5.56 "Tchi,min"
+      annotation(Dialog(tab="Pressure and temperature reset points"));
+      parameter Modelica.SIunits.ThermodynamicTemperature TMax = 273.15+22 "Tchi,max"
+      annotation(Dialog(tab="Pressure and temperature reset points"));
+      parameter Modelica.SIunits.Time startTime=0 "First sample time instant";
+
+      Modelica.Blocks.Interfaces.RealInput u
+        "Input signall, such as dT, or valve position"
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      FiveZone.PrimarySideControl.BaseClasses.LinearPiecewiseTwo linPieTwo(
+        x0=0,
+        x1=x1,
+        x2=1,
+        y10=dpMin,
+        y11=dpMax,
+        y20=TMax,
+        y21=TMin) "Calculation of two piecewise linear functions"
+        annotation (Placement(transformation(extent={{20,-10},{40,10}})));
+
+      Modelica.Blocks.Interfaces.RealOutput dpSet(
+        final quantity="Pressure",
+        final unit = "Pa") "DP setpoint"
+        annotation (Placement(transformation(extent={{100,40},{120,60}}),
+            iconTransformation(extent={{100,40},{120,60}})));
+      Modelica.Blocks.Interfaces.RealOutput TSet(
+        final quantity="ThermodynamicTemperature",
+        final unit="K")
+        "CHWST"
+        annotation (Placement(transformation(extent={{100,-60},{120,-40}}),
+            iconTransformation(extent={{100,-60},{120,-40}})));
+      FiveZone.PrimarySideControl.BaseClasses.TrimAndRespond triAndRes(
+        samplePeriod=samplePeriod,
+        startTime=startTime,
+        uTri=uTri,
+        yEqu0=yEqu0,
+        yDec=yDec,
+        yInc=yInc)
+        annotation (Placement(transformation(extent={{-40,-10},{-20,10}})));
+
+      Modelica.Blocks.Logical.Switch swi1 "Switch"
+        annotation (Placement(transformation(extent={{60,70},{80,90}})));
+      Modelica.Blocks.Sources.RealExpression dpSetIni(y=dpMin)
+        "Initial dp setpoint"
+        annotation (Placement(transformation(extent={{-20,80},{0,100}})));
+      Modelica.Blocks.Sources.RealExpression TSetIni(y=TMin)
+        "Initial temperature setpoint"
+        annotation (Placement(transformation(extent={{-20,-88},{0,-68}})));
+      Modelica.Blocks.Logical.Switch swi2 "Switch"
+        annotation (Placement(transformation(extent={{60,-80},{80,-60}})));
+      Modelica.Blocks.Interfaces.IntegerInput uOpeMod
+        "Cooling mode in WSEControls.Type.OperationaModes" annotation (Placement(
+            transformation(extent={{-140,40},{-100,80}}),  iconTransformation(
+              extent={{-140,40},{-100,80}})));
+      Buildings.Controls.OBC.CDL.Integers.GreaterThreshold intGreThr(threshold=
+            Integer(FiveZone.Types.CoolingModes.FreeCooling))
+        annotation (Placement(transformation(extent={{-60,50},{-40,70}})));
+      Buildings.Controls.OBC.CDL.Logical.And and2
+        annotation (Placement(transformation(extent={{-10,50},{10,70}})));
+      Buildings.Controls.OBC.CDL.Integers.LessThreshold intLesThr(threshold=Integer(
+            FiveZone.Types.CoolingModes.Off))
+        annotation (Placement(transformation(extent={{-60,18},{-40,38}})));
+    equation
+
+      connect(triAndRes.y, linPieTwo.u)
+        annotation (Line(points={{-19,0},{18,0}}, color={0,0,127}));
+      connect(uOpeMod, intGreThr.u)
+        annotation (Line(points={{-120,60},{-62,60}}, color={255,127,0}));
+      connect(linPieTwo.y[1], swi1.u1) annotation (Line(points={{41,-0.5},{48,-0.5},
+              {48,88},{58,88}}, color={0,0,127}));
+      connect(dpSetIni.y, swi1.u3) annotation (Line(points={{1,90},{46,90},{46,72},
+              {58,72}}, color={0,0,127}));
+      connect(linPieTwo.y[2], swi2.u1) annotation (Line(points={{41,0.5},{52,0.5},{
+              52,-62},{58,-62}}, color={0,0,127}));
+      connect(TSetIni.y, swi2.u3)
+        annotation (Line(points={{1,-78},{58,-78}}, color={0,0,127}));
+      connect(swi1.y, dpSet) annotation (Line(points={{81,80},{90,80},{90,50},{110,
+              50}}, color={0,0,127}));
+      connect(swi2.y, TSet) annotation (Line(points={{81,-70},{90,-70},{90,-50},{
+              110,-50}}, color={0,0,127}));
+      connect(u, triAndRes.u)
+        annotation (Line(points={{-120,0},{-42,0}}, color={0,0,127}));
+      connect(uOpeMod, intLesThr.u) annotation (Line(points={{-120,60},{-80,60},{
+              -80,28},{-62,28}}, color={255,127,0}));
+      connect(intGreThr.y, and2.u1)
+        annotation (Line(points={{-38,60},{-12,60}}, color={255,0,255}));
+      connect(intLesThr.y, and2.u2) annotation (Line(points={{-38,28},{-28,28},{-28,
+              52},{-12,52}}, color={255,0,255}));
+      connect(and2.y, swi1.u2) annotation (Line(points={{12,60},{34,60},{34,80},{58,
+              80}}, color={255,0,255}));
+      connect(and2.y, swi2.u2) annotation (Line(points={{12,60},{46,60},{46,-70},{
+              58,-70}}, color={255,0,255}));
+      annotation (defaultComponentName="temDifPreRes",
+        Documentation(info="<html>
+<p>This model describes a chilled water supply temperature setpoint and differential pressure setpoint reset control. In this logic, it is to first increase the different pressure, <i>&Delta;p</i>, of the chilled water loop to increase the mass flow rate. If <i>&Delta;p</i> reaches the maximum value and further cooling is still needed, the chiller remperature setpoint, <i>T<sub>chi,set</i></sub>, is reduced. If there is too much cooling, the <i>T<sub>chi,set</i></sub> and <i>&Delta;p</i> will be changed in the reverse direction. </p>
+<p>The model implements a discrete time trim and respond logic as follows: </p>
+<ul>
+<li>A cooling request is triggered if the input signal, <i>y</i>, is larger than 0. <i>y</i> is the difference between the actual and set temperature of the suppuly air to the data center room.</li>
+<li>The request is sampled every 2 minutes. If there is a cooling request, the control signal <i>u</i> is increased by <i>0.03</i>, where <i>0 &le; u &le; 1</i>. If there is no cooling request, <i>u</i> is decreased by <i>0.03</i>. </li>
+</ul>
+<p>The control signal <i>u</i> is converted to setpoints for <i>&Delta;p</i> and <i>T<sub>chi,set</i></sub> as follows: </p>
+<ul>
+<li>If <i>u &isin; [0, x]</i> then <i>&Delta;p = &Delta;p<sub>min</sub> + u &nbsp;(&Delta;p<sub>max</sub>-&Delta;p<sub>min</sub>)/x</i> and <i>T = T<sub>max</i></sub></li>
+<li>If <i>u &isin; (x, 1]</i> then <i>&Delta;p = &Delta;p<sub>max</i></sub> and <i>T = T<sub>max</sub> - (u-x)&nbsp;(T<sub>max</sub>-T<sub>min</sub>)/(1-x) </i></li>
+</ul>
+<p>where <i>&Delta;p<sub>min</i></sub> and <i>&Delta;p<sub>max</i></sub> are minimum and maximum values for <i>&Delta;p</i>, and <i>T<sub>min</i></sub> and <i>T<sub>max</i></sub> are the minimum and maximum values for <i>T<sub>chi,set</i></sub>. </p>
+<p>Note that we deactivate the trim and response when the chillers are off.</p>
+
+<h4>Reference</h4>
+<p>Stein, J. (2009). Waterside Economizing in Data Centers: Design and Control Considerations. ASHRAE Transactions, 115(2), 192-200.</p>
+<p>Taylor, S.T. (2007). Increasing Efficiency with VAV System Static Pressure Setpoint Reset. ASHRAE Journal, June, 24-32. </p>
+</html>",     revisions="<html>
+<ul>
+<li><i>December 19, 2018</i> by Yangyang Fu:<br/>
+        Deactivate reset when chillers are off.
+</li>
+<li><i>June 23, 2018</i> by Xing Lu:<br/>
+        First implementation.
+</li>
+</ul>
+</html>"));
+    end TemperatureDifferentialPressureReset;
+
+    model PlantRequest "Plant request control"
+      extends Modelica.Blocks.Icons.Block;
+
+      Buildings.Controls.OBC.CDL.Interfaces.IntegerOutput yPlaReq
+        "Plant request" annotation (Placement(transformation(extent={{100,-10},{120,
+                10}}), iconTransformation(extent={{100,-10},{120,10}})));
+      Buildings.Controls.OBC.CDL.Interfaces.RealInput uPlaVal(
+        min=0,
+        max=1,
+        final unit="1") "Cooling or Heating valve position"
+    annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      Buildings.Controls.OBC.CDL.Continuous.Hysteresis hys(final uHigh=uHigh,
+          final uLow=uLow)
+        "Check if valve position is greater than 0.95"
+        annotation (Placement(transformation(extent={{-70,-10},{-50,10}})));
+      parameter Real uLow=0.1 "if y=true and u<uLow, switch to y=false";
+      parameter Real uHigh=0.95 "if y=false and u>uHigh, switch to y=true";
+    protected
+      Buildings.Controls.OBC.CDL.Continuous.Sources.Constant onePlaReq(final k=1)
+        "Constant 1"
+        annotation (Placement(transformation(extent={{-10,20},{10,40}})));
+      Buildings.Controls.OBC.CDL.Continuous.Sources.Constant zerPlaReq(final k=0) "Constant 0"
+        annotation (Placement(transformation(extent={{-10,-40},{10,-20}})));
+      Buildings.Controls.OBC.CDL.Logical.Switch swi "Output 0 or 1 request "
+        annotation (Placement(transformation(extent={{30,-10},{50,10}})));
+      Buildings.Controls.OBC.CDL.Conversions.RealToInteger reaToInt "Convert real to integer value"
+        annotation (Placement(transformation(extent={{70,-10},{90,10}})));
+    equation
+      connect(reaToInt.y, yPlaReq) annotation (Line(points={{92,0},{96,0},{96,0},{
+              110,0}},
+                   color={255,127,0}));
+      connect(swi.y, reaToInt.u)
+        annotation (Line(points={{52,0},{68,0}}, color={0,0,127}));
+      connect(onePlaReq.y, swi.u1)
+        annotation (Line(points={{12,30},{20,30},{20,8},{28,8}}, color={0,0,127}));
+      connect(zerPlaReq.y, swi.u3) annotation (Line(points={{12,-30},{20,-30},{20,
+              -8},{28,-8}},
+                        color={0,0,127}));
+      connect(hys.y, swi.u2)
+        annotation (Line(points={{-48,0},{28,0}}, color={255,0,255}));
+      connect(uPlaVal, hys.u)
+        annotation (Line(points={{-120,0},{-72,0}}, color={0,0,127}));
+      annotation (Documentation(info="<html>
+<p>This module calculates the plant request number based on the valve position: </p>
+<p><br><b>Chiller Plant Requests</b>. Send the chiller plant that serves the system a Chiller Plant Request as follows: </p>
+<ol>
+<li>If the CHW valve position is greater than 95&percnt;, send 1 Request until the CHW valve position is less than 10&percnt; </li>
+<li>Else if the CHW valve position is less than 95&percnt;, send 0 Requests. </li>
+</ol>
+<p><b>Hot Water Plant Requests: </b>Send the heating hot water plant that serves the AHU a Hot Water Plant Request as follows: </p>
+<ol>
+<li>If the HW valve position is greater than 95&percnt;, send 1 Request until the HW valve position is less than 10&percnt; </li>
+<li>Else if the HW valve position is less than 95&percnt;, send 0 Requests. </li>
+</ol>
+</html>",     revisions="<html>
+<ul>
+<li>Sep 1, 2020, by Xing Lu:<br>First implementation. </li>
+</ul>
+</html>"));
+    end PlantRequest;
+
+    model BoilerPlantEnableDisable
+      extends ChillerPlantEnableDisable(con1(condition=yPlaReq > numIgn and TOut <
+              TOutPla and ySupFan and offTim.y >= shoCycTim), con2(condition=(
+              lesEquReq.y >= plaReqTim and onTim.y >= shoCycTim and lesEquSpe.y >=
+              plaReqTim) or ((TOut > TOutPla - 1 or not ySupFan) and onTim.y >=
+              shoCycTim), waitTime=0));
+      annotation (Documentation(info="<html>
+<p>This is a boiler plant enable disable control that works as follows: </p>
+<p>Enable the plant in the lowest stage when the plant has been disabled for at least 15 minutes and: </p>
+<ol>
+<li>Number of Hot Water Plant Requests &gt; I (I = Ignores shall default to 0, adjustable), and </li>
+<li>OAT&lt;H-LOT, and </li>
+<li>The boiler plant enable schedule is active. </li>
+</ol>
+<p>Disable the plant when it has been enabled for at least 15 minutes and: </p>
+<ol>
+<li>Number of Hot Water Plant Requests &le; I for 3 minutes, or </li>
+<li>OAT&gt;H-LOT-1&deg;F, or </li>
+<li>The boiler plant enable schedule is inactive. </li>
+</ol>
+<p>In the above logic, OAT is the outdoor air temperature, CH-LOT is the chiller plant lockout air temperature, H-LOT is the heating plant lockout air temperature.</p>
+</html>"));
+    end BoilerPlantEnableDisable;
+
+    model MinimumFlowBypassValve "Minimum flow bypass valve control"
+      extends Modelica.Blocks.Icons.Block;
+
+      Buildings.Controls.OBC.CDL.Interfaces.RealInput m_flow(final quantity=
+            "MassFlowRate", final unit="kg/s") "Water mass flow rate measurement"
+        annotation (Placement(transformation(extent={{-140,10},{-100,50}}),
+            iconTransformation(extent={{-20,-20},{20,20}}, origin={-120,30})));
+      Modelica.Blocks.Sources.RealExpression m_flow_min(y=m_flow_minimum)
+        "Design minimum water flow rate"
+        annotation (Placement(transformation(extent={{-80,48},{-60,68}})));
+      Buildings.Controls.OBC.CDL.Continuous.LimPID conPID(
+        controllerType=controllerType,
+        k=k,
+        Ti=Ti,
+        Td=Td,
+        reset=Buildings.Types.Reset.Parameter,
+        y_reset=0) annotation (Placement(transformation(extent={{-10,60},{10,80}})));
+      Modelica.Blocks.Interfaces.RealOutput y
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+      parameter Modelica.SIunits.MassFlowRate m_flow_minimum=0.1 "Design minimum water mass flow rate";
+     // Controller
+      parameter Modelica.Blocks.Types.SimpleController controllerType=
+        Modelica.Blocks.Types.SimpleController.PI
+        "Type of controller";
+      parameter Real k(min=0, unit="1") = 0.1
+        "Gain of controller";
+      parameter Modelica.SIunits.Time Ti(min=Modelica.Constants.small)=60
+        "Time constant of integrator block"
+         annotation (Dialog(enable=
+              (controllerType == Modelica.Blocks.Types.SimpleController.PI or
+              controllerType == Modelica.Blocks.Types.SimpleController.PID)));
+      parameter Modelica.SIunits.Time Td(min=0)=0.1
+        "Time constant of derivative block"
+         annotation (Dialog(enable=
+             (controllerType == Modelica.Blocks.Types.SimpleController.PD or
+              controllerType == Modelica.Blocks.Types.SimpleController.PID)));
+
+      Buildings.Controls.OBC.CDL.Interfaces.BooleanInput yPla "Plant on/off"
+        annotation (Placement(transformation(extent={{-140,-70},{-100,-30}}),
+            iconTransformation(extent={{-140,-50},{-100,-10}})));
+      Modelica.Blocks.Sources.RealExpression dm(y=m_flow - m_flow_minimum)
+        "Delta mass flowrate"
+        annotation (Placement(transformation(extent={{-92,-20},{-72,0}})));
+      Buildings.Controls.OBC.CDL.Continuous.Hysteresis hys(uLow=0, uHigh=0.1,
+        y(start=false))
+        annotation (Placement(transformation(extent={{-60,-20},{-40,0}})));
+      Modelica.Blocks.Logical.And and1
+        annotation (Placement(transformation(extent={{0,-40},{20,-20}})));
+    protected
+      Buildings.Controls.OBC.CDL.Logical.Switch swi "Output 0 or 1 request "
+        annotation (Placement(transformation(extent={{54,-10},{74,10}})));
+      Buildings.Controls.OBC.CDL.Continuous.Sources.Constant zer(final k=0)
+        "Constant 0"
+        annotation (Placement(transformation(extent={{20,30},{40,50}})));
+    equation
+      connect(m_flow_min.y, conPID.u_s)
+        annotation (Line(points={{-59,58},{-36,58},{-36,70},{-12,70}},
+                                                   color={0,0,127}));
+      connect(conPID.u_m, m_flow)
+        annotation (Line(points={{0,58},{0,30},{-120,30}}, color={0,0,127}));
+      connect(swi.y, y) annotation (Line(points={{76,0},{110,0}}, color={0,0,127}));
+      connect(dm.y, hys.u)
+        annotation (Line(points={{-71,-10},{-62,-10}}, color={0,0,127}));
+      connect(conPID.y, swi.u3) annotation (Line(points={{12,70},{16,70},{16,-8},{52,
+              -8}},    color={0,0,127}));
+      connect(zer.y, swi.u1)
+        annotation (Line(points={{42,40},{44,40},{44,8},{52,8}}, color={0,0,127}));
+      connect(yPla, and1.u2) annotation (Line(points={{-120,-50},{-20,-50},{-20,-38},
+              {-2,-38}}, color={255,0,255}));
+      connect(hys.y, and1.u1) annotation (Line(points={{-38,-10},{-20,-10},{-20,
+              -30},{-2,-30}},
+                         color={255,0,255}));
+      connect(and1.y, swi.u2) annotation (Line(points={{21,-30},{40,-30},{40,0},{52,
+              0}}, color={255,0,255}));
+      connect(hys.y, conPID.trigger)
+        annotation (Line(points={{-38,-10},{-6,-10},{-6,58}}, color={255,0,255}));
+      annotation (Documentation(info="<html>
+<p>The bypass valve PID loop is enabled when the plant is on. When enabled, the bypass valve loop starts with the valve 0&percnt; open. It is closed when the plant is off. </p>
+</html>",     revisions="<html>
+<ul>
+<li>Sep 1, 2020, by Xing Lu:<br>First implementation. </li>
+</ul>
+</html>"));
+    end MinimumFlowBypassValve;
+
+    model HotWaterTemperatureReset "Hot Water Temperature Reset Control"
+
+      parameter Real uHigh=0.95 "if y=false and u>uHigh, switch to y=true";
+      parameter Real uLow=0.85 "if y=true and u<uLow, switch to y=false";
+      Buildings.Controls.OBC.CDL.Interfaces.RealInput uPlaHeaVal
+        "Heating valve position"
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      parameter Real iniSet(
+        final unit="K",
+        final displayUnit="degC",
+        final quantity="ThermodynamicTemperature") = maxSet
+        "Initial setpoint"
+        annotation (Dialog(group="Trim and respond for pressure setpoint"));
+      parameter Real minSet(
+        final unit="K",
+        final displayUnit="degC",
+        final quantity="ThermodynamicTemperature") = 273.15 + 32.2
+        "Minimum setpoint"
+        annotation (Dialog(group="Trim and respond for pressure setpoint"));
+      parameter Real maxSet(
+        final unit="K",
+        final displayUnit="degC",
+        final quantity="ThermodynamicTemperature") = 273.15 + 45
+        "Maximum setpoint"
+        annotation (Dialog(group="Trim and respond for pressure setpoint"));
+      parameter Real delTim(
+        final unit="s",
+        final quantity="Time")= 600
+       "Delay time after which trim and respond is activated"
+        annotation (Dialog(group="Trim and respond for pressure setpoint"));
+      parameter Real samplePeriod(
+        final unit="s",
+        final quantity="Time") = 300  "Sample period"
+        annotation (Dialog(group="Trim and respond for pressure setpoint"));
+      parameter Integer numIgnReq = 0
+        "Number of ignored requests"
+        annotation (Dialog(group="Trim and respond for pressure setpoint"));
+      parameter Real triAmo(
+        final unit="K",
+        final displayUnit="K",
+        final quantity="TemperatureDifference") = -1
+        "Trim amount"
+        annotation (Dialog(group="Trim and respond for pressure setpoint"));
+      parameter Real resAmo(
+        final unit="K",
+        final displayUnit="K",
+        final quantity="TemperatureDifference") = 1.5
+        "Response amount"
+        annotation (Dialog(group="Trim and respond for pressure setpoint"));
+      parameter Real maxRes(
+        final unit="K",
+        final displayUnit="K",
+        final quantity="TemperatureDifference") = 4
+        "Maximum response per time interval (same sign as resAmo)"
+        annotation (Dialog(group="Trim and respond for pressure setpoint"));
+      Buildings.Controls.OBC.ASHRAE.G36_PR1.Generic.SetPoints.TrimAndRespond staTBoiSupSetRes(
+        final iniSet=iniSet,
+        final minSet=minSet,
+        final maxSet=maxSet,
+        final delTim=delTim,
+        final samplePeriod=samplePeriod,
+        final numIgnReq=numIgnReq,
+        final triAmo=triAmo,
+        final resAmo=resAmo,
+        final maxRes=maxRes)
+        "Static pressure setpoint reset using trim and respond logic"
+        annotation (Placement(transformation(extent={{-40,-2},{-20,18}})));
+
+      FiveZone.Controls.PlantRequest plaReq(uLow=uLow, uHigh=uHigh)
+        annotation (Placement(transformation(extent={{-80,-10},{-60,10}})));
+      Buildings.Controls.OBC.CDL.Interfaces.BooleanInput uDevSta
+        "On/Off status of the associated device"
+        annotation (Placement(transformation(extent={{-140,54},{-100,94}})));
+      Buildings.Controls.OBC.CDL.Interfaces.RealOutput TSupBoi(
+        final unit="K",
+        final displayUnit="degC",
+        final quantity="ThermodynamicTemperature")
+        "Setpoint for boiler supply water temperature"
+        annotation (Placement(transformation(extent={{100,-12},{140,28}}),
+            iconTransformation(extent={{100,-20},{140,20}})));
+    protected
+      Buildings.Controls.OBC.CDL.Discrete.FirstOrderHold firOrdHol(final
+          samplePeriod=samplePeriod)
+        "Extrapolation through the values of the last two sampled input signals"
+        annotation (Placement(transformation(extent={{10,-2},{30,18}})));
+    equation
+      connect(plaReq.uPlaVal, uPlaHeaVal)
+        annotation (Line(points={{-82,0},{-120,0}}, color={0,0,127}));
+      connect(plaReq.yPlaReq, staTBoiSupSetRes.numOfReq)
+        annotation (Line(points={{-59,0},{-42,0}}, color={255,127,0}));
+      connect(staTBoiSupSetRes.uDevSta, uDevSta) annotation (Line(points={{-42,16},{
+              -50,16},{-50,74},{-120,74}}, color={255,0,255}));
+      connect(staTBoiSupSetRes.y, firOrdHol.u)
+        annotation (Line(points={{-18,8},{8,8}}, color={0,0,127}));
+      connect(firOrdHol.y, TSupBoi)
+        annotation (Line(points={{32,8},{120,8}}, color={0,0,127}));
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+                                    Rectangle(
+              extent={{-100,-100},{100,100}},
+              lineColor={0,0,127},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid),
+                                            Text(
+            extent={{-152,146},{148,106}},
+            textString="%name",
+            lineColor={0,0,255})}),                                  Diagram(
+            coordinateSystem(preserveAspectRatio=false)),
+        Documentation(info="<html>
+<p>Hot water supply temperature setpoint shall be reset using Trim &amp; Respond logic using following parameters as a starting point: </p>
+<table cellspacing=\"2\" cellpadding=\"0\" border=\"1\"><tr>
+<td><p align=\"center\"><h4>Variable </h4></p></td>
+<td><p align=\"center\"><h4>Value </h4></p></td>
+<td><p align=\"center\"><h4>Definition </h4></p></td>
+</tr>
+<tr>
+<td><p>Device</p></td>
+<td><p>HW Loop</p></td>
+<td><p>Associated device</p></td>
+</tr>
+<tr>
+<td><p>SP0</p></td>
+<td><p><span style=\"font-family: Courier New;\">iniSet</span></p></td>
+<td><p>Initial setpoint</p></td>
+</tr>
+<tr>
+<td><p>SPmin</p></td>
+<td><p><span style=\"font-family: Courier New;\">minSet</span></p></td>
+<td><p>Minimum setpoint</p></td>
+</tr>
+<tr>
+<td><p>SPmax</p></td>
+<td><p><span style=\"font-family: Courier New;\">maxSet</span></p></td>
+<td><p>Maximum setpoint</p></td>
+</tr>
+<tr>
+<td><p>Td</p></td>
+<td><p><span style=\"font-family: Courier New;\">delTim</span></p></td>
+<td><p>Delay timer</p></td>
+</tr>
+<tr>
+<td><p>T</p></td>
+<td><p><span style=\"font-family: Courier New;\">samplePeriod</span></p></td>
+<td><p>Time step</p></td>
+</tr>
+<tr>
+<td><p>I</p></td>
+<td><p><span style=\"font-family: Courier New;\">numIgnReq</span></p></td>
+<td><p>Number of ignored requests</p></td>
+</tr>
+<tr>
+<td><p>R</p></td>
+<td><p><span style=\"font-family: Courier New;\">uZonPreResReq</span></p></td>
+<td><p>Number of requests</p></td>
+</tr>
+<tr>
+<td><p>SPtrim</p></td>
+<td><p><span style=\"font-family: Courier New;\">triAmo</span></p></td>
+<td><p>Trim amount</p></td>
+</tr>
+<tr>
+<td><p>SPres</p></td>
+<td><p><span style=\"font-family: Courier New;\">resAmo</span></p></td>
+<td><p>Respond amount</p></td>
+</tr>
+<tr>
+<td><p>SPres_max</p></td>
+<td><p><span style=\"font-family: Courier New;\">maxRes</span></p></td>
+<td><p>Maximum response per time interval</p></td>
+</tr>
+</table>
+</html>"));
+    end HotWaterTemperatureReset;
+
+    model TrimResponse "Trim and respond"
+      extends Modelica.Blocks.Icons.Block;
+      parameter Modelica.SIunits.Time samplePeriod=120 "Sample period of component";
+      parameter Real uTri=0 "Value to triggering the request for actuator";
+      parameter Real yEqu0=0 "y setpoint when equipment starts";
+      parameter Real yDec=-0.03 "y decrement (must be negative)";
+      parameter Real yInc=0.03 "y increment (must be positive)";
+      parameter Real x1=0.5 "First interval [x0, x1] and second interval (x1, x2]"
+      annotation(Dialog(tab="Pressure and temperature reset points"));
+      parameter Modelica.SIunits.Pressure dpMin = 100 "dpmin"
+      annotation(Dialog(tab="Pressure and temperature reset points"));
+      parameter Modelica.SIunits.Pressure dpMax =  300 "dpmax"
+      annotation(Dialog(tab="Pressure and temperature reset points"));
+      parameter Modelica.SIunits.ThermodynamicTemperature TMin=273.15+32 "Tchi,min"
+      annotation(Dialog(tab="Pressure and temperature reset points"));
+      parameter Modelica.SIunits.ThermodynamicTemperature TMax = 273.15+45 "Tchi,max"
+      annotation(Dialog(tab="Pressure and temperature reset points"));
+      parameter Modelica.SIunits.Time startTime=0 "First sample time instant";
+
+      Modelica.Blocks.Interfaces.RealInput u
+        "Input signall, such as dT, or valve position"
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      FiveZone.PrimarySideControl.BaseClasses.LinearPiecewiseTwo linPieTwo(
+        x0=0,
+        x1=x1,
+        x2=1,
+        y10=dpMin,
+        y11=dpMax,
+        y20=TMin,
+        y21=TMax) "Calculation of two piecewise linear functions"
+        annotation (Placement(transformation(extent={{20,-10},{40,10}})));
+
+      Modelica.Blocks.Interfaces.RealOutput dpSet(
+        final quantity="Pressure",
+        final unit = "Pa") "DP setpoint"
+        annotation (Placement(transformation(extent={{100,40},{120,60}}),
+            iconTransformation(extent={{100,40},{120,60}})));
+      Modelica.Blocks.Interfaces.RealOutput TSet(
+        final quantity="ThermodynamicTemperature",
+        final unit="K")
+        "CHWST"
+        annotation (Placement(transformation(extent={{100,-60},{120,-40}}),
+            iconTransformation(extent={{100,-60},{120,-40}})));
+      FiveZone.PrimarySideControl.BaseClasses.TrimAndRespond triAndRes(
+        samplePeriod=samplePeriod,
+        startTime=startTime,
+        uTri=uTri,
+        yEqu0=yEqu0,
+        yDec=yDec,
+        yInc=yInc)
+        annotation (Placement(transformation(extent={{-40,-10},{-20,10}})));
+
+      Buildings.Controls.OBC.CDL.Interfaces.BooleanInput uDevSta
+        "On/Off status of the associated device"
+        annotation (Placement(transformation(extent={{-140,50},{-100,90}}),
+            iconTransformation(extent={{-180,10},{-100,90}})));
+      Modelica.Blocks.Sources.RealExpression dpSetIni(y=dpMin)
+        "Initial dp setpoint"
+        annotation (Placement(transformation(extent={{-20,80},{0,100}})));
+      Modelica.Blocks.Sources.RealExpression TSetIni(y=TMin)
+        "Initial temperature setpoint"
+        annotation (Placement(transformation(extent={{-20,-88},{0,-68}})));
+      Modelica.Blocks.Logical.Switch swi2 "Switch"
+        annotation (Placement(transformation(extent={{60,-80},{80,-60}})));
+      Modelica.Blocks.Logical.Switch swi1 "Switch"
+        annotation (Placement(transformation(extent={{60,70},{80,90}})));
+    equation
+
+      connect(triAndRes.y, linPieTwo.u)
+        annotation (Line(points={{-19,0},{18,0}}, color={0,0,127}));
+      connect(u, triAndRes.u)
+        annotation (Line(points={{-120,0},{-42,0}}, color={0,0,127}));
+      connect(uDevSta, swi1.u2) annotation (Line(points={{-120,70},{0,70},{0,80},{
+              58,80}}, color={255,0,255}));
+      connect(swi1.y, dpSet) annotation (Line(points={{81,80},{92,80},{92,50},{110,
+              50}}, color={0,0,127}));
+      connect(linPieTwo.y[1], swi1.u1) annotation (Line(points={{41,-0.5},{48,-0.5},
+              {48,88},{58,88}}, color={0,0,127}));
+      connect(dpSetIni.y, swi1.u3) annotation (Line(points={{1,90},{46,90},{46,72},
+              {58,72}}, color={0,0,127}));
+      connect(uDevSta, swi2.u2) annotation (Line(points={{-120,70},{0,70},{0,-70},{
+              58,-70}}, color={255,0,255}));
+      connect(TSetIni.y, swi2.u3)
+        annotation (Line(points={{1,-78},{58,-78}}, color={0,0,127}));
+      connect(linPieTwo.y[2], swi2.u1) annotation (Line(points={{41,0.5},{48,0.5},{
+              48,-62},{58,-62}}, color={0,0,127}));
+      connect(swi2.y, TSet) annotation (Line(points={{81,-70},{88,-70},{88,-50},{
+              110,-50}}, color={0,0,127}));
+      annotation (defaultComponentName="triRes",
+        Documentation(info="<html>
+<p>This model describes a chilled water supply temperature setpoint and differential pressure setpoint reset control. In this logic, it is to first increase the different pressure, <i>&Delta;p</i>, of the chilled water loop to increase the mass flow rate. If <i>&Delta;p</i> reaches the maximum value and further cooling is still needed, the chiller remperature setpoint, <i>T<sub>chi,set</i></sub>, is reduced. If there is too much cooling, the <i>T<sub>chi,set</i></sub> and <i>&Delta;p</i> will be changed in the reverse direction. </p>
+<p>The model implements a discrete time trim and respond logic as follows: </p>
+<ul>
+<li>A cooling request is triggered if the input signal, <i>y</i>, is larger than 0. <i>y</i> is the difference between the actual and set temperature of the suppuly air to the data center room.</li>
+<li>The request is sampled every 2 minutes. If there is a cooling request, the control signal <i>u</i> is increased by <i>0.03</i>, where <i>0 &le; u &le; 1</i>. If there is no cooling request, <i>u</i> is decreased by <i>0.03</i>. </li>
+</ul>
+<p>The control signal <i>u</i> is converted to setpoints for <i>&Delta;p</i> and <i>T<sub>chi,set</i></sub> as follows: </p>
+<ul>
+<li>If <i>u &isin; [0, x]</i> then <i>&Delta;p = &Delta;p<sub>min</sub> + u &nbsp;(&Delta;p<sub>max</sub>-&Delta;p<sub>min</sub>)/x</i> and <i>T = T<sub>max</i></sub></li>
+<li>If <i>u &isin; (x, 1]</i> then <i>&Delta;p = &Delta;p<sub>max</i></sub> and <i>T = T<sub>max</sub> - (u-x)&nbsp;(T<sub>max</sub>-T<sub>min</sub>)/(1-x) </i></li>
+</ul>
+<p>where <i>&Delta;p<sub>min</i></sub> and <i>&Delta;p<sub>max</i></sub> are minimum and maximum values for <i>&Delta;p</i>, and <i>T<sub>min</i></sub> and <i>T<sub>max</i></sub> are the minimum and maximum values for <i>T<sub>chi,set</i></sub>. </p>
+<p>Note that we deactivate the trim and response when the chillers are off.</p>
+
+<h4>Reference</h4>
+<p>Stein, J. (2009). Waterside Economizing in Data Centers: Design and Control Considerations. ASHRAE Transactions, 115(2), 192-200.</p>
+<p>Taylor, S.T. (2007). Increasing Efficiency with VAV System Static Pressure Setpoint Reset. ASHRAE Journal, June, 24-32. </p>
+</html>",     revisions="<html>
+<ul>
+<li><i>December 19, 2018</i> by Yangyang Fu:<br/>
+        Deactivate reset when chillers are off.
+</li>
+<li><i>June 23, 2018</i> by Xing Lu:<br/>
+        First implementation.
+</li>
+</ul>
+</html>"));
+    end TrimResponse;
+
+    package Validation
+
+      model ChillerPlantEnableDisable
+        extends Modelica.Icons.Example;
+        FiveZone.Controls.ChillerPlantEnableDisable plaEnaDis
+          annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
+        Modelica.Blocks.Sources.BooleanPulse ySupFan(
+          width=60,
+          period(displayUnit="h") = 10800,
+          startTime(displayUnit="min") = 300)
+          annotation (Placement(transformation(extent={{-80,-20},{-60,0}})));
+        Modelica.Blocks.Sources.Sine TOut(
+          amplitude=10,
+          freqHz=1/10800,
+          offset=16 + 273.15,
+          startTime(displayUnit="min") = 1200)
+          annotation (Placement(transformation(extent={{-80,30},{-60,50}})));
+        Modelica.Blocks.Sources.IntegerTable yPlaReq(table=[0,0; 800,1; 2500,0; 3000,
+              1; 3800,0; 4500,1; 10800,0; 15000,1; 18000,0]) "Plant Request Numbers"
+          annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));
+        Modelica.Blocks.Sources.Sine yFanSep(
+          amplitude=0.5,
+          freqHz=1/10800,
+          offset=0.5,
+          startTime(displayUnit="min"))
+          annotation (Placement(transformation(extent={{-80,-90},{-60,-70}})));
+      equation
+        connect(ySupFan.y, plaEnaDis.ySupFan) annotation (Line(points={{-59,-10},{-36,
+                -10},{-36,0},{-12,0}}, color={255,0,255}));
+        connect(TOut.y, plaEnaDis.TOut) annotation (Line(points={{-59,40},{-36,40},{
+                -36,4.6},{-12,4.6}},
+                             color={0,0,127}));
+        connect(yPlaReq.y, plaEnaDis.yPlaReq) annotation (Line(points={{-59,-50},{-34,
+                -50},{-34,-4},{-12,-4}}, color={255,127,0}));
+        connect(yFanSep.y, plaEnaDis.yFanSpe) annotation (Line(points={{-59,-80},{-32,
+                -80},{-32,-7},{-11,-7}}, color={0,0,127}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+              coordinateSystem(preserveAspectRatio=false)),
+          experiment(StopTime=21600, __Dymola_Algorithm="Cvode"));
+      end ChillerPlantEnableDisable;
+
+      model PlantRequest
+        extends Modelica.Icons.Example;
+        Modelica.Blocks.Sources.Sine uPlaReq(
+          amplitude=0.5,
+          freqHz=1/2000,
+          offset=0.5,
+          startTime(displayUnit="min") = 300)
+          annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
+        FiveZone.Controls.PlantRequest plaReq
+          annotation (Placement(transformation(extent={{-8,-10},{12,10}})));
+      equation
+        connect(uPlaReq.y, plaReq.uPlaVal)
+          annotation (Line(points={{-39,0},{-9,0}}, color={0,0,127}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+              coordinateSystem(preserveAspectRatio=false)),
+          experiment(StopTime=21600, __Dymola_Algorithm="Cvode"));
+      end PlantRequest;
+
+      model CoolingMode
+        "Test the model ChillerWSE.Examples.BaseClasses.CoolingModeController"
+        extends Modelica.Icons.Example;
+
+        FiveZone.Controls.CoolingMode cooModCon(
+          deaBan1=1,
+          deaBan2=1,
+          tWai=30,
+          deaBan3=1,
+          deaBan4=1)
+          "Cooling mode controller used in integrared waterside economizer chilled water system"
+          annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
+        Modelica.Blocks.Sources.Pulse TCHWLeaWSE(
+          period=300,
+          amplitude=15,
+          offset=273.15 + 5) "WSE chilled water supply temperature"
+          annotation (Placement(transformation(extent={{-60,-50},{-40,-30}})));
+        Modelica.Blocks.Sources.Constant TWetBub(k=273.15 + 5) "Wet bulb temperature"
+          annotation (Placement(transformation(extent={{-60,10},{-40,30}})));
+        Modelica.Blocks.Sources.Constant TAppTow(k=5) "Cooling tower approach"
+          annotation (Placement(transformation(extent={{-60,-20},{-40,0}})));
+        Modelica.Blocks.Sources.Constant TCHWEntWSE(k=273.15 + 12)
+          "Chilled water return temperature in waterside economizer"
+          annotation (Placement(transformation(extent={{-60,-90},{-40,-70}})));
+        Modelica.Blocks.Sources.Constant TCHWLeaSet(k=273.15 + 10)
+          "Chilled water supply temperature setpoint"
+          annotation (Placement(transformation(extent={{-60,40},{-40,60}})));
+        Modelica.Blocks.Sources.BooleanPulse yPla(
+          width=80,
+          period(displayUnit="min") = 300,
+          startTime(displayUnit="min") = 60)
+          annotation (Placement(transformation(extent={{-60,70},{-40,90}})));
+      equation
+        connect(TCHWLeaSet.y, cooModCon.TCHWSupSet) annotation (Line(points={{-39,50},
+                {-24,50},{-24,5.77778},{-12,5.77778}},
+                                           color={0,0,127}));
+        connect(TWetBub.y, cooModCon.TWetBul)
+          annotation (Line(points={{-39,20},{-26,20},{-26,2.22222},{-12,2.22222}},
+                                  color={0,0,127}));
+        connect(TAppTow.y, cooModCon.TApp) annotation (Line(points={{-39,-10},{-28,
+                -10},{-28,-1.11111},{-12,-1.11111}},
+                                  color={0,0,127}));
+        connect(TCHWLeaWSE.y, cooModCon.TCHWSupWSE) annotation (Line(points={{-39,-40},
+                {-28,-40},{-28,-4.44444},{-12,-4.44444}},
+                                              color={0,0,127}));
+        connect(TCHWEntWSE.y, cooModCon.TCHWRetWSE) annotation (Line(points={{-39,-80},
+                {-26,-80},{-26,-7.77778},{-12,-7.77778}},
+                                              color={0,0,127}));
+        connect(yPla.y, cooModCon.yPla) annotation (Line(points={{-39,80},{-22,80},{
+                -22,8.66667},{-12,8.66667}}, color={255,0,255}));
+        annotation (
+          Documentation(info="<html>
+<p>
+This model tests the cooling mode controller implemented in
+<a href=\"modelica://FaultInjection.Experimental.SystemLevelFaults.Controls.CoolingMode\">
+FaultInjection.Experimental.SystemLevelFaults.Controls.CoolingMode</a>.
+</p>
+</html>",       revisions="<html>
+<ul>
+<li>
+August 25, 2017, by Yangyang Fu:<br/>
+First implementation.
+</li>
+</ul>
+</html>"),
+      experiment(
+            StartTime=0,
+            StopTime=600,
+            Tolerance=1e-06),
+          __Dymola_Commands(file=
+                "Resources/Scripts/dymola/FaultInjection/Experimental/SystemLevelFaults/Controls/Validation/CoolingMode.mos"
+              "Simulate and Plot"));
+      end CoolingMode;
+
+      model ConstantSpeedPumpStage
+        "Test the model ChillerWSE.Examples.BaseClasses.ConstatnSpeedPumpStageControl"
+        extends Modelica.Icons.Example;
+
+        FiveZone.Controls.ConstantSpeedPumpStage conSpePumSta(tWai=30)
+          "Staging controller for constant speed pumps"
+          annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
+        Modelica.Blocks.Sources.IntegerTable cooMod(table=[360,1; 720,2; 1080,3; 1440,
+              4])
+          "Cooling mode"
+          annotation (Placement(transformation(extent={{-60,40},{-40,60}})));
+        Modelica.Blocks.Sources.IntegerTable chiNumOn(
+          table=[0,0; 360,1; 540,2; 720,1;
+                 900,2; 1080,1; 1260,2; 1440,1])
+          "The number of running chillers"
+          annotation (Placement(transformation(extent={{-60,-40},{-40,-20}})));
+      equation
+        connect(cooMod.y, conSpePumSta.cooMod)
+          annotation (Line(points={{-39,50},{-20,50},{-20,5},{-12,5}},
+                              color={255,127,0}));
+        connect(chiNumOn.y,conSpePumSta.numOnChi)
+          annotation (Line(points={{-39,-30},{-20,-30},{-20,-5},{-12,-5}},
+                              color={255,127,0}));
+        annotation (    __Dymola_Commands(file=
+                "modelica://Buildings/Resources/Scripts/Dymola/Applications/DataCenters/ChillerCooled/Controls/Validation/ConstantSpeedPumpStage.mos"
+              "Simulate and plot"),
+          Documentation(info="<html>
+<p>
+This example test how the number of required constant-speed pumps varies
+based on cooling mode signals and the number of running chillers. Detailed
+control logic can be found in
+<a href=\"modelica://Buildings.Applications.DataCenters.ChillerCooled.Controls.ConstantSpeedPumpStage\">
+Buildings.Applications.DataCenters.ChillerCooled.Controls.ConstantSpeedPumpStage</a>.
+</p>
+</html>",       revisions="<html>
+<ul>
+<li>
+August 25, 2017, by Yangyang Fu:<br/>
+First implementation.
+</li>
+</ul>
+</html>"),
+      experiment(
+            StartTime=0,
+            StopTime=1440,
+            Tolerance=1e-06));
+      end ConstantSpeedPumpStage;
+
+      model CoolingTowerSpeed
+        "Test the model ChillerWSE.Examples.BaseClasses.CoolingTowerSpeedControl"
+        extends Modelica.Icons.Example;
+
+        parameter Modelica.Blocks.Types.SimpleController controllerType=
+          Modelica.Blocks.Types.SimpleController.PID
+          "Type of controller"
+          annotation(Dialog(tab="Controller"));
+        parameter Real k(min=0, unit="1") = 1
+          "Gain of controller"
+          annotation(Dialog(tab="Controller"));
+        parameter Modelica.SIunits.Time Ti(min=Modelica.Constants.small)=0.5
+          "Time constant of integrator block"
+           annotation (Dialog(enable=
+                (controllerType == Modelica.Blocks.Types.SimpleController.PI or
+                controllerType == Modelica.Blocks.Types.SimpleController.PID),tab="Controller"));
+        parameter Modelica.SIunits.Time Td(min=0)=0.1
+          "Time constant of derivative block"
+           annotation (Dialog(enable=
+                (controllerType == Modelica.Blocks.Types.SimpleController.PD or
+                controllerType == Modelica.Blocks.Types.SimpleController.PID),tab="Controller"));
+        parameter Real yMax(start=1)=1
+         "Upper limit of output"
+          annotation(Dialog(tab="Controller"));
+        parameter Real yMin=0
+         "Lower limit of output"
+          annotation(Dialog(tab="Controller"));
+
+        FiveZone.Controls.CoolingTowerSpeed cooTowSpeCon(controllerType=
+              Modelica.Blocks.Types.SimpleController.PI)
+          "Cooling tower speed controller"
+          annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
+        Modelica.Blocks.Sources.Sine CHWST(
+          amplitude=2,
+          freqHz=1/360,
+          offset=273.15 + 5)
+          "Chilled water supply temperature"
+          annotation (Placement(transformation(extent={{-60,-80},{-40,-60}})));
+        Modelica.Blocks.Sources.Constant CWSTSet(k=273.15 + 20)
+          "Condenser water supply temperature setpoint"
+          annotation (Placement(transformation(extent={{-60,70},{-40,90}})));
+        Modelica.Blocks.Sources.Sine CWST(
+          amplitude=5,
+          freqHz=1/360,
+          offset=273.15 + 20)
+          "Condenser water supply temperature"
+          annotation (Placement(transformation(extent={{-60,-40},{-40,-20}})));
+        Modelica.Blocks.Sources.Constant CHWSTSet(k=273.15 + 6)
+          "Chilled water supply temperature setpoint"
+          annotation (Placement(transformation(extent={{-60,0},{-40,20}})));
+        Modelica.Blocks.Sources.IntegerTable cooMod(table=[360,1; 720,2; 1080,3; 1440,
+              4])
+          "Cooling mode"
+          annotation (Placement(transformation(extent={{-60,40},{-40,60}})));
+      equation
+        connect(CWSTSet.y, cooTowSpeCon.TCWSupSet)
+          annotation (Line(points={{-39,80},{-20,80},{-20,80},{-20,22},{-20,10},{-12,
+                10}},                                         color={0,0,127}));
+        connect(CHWSTSet.y, cooTowSpeCon.TCHWSupSet)
+          annotation (Line(points={{-39,10},
+                {-32,10},{-32,1.11111},{-12,1.11111}}, color={0,0,127}));
+        connect(CWST.y, cooTowSpeCon.TCWSup)
+          annotation (Line(points={{-39,-30},{-32,-30},
+                {-32,-3.33333},{-12,-3.33333}}, color={0,0,127}));
+        connect(CHWST.y, cooTowSpeCon.TCHWSup)
+          annotation (Line(points={{-39,-70},{-32,
+                -70},{-24,-70},{-24,-7.77778},{-12,-7.77778}}, color={0,0,127}));
+        connect(cooMod.y, cooTowSpeCon.cooMod)
+          annotation (Line(points={{-39,50},{-26,50},{-26,5.55556},{-12,5.55556}},
+                                                  color={255,127,0}));
+        annotation (    __Dymola_Commands(file=
+              "modelica://Buildings/Resources/Scripts/Dymola/Applications/DataCenters/ChillerCooled/Controls/Validation/CoolingTowerSpeed.mos"
+              "Simulate and plot"),
+          Documentation(info="<html>
+<p>
+This example tests the controller for the cooling tower fan speed. Detailed control logic can be found in
+<a href=\"modelica://Buildings.Applications.DataCenters.ChillerCooled.Controls.CoolingTowerSpeed\">
+Buildings.Applications.DataCenters.ChillerCooled.Controls.CoolingTowerSpeed</a>.
+</p>
+</html>",       revisions="<html>
+<ul>
+<li>
+August 25, 2017, by Yangyang Fu:<br/>
+First implementation.
+</li>
+</ul>
+</html>"),
+      experiment(
+            StopTime=2000,
+            Tolerance=1e-06,
+            __Dymola_Algorithm="Dassl"));
+      end CoolingTowerSpeed;
+
+      model MinimumFlowBypassValve
+        extends Modelica.Icons.Example;
+        Modelica.Blocks.Sources.Sine m_flow(
+          amplitude=0.05,
+          freqHz=1/10000,
+          offset=0.1,
+          startTime(displayUnit="min") = 60)
+          annotation (Placement(transformation(extent={{-60,10},{-40,30}})));
+        FiveZone.Controls.MinimumFlowBypassValve minFloBypVal(m_flow_minimum=
+              0.13, controllerType=Modelica.Blocks.Types.SimpleController.PI)
+          annotation (Placement(transformation(extent={{-12,-10},{8,10}})));
+        Modelica.Blocks.Sources.BooleanConstant boo
+          annotation (Placement(transformation(extent={{-60,-40},{-40,-20}})));
+      equation
+        connect(m_flow.y, minFloBypVal.m_flow) annotation (Line(points={{-39,20},{-25.5,
+                20},{-25.5,3},{-14,3}}, color={0,0,127}));
+        connect(boo.y, minFloBypVal.yPla) annotation (Line(points={{-39,-30},{-26,-30},
+                {-26,-3},{-14,-3}}, color={255,0,255}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+              coordinateSystem(preserveAspectRatio=false)),
+          experiment(StopTime=21600, __Dymola_Algorithm="Cvode"));
+      end MinimumFlowBypassValve;
+
+      model HotWaterTemperatureReset
+        extends Modelica.Icons.Example;
+        Modelica.Blocks.Sources.Sine yVal(
+          amplitude=0.3,
+          freqHz=1/8000,
+          offset=0.7,
+          startTime(displayUnit="min") = 0)
+          annotation (Placement(transformation(extent={{-60,-30},{-40,-10}})));
+        FiveZone.Controls.HotWaterTemperatureReset hotWatTemRes(resAmo=2)
+          annotation (Placement(transformation(extent={{-10,-8},{10,12}})));
+        Modelica.Blocks.Sources.BooleanPulse yPla(
+          width=80,
+          period(displayUnit="min") = 12000,
+          startTime(displayUnit="min") = 600)
+          annotation (Placement(transformation(extent={{-60,20},{-40,40}})));
+      equation
+        connect(yPla.y, hotWatTemRes.uDevSta) annotation (Line(points={{-39,30},{-26,
+                30},{-26,9.4},{-12,9.4}}, color={255,0,255}));
+        connect(yVal.y, hotWatTemRes.uPlaHeaVal) annotation (Line(points={{-39,-20},{
+                -26,-20},{-26,2},{-12,2}}, color={0,0,127}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+              coordinateSystem(preserveAspectRatio=false)),
+          experiment(StopTime=21600, __Dymola_Algorithm="Cvode"),
+          __Dymola_Commands(file="\"\"" "Simulate and Plot"));
+      end HotWaterTemperatureReset;
+    annotation (Icon(graphics={
+            Rectangle(
+              lineColor={200,200,200},
+              fillColor={248,248,248},
+              fillPattern=FillPattern.HorizontalCylinder,
+              extent={{-100,-100},{100,100}},
+              radius=25.0),
+            Polygon(
+              origin={8,14},
+              lineColor={78,138,73},
+              fillColor={78,138,73},
+              pattern=LinePattern.None,
+              fillPattern=FillPattern.Solid,
+              points={{-58.0,46.0},{42.0,-14.0},{-58.0,-74.0},{-58.0,46.0}}),
+            Rectangle(
+              lineColor={128,128,128},
+              extent={{-100,-100},{100,100}},
+              radius=25.0)}));
+    end Validation;
+
+    package BaseClasses
+
+      model TimeLessEqual
+        "Timer calculating the time when A is less than or equal than B"
+
+        parameter Real threshold=0 "Comparison with respect to threshold";
+
+        Modelica.Blocks.Interfaces.RealOutput y(
+          final quantity="Time",
+          final unit="s")
+          "Connector of Real output signal"
+          annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+
+        Modelica.Blocks.Logical.LessEqualThreshold    lesEqu(
+           threshold = threshold)
+          annotation (Placement(transformation(extent={{-30,-10},{-10,10}})));
+
+        Modelica.Blocks.Logical.Timer tim "Timer"
+          annotation (Placement(transformation(extent={{20,-10},{40,10}})));
+
+        Modelica.Blocks.Interfaces.IntegerInput u1
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+        Modelica.Blocks.Math.IntegerToReal intToRea
+          annotation (Placement(transformation(extent={{-80,-10},{-60,10}})));
+      equation
+        connect(lesEqu.y, tim.u)
+          annotation (Line(points={{-9,0},{18,0}},  color={255,0,255}));
+        connect(tim.y,y)  annotation (Line(points={{41,0},{110,0}}, color={0,0,127}));
+        connect(intToRea.y, lesEqu.u)
+          annotation (Line(points={{-59,0},{-32,0}}, color={0,0,127}));
+        connect(u1, intToRea.u)
+          annotation (Line(points={{-120,0},{-82,0}}, color={255,127,0}));
+        annotation (defaultComponentName="lesEqu",
+        Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+              Rectangle(
+                extent={{-100,100},{100,-100}},
+                lineColor={0,0,0},
+                lineThickness=5.0,
+                fillColor={210,210,210},
+                fillPattern=FillPattern.Solid,
+                borderPattern=BorderPattern.Raised),
+                                         Text(
+                extent={{-90,-40},{60,40}},
+                lineColor={0,0,0},
+                textString="<="),
+              Ellipse(
+                extent={{71,7},{85,-7}},
+                lineColor=DynamicSelect({235,235,235}, if y > 0.5 then {0,255,0}
+                     else {235,235,235}),
+                fillColor=DynamicSelect({235,235,235}, if y > 0.5 then {0,255,0}
+                     else {235,235,235}),
+                fillPattern=FillPattern.Solid),
+                                              Text(
+              extent={{-150,150},{150,110}},
+              textString="%name",
+              lineColor={0,0,255})}),                                  Diagram(
+              coordinateSystem(preserveAspectRatio=false)),
+          Documentation(info="<html>
+<p>This model represents a timer that starts to calculate the time when the input is less than or equal to a certain threshold. It will return to zero when the condition does not satisfy.</p>
+</html>"));
+      end TimeLessEqual;
+
+      model TimeLessEqualRea
+        "Timer calculating the time when A is less than or equal than B"
+
+        parameter Real threshold=0 "Comparison with respect to threshold";
+
+        Modelica.Blocks.Interfaces.RealOutput y(
+          final quantity="Time",
+          final unit="s")
+          "Connector of Real output signal"
+          annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+
+        Modelica.Blocks.Logical.LessEqualThreshold    lesEqu(
+           threshold = threshold)
+          annotation (Placement(transformation(extent={{-30,-10},{-10,10}})));
+
+        Modelica.Blocks.Logical.Timer tim "Timer"
+          annotation (Placement(transformation(extent={{20,-10},{40,10}})));
+
+        Modelica.Blocks.Interfaces.RealInput u1
+                                      "Connector of Real input signal"
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      equation
+        connect(lesEqu.y, tim.u)
+          annotation (Line(points={{-9,0},{18,0}},  color={255,0,255}));
+        connect(tim.y,y)  annotation (Line(points={{41,0},{110,0}}, color={0,0,127}));
+        connect(lesEqu.u, u1)
+          annotation (Line(points={{-32,0},{-120,0}}, color={0,0,127}));
+        annotation (defaultComponentName="lesEqu",
+        Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+              Rectangle(
+                extent={{-100,100},{100,-100}},
+                lineColor={0,0,0},
+                lineThickness=5.0,
+                fillColor={210,210,210},
+                fillPattern=FillPattern.Solid,
+                borderPattern=BorderPattern.Raised),
+                                         Text(
+                extent={{-90,-40},{60,40}},
+                lineColor={0,0,0},
+                textString="<="),
+              Ellipse(
+                extent={{71,7},{85,-7}},
+                lineColor=DynamicSelect({235,235,235}, if y > 0.5 then {0,255,0}
+                     else {235,235,235}),
+                fillColor=DynamicSelect({235,235,235}, if y > 0.5 then {0,255,0}
+                     else {235,235,235}),
+                fillPattern=FillPattern.Solid),
+                                              Text(
+              extent={{-150,150},{150,110}},
+              textString="%name",
+              lineColor={0,0,255})}),                                  Diagram(
+              coordinateSystem(preserveAspectRatio=false)),
+          Documentation(info="<html>
+<p>This model represents a timer that starts to calculate the time when the input is less than or equal to a certain threshold. It will return to zero when the condition does not satisfy.</p>
+</html>"));
+      end TimeLessEqualRea;
+    end BaseClasses;
+  annotation (Documentation(info="<html>
+<p>Collection of models for the control of airside and waterside systems. </p>
+</html>"),   Icon(graphics={
+        Rectangle(
+          origin={10,45.1488},
+          fillColor={255,255,255},
+          extent={{-30.0,-20.1488},{30.0,20.1488}}),
+        Polygon(
+          origin={-30,45},
+          pattern=LinePattern.None,
+          fillPattern=FillPattern.Solid,
+          points={{10.0,0.0},{-5.0,5.0},{-5.0,-5.0}}),
+        Line(
+          origin={-41.25,10},
+          points={{21.25,-35.0},{-13.75,-35.0},{-13.75,35.0},{6.25,35.0}}),
+        Rectangle(
+          origin={10,-24.8512},
+          fillColor={255,255,255},
+          extent={{-30.0,-20.1488},{30.0,20.1488}}),
+        Line(
+          origin={61.25,10},
+          points={{-21.25,35.0},{13.75,35.0},{13.75,-35.0},{-6.25,-35.0}})}));
+  end Controls;
+
+  package PrimarySideControl "Package with primary chilled water loop control"
+    extends Modelica.Icons.Package;
+
+    package CHWLoopEquipment "Collection of local controls in the chilled water loop"
+    extends Modelica.Icons.Package;
+
+      model StageLoadBasedChiller
+        "Chiller staging control based on cooling load"
+        extends Modelica.Blocks.Icons.Block;
+        parameter Modelica.SIunits.Power QEva_nominal
+          "Nominal cooling capaciaty(Negative means cooling)";
+        parameter Integer numChi=2 "Design number of chillers";
+        parameter Real staUpThr=0.8 "Staging up threshold";
+        parameter Real staDowThr=0.25 "Staging down threshold";
+        parameter Modelica.SIunits.Time waiTimStaUp=300
+          "Time duration of for staging up";
+        parameter Modelica.SIunits.Time waiTimStaDow=300
+          "Time duration of for staging down";
+        parameter Modelica.SIunits.Time shoCycTim=1200
+          "Time duration to avoid short cycling of equipment";
+        inner Modelica.StateGraph.StateGraphRoot stateGraphRoot
+          annotation (Placement(transformation(extent={{-100,80},{-80,100}})));
+
+        Modelica.Blocks.Interfaces.RealInput QTot(unit="W")
+          "Total cooling load in the chillers, negative"
+          annotation (Placement(transformation(extent={{-140,-60},{-100,-20}}),
+              iconTransformation(extent={{-140,-60},{-100,-20}})));
+
+        Modelica.Blocks.Sources.BooleanExpression unOccFre(y=uOpeMod == Integer(
+              FiveZone.Types.CoolingModes.Off)
+               or uOpeMod == Integer(FiveZone.Types.CoolingModes.FreeCooling))
+          "Unoccupied or FreeCooling mode"
+          annotation (Placement(transformation(extent={{-92,10},{-72,30}})));
+        Buildings.Controls.OBC.CDL.Logical.Switch swi1
+          annotation (Placement(transformation(extent={{-20,10},{0,30}})));
+        Buildings.Controls.OBC.CDL.Continuous.Sources.Constant zer(k=0) "Zero"
+          annotation (Placement(transformation(extent={{-62,40},{-42,60}})));
+        Buildings.Controls.OBC.CDL.Conversions.RealToInteger reaToInt
+          annotation (Placement(transformation(extent={{10,10},{30,30}})));
+        BaseClasses.SequenceSignal seqSig(n=numChi)
+          "Simple model that is used to determine the on and off sequence of equipment"
+          annotation (Placement(transformation(extent={{50,10},{70,30}})));
+        BaseClasses.Stage sta(
+          shoCycTim=shoCycTim,
+          waiTimStaUp=waiTimStaUp,
+          waiTimStaDow=waiTimStaDow,
+          staUpThr=staUpThr*(-QEva_nominal),
+          staDowThr=staDowThr*(-QEva_nominal))
+          annotation (Placement(transformation(extent={{-20,-54},{0,-34}})));
+        Buildings.Controls.OBC.CDL.Conversions.IntegerToReal intToRea1
+          annotation (Placement(transformation(extent={{12,-54},{32,-34}})));
+        Modelica.Blocks.Interfaces.RealOutput y[numChi]
+          "On and off signal of chiller"
+          annotation (Placement(transformation(extent={{100,-50},{120,-30}})));
+        Buildings.Controls.OBC.CDL.Interfaces.IntegerOutput yChi
+          "Number of active chillers"
+          annotation (Placement(transformation(extent={{100,30},{120,50}}),
+              iconTransformation(extent={{100,30},{120,50}})));
+        Modelica.Blocks.Interfaces.IntegerInput uOpeMod
+          "Cooling mode in WSEControls.Type.OperationaModes" annotation (Placement(
+              transformation(extent={{-140,20},{-100,60}}),  iconTransformation(
+                extent={{-140,20},{-100,60}})));
+
+        Modelica.Blocks.Math.Gain gain(k=-1)
+          annotation (Placement(transformation(extent={{-80,-50},{-60,-30}})));
+        Buildings.Controls.OBC.CDL.Logical.Not not2
+          annotation (Placement(transformation(extent={{-60,-20},{-40,0}})));
+      equation
+        connect(zer.y,swi1. u1) annotation (Line(points={{-40,50},{-30,50},{-30,28},{-22,
+                28}},    color={0,0,127}));
+        connect(unOccFre.y, swi1.u2)
+          annotation (Line(points={{-71,20},{-22,20}}, color={255,0,255}));
+        connect(swi1.y,reaToInt. u)
+          annotation (Line(points={{2,20},{8,20}}, color={0,0,127}));
+        connect(reaToInt.y,seqSig. u)
+          annotation (Line(points={{32,20},{48,20}}, color={255,127,0}));
+        connect(reaToInt.y,yChi)  annotation (Line(points={{32,20},{40,20},{40,40},{110,
+                40}}, color={255,127,0}));
+        connect(seqSig.y,y)  annotation (Line(points={{71,20},{80,20},{80,-40},{110,-40}},
+              color={0,0,127}));
+        connect(sta.ySta,intToRea1. u)
+          annotation (Line(points={{1,-44},{10,-44}},    color={255,127,0}));
+        connect(gain.y, sta.u) annotation (Line(points={{-59,-40},{-22,-40}},
+                                      color={0,0,127}));
+        connect(QTot, gain.u) annotation (Line(points={{-120,-40},{-82,-40}},
+              color={0,0,127}));
+        connect(unOccFre.y, not2.u) annotation (Line(points={{-71,20},{-66,20},{-66,
+                -10},{-62,-10}}, color={255,0,255}));
+        connect(not2.y, sta.on) annotation (Line(points={{-38,-10},{-32,-10},{-32,-48},
+                {-22,-48}}, color={255,0,255}));
+        connect(intToRea1.y, swi1.u3) annotation (Line(points={{34,-44},{40,-44},{40,0},
+                {-30,0},{-30,12},{-22,12}},    color={0,0,127}));
+       annotation (
+          defaultComponentName="staLoaChi",
+          Documentation(info="<html>
+
+<p>This model describes a chiller staging control based on the part load ratio (PLR) or cooling load Q.</p>
+<ul>
+<li>
+In unoccupied and free cooling mode, the chillers are off.
+</li>
+
+<li>
+In pre-partial, partial and full mechanical cooling mode, the chillers are staged based on part load ratio or cooling load in chillers. At the beginning, the number of chillers stay unchanged
+from previous operating mode.
+</li>
+
+</ul>
+
+<h4>PLR or Q-based Stage Control </h4>
+
+<p>Chillers are staged up when</p>
+<ol>
+<li>Current stage has been activated for at least <i>30</i> minutes (<i><span style=\"font-size: 10pt;\">△</span>t<sub>stage,on</sub> &gt; 30 min) </i>and</li>
+<li>PLR for any active chiller is greater than <i>80</i>&percnt; for <i>10</i> minutes <i>(PLR<sub>chiller</sub> &gt; 80&percnt; for 10 min).</i></li>
+</ol>
+<p>Chillers are staged down when</p>
+<ol>
+<li>Current stage has been activated for at least <i>30</i> minutes <i>(<span style=\"font-size: 10pt;\">△</span>t<sub>stage,on</sub> &gt; 30 min)</i> and</li>
+<li>PLR for any active chiller is less than 25&percnt; for 15 minutes <i>(PLR<sub>chiller</sub> &lt; 25&percnt; for 15 min)</i>.</li>
+</ol>
+<p>It is noted that the time duration and the percentage can be adjusted according to different projects.</p>
+<p>This control logic is provided by Jeff Stein via email communication.</p>
+</html>",       revisions="<html>
+<ul>
+<li>August 16, 2018, by Yangyang Fu:<br> 
+Improve documentation. 
+</li>
+<li>June 12, 2018, by Xing Lu:<br>
+First implementation. 
+</li>
+</ul>
+</html>"),Diagram(coordinateSystem(extent={{-100,-100},{100,100}})),
+          Icon(coordinateSystem(extent={{-100,-100},{100,100}})),
+          __Dymola_Commands);
+      end StageLoadBasedChiller;
+
+      model StagePump "Staging control for CHW pumps"
+        extends Modelica.Blocks.Icons.Block;
+        parameter Modelica.SIunits.MassFlowRate m_flow_nominal
+          "Nominal mass flow rate of the CHW pump";
+        parameter Integer numPum=2 "Design number of pumps";
+        parameter Real staUpThr = 0.85 "Staging up threshold";
+        parameter Real staDowThr = 0.45 "Staging down threshold";
+        parameter Modelica.SIunits.Time waiTimStaUp=300
+          "Time duration of for staging up";
+        parameter Modelica.SIunits.Time waiTimStaDow=300
+          "Time duration of for staging down";
+        parameter Modelica.SIunits.Time shoCycTim=1200
+          "Time duration to avoid short cycling of equipment";
+        Modelica.Blocks.Interfaces.RealInput masFloPum
+          "Average mass flowrate of the active CHW pump"
+          annotation (Placement(transformation(extent={{-140,
+                  -60},{-100,-20}}),
+              iconTransformation(extent={{-140,-60},{-100,
+                  -20}})));
+
+        inner Modelica.StateGraph.StateGraphRoot stateGraphRoot
+          annotation (Placement(transformation(extent={{-100,80},{-80,100}})));
+
+        Modelica.Blocks.Sources.BooleanExpression unOcc(y=uOpeMod
+               == Integer(FiveZone.Types.CoolingModes.Off))
+          "Unoccupied or FreeCooling mode"
+          annotation (Placement(transformation(extent={{-90,10},{-70,30}})));
+        Buildings.Controls.OBC.CDL.Logical.Switch swi1
+          annotation (Placement(transformation(extent={{-20,10},{0,30}})));
+        Buildings.Controls.OBC.CDL.Continuous.Sources.Constant zer(k=0) "Zero"
+          annotation (Placement(transformation(extent={{-60,40},{-40,60}})));
+        Buildings.Controls.OBC.CDL.Conversions.RealToInteger reaToInt
+          annotation (Placement(transformation(extent={{10,10},{30,30}})));
+        BaseClasses.SequenceSignal seqSig(n=numPum)
+          "Simple model that is used to determine the on and off sequence of equipment"
+          annotation (Placement(transformation(extent={{50,10},{70,30}})));
+        BaseClasses.Stage sta(
+          shoCycTim=shoCycTim,
+          waiTimStaUp=waiTimStaUp,
+          waiTimStaDow=waiTimStaDow,
+          staUpThr=staUpThr*m_flow_nominal,
+          staDowThr=staDowThr*m_flow_nominal)
+          annotation (Placement(transformation(extent={{-20,-54},{0,-34}})));
+        Buildings.Controls.OBC.CDL.Conversions.IntegerToReal intToRea1
+          annotation (Placement(transformation(extent={{12,-54},{32,-34}})));
+        Modelica.Blocks.Interfaces.RealOutput y[numPum]
+          "On and off signal of pumps"
+          annotation (Placement(transformation(extent={{100,-50},{120,-30}})));
+        Buildings.Controls.OBC.CDL.Interfaces.IntegerOutput yPum
+          "Number of active pumps"
+          annotation (Placement(transformation(extent={{100,30},{120,50}}),
+              iconTransformation(extent={{100,30},{120,50}})));
+        Modelica.Blocks.Interfaces.IntegerInput uOpeMod
+          "Cooling mode in WSEControls.Type.OperationaModes" annotation (Placement(
+              transformation(extent={{-140,20},{-100,60}}),  iconTransformation(
+                extent={{-140,20},{-100,60}})));
+        Buildings.Controls.OBC.CDL.Logical.Not not2
+          annotation (Placement(transformation(extent={{-60,-30},{-40,-10}})));
+      equation
+        connect(zer.y,swi1. u1) annotation (Line(points={{-38,50},{-30,50},{-30,28},{-22,
+                28}},    color={0,0,127}));
+        connect(unOcc.y,swi1. u2)
+          annotation (Line(points={{-69,20},{-22,20}}, color={255,0,255}));
+        connect(swi1.y,reaToInt. u)
+          annotation (Line(points={{2,20},{8,20}}, color={0,0,127}));
+        connect(reaToInt.y,seqSig. u)
+          annotation (Line(points={{32,20},{48,20}}, color={255,127,0}));
+        connect(reaToInt.y,yPum)  annotation (Line(points={{32,20},{40,20},{40,40},{110,
+                40}}, color={255,127,0}));
+        connect(seqSig.y,y)  annotation (Line(points={{71,20},{80,20},{80,-40},{110,-40}},
+              color={0,0,127}));
+        connect(sta.ySta,intToRea1. u)
+          annotation (Line(points={{1,-44},{10,-44}},    color={255,127,0}));
+        connect(masFloPum, sta.u) annotation (Line(
+              points={{-120,-40},{-22,-40}},
+                       color={0,0,127}));
+        connect(unOcc.y, not2.u) annotation (Line(points={{-69,20},{-66,20},{-66,-20},
+                {-62,-20}}, color={255,0,255}));
+        connect(not2.y, sta.on) annotation (Line(points={{-38,-20},{-30,-20},{-30,-48},
+                {-22,-48}}, color={255,0,255}));
+        connect(intToRea1.y, swi1.u3) annotation (Line(points={{34,-44},{40,-44},{40,0},
+                {-30,0},{-30,12},{-22,12}},    color={0,0,127}));
+        annotation (defaultComponentName="staPum",
+        Documentation(info="<html>
+<p>This model describes a chilled water pump staging control. </p>
+<ul>
+<li>In unoccupied and free cooling mode, the chillers are off. </li>
+<li>In pre-partial, partial and full mechanical cooling mode, the chilled water pumps are staged based on measured flowrate. At the beginning, the number of pumps stay unchanged from previous operating mode. </li>
+</ul>
+<h4>Flowrate-based Stage Control </h4>
+<p>The CHW pumps are staged up when </p>
+<ol>
+<li>Current stage has been active for at least 15 minutes (<i><span style=\"font-size: 10pt;\">△</span>t<sub>stage,on</sub> &gt; 15 min) </i>and </li>
+<li>The measured flowrate is larger than 85&percnt; of the total nominal flowrate of the active pumps for 2 minutes <i>(m<sub>CHWP</sub> &gt; 85&percnt; &middot; m<sub>CHWP,nominal</sub> for 2 min)</i>.</li>
+</ol>
+<p>The CHW pumps are staged down when</p>
+<ol>
+<li>Current stage has been active for at least 15 minutes (<i><span style=\"font-size: 10pt;\">△</span>t<sub>stage,on</sub> &gt; 15 min) </i>and</li>
+<li>The measured flowrate is less than 45&percnt; of the total nominal flowrate of the active pumps for 15 minutes <i>(m<sub>CHWP</sub> &lt; 45&percnt; &middot; m<sub>CHWP,nominal </sub>for 15 min)</i>.</li>
+</ol>
+<p>This control logic is provided by Jeff Stein via email communication.</p>
+</html>",       revisions="<html>
+<ul>
+<li>June 14, 2018, by Xing Lu:<br>First implementation. </li>
+</ul>
+</html>"),Diagram(coordinateSystem(extent={{-100,-100},{100,100}})),
+          Icon(coordinateSystem(extent={{-100,-100},{100,100}})),
+          __Dymola_Commands);
+      end StagePump;
+
+      model TemperatureDifferentialPressureReset
+        "CHWST and CHW DP reset control for chillers"
+        extends Modelica.Blocks.Icons.Block;
+        parameter Modelica.SIunits.Time samplePeriod=120 "Sample period of component";
+        parameter Real uTri=0 "Value to triggering the request for actuator";
+        parameter Real yEqu0=0 "y setpoint when equipment starts";
+        parameter Real yDec=-0.03 "y decrement (must be negative)";
+        parameter Real yInc=0.03 "y increment (must be positive)";
+        parameter Real x1=0.5 "First interval [x0, x1] and second interval (x1, x2]"
+        annotation(Dialog(tab="Pressure and temperature reset points"));
+        parameter Modelica.SIunits.Pressure dpMin = 100 "dpmin"
+        annotation(Dialog(tab="Pressure and temperature reset points"));
+        parameter Modelica.SIunits.Pressure dpMax =  300 "dpmax"
+        annotation(Dialog(tab="Pressure and temperature reset points"));
+        parameter Modelica.SIunits.ThermodynamicTemperature TMin=273.15+5.56 "Tchi,min"
+        annotation(Dialog(tab="Pressure and temperature reset points"));
+        parameter Modelica.SIunits.ThermodynamicTemperature TMax = 273.15+22 "Tchi,max"
+        annotation(Dialog(tab="Pressure and temperature reset points"));
+        parameter Modelica.SIunits.Time startTime=0 "First sample time instant";
+
+        Modelica.Blocks.Interfaces.RealInput u
+          "Input signall, such as dT, or valve position"
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+        BaseClasses.LinearPiecewiseTwo linPieTwo(
+          x0=0,
+          x1=x1,
+          x2=1,
+          y10=dpMin,
+          y11=dpMax,
+          y20=TMax,
+          y21=TMin)
+          "Calculation of two piecewise linear functions"
+          annotation (Placement(transformation(extent={{20,-10},{40,10}})));
+
+        Modelica.Blocks.Interfaces.RealOutput dpSet(
+          final quantity="Pressure",
+          final unit = "Pa") "DP setpoint"
+          annotation (Placement(transformation(extent={{100,40},{120,60}}),
+              iconTransformation(extent={{100,40},{120,60}})));
+        Modelica.Blocks.Interfaces.RealOutput TSet(
+          final quantity="ThermodynamicTemperature",
+          final unit="K")
+          "CHWST"
+          annotation (Placement(transformation(extent={{100,-60},{120,-40}}),
+              iconTransformation(extent={{100,-60},{120,-40}})));
+        BaseClasses.TrimAndRespond triAndRes(
+          samplePeriod=samplePeriod,
+          startTime=startTime,
+          uTri=uTri,
+          yEqu0=yEqu0,
+          yDec=yDec,
+          yInc=yInc)
+          annotation (Placement(transformation(extent={{-40,-10},{-20,10}})));
+
+        Modelica.Blocks.Logical.Switch swi1 "Switch"
+          annotation (Placement(transformation(extent={{60,70},{80,90}})));
+        Modelica.Blocks.Sources.RealExpression dpSetIni(y=dpMin)
+          "Initial dp setpoint"
+          annotation (Placement(transformation(extent={{-20,80},{0,100}})));
+        Modelica.Blocks.Sources.RealExpression TSetIni(y=TMin)
+          "Initial temperature setpoint"
+          annotation (Placement(transformation(extent={{-20,-88},{0,-68}})));
+        Modelica.Blocks.Logical.Switch swi2 "Switch"
+          annotation (Placement(transformation(extent={{60,-80},{80,-60}})));
+        Modelica.Blocks.Interfaces.IntegerInput uOpeMod
+          "Cooling mode in WSEControls.Type.OperationaModes" annotation (Placement(
+              transformation(extent={{-140,40},{-100,80}}),  iconTransformation(
+                extent={{-140,40},{-100,80}})));
+        Buildings.Controls.OBC.CDL.Integers.GreaterThreshold intGreThr(threshold=
+              Integer(Buildings.Applications.DataCenters.Types.CoolingModes.FreeCooling))
+          annotation (Placement(transformation(extent={{-60,50},{-40,70}})));
+      equation
+
+        connect(triAndRes.y, linPieTwo.u)
+          annotation (Line(points={{-19,0},{18,0}}, color={0,0,127}));
+        connect(uOpeMod, intGreThr.u)
+          annotation (Line(points={{-120,60},{-62,60}}, color={255,127,0}));
+        connect(intGreThr.y, swi1.u2) annotation (Line(points={{-38,60},{50,60},{50,
+                80},{58,80}}, color={255,0,255}));
+        connect(intGreThr.y, swi2.u2) annotation (Line(points={{-38,60},{50,60},{50,
+                -70},{58,-70}}, color={255,0,255}));
+        connect(linPieTwo.y[1], swi1.u1) annotation (Line(points={{41,-0.5},{48,-0.5},
+                {48,88},{58,88}}, color={0,0,127}));
+        connect(dpSetIni.y, swi1.u3) annotation (Line(points={{1,90},{46,90},{46,72},
+                {58,72}}, color={0,0,127}));
+        connect(linPieTwo.y[2], swi2.u1) annotation (Line(points={{41,0.5},{52,0.5},{
+                52,-62},{58,-62}}, color={0,0,127}));
+        connect(TSetIni.y, swi2.u3)
+          annotation (Line(points={{1,-78},{58,-78}}, color={0,0,127}));
+        connect(swi1.y, dpSet) annotation (Line(points={{81,80},{90,80},{90,50},{110,
+                50}}, color={0,0,127}));
+        connect(swi2.y, TSet) annotation (Line(points={{81,-70},{90,-70},{90,-50},{
+                110,-50}}, color={0,0,127}));
+        connect(u, triAndRes.u)
+          annotation (Line(points={{-120,0},{-42,0}}, color={0,0,127}));
+        annotation (defaultComponentName="temDifPreRes",
+          Documentation(info="<html>
+<p>This model describes a chilled water supply temperature setpoint and differential pressure setpoint reset control. In this logic, it is to first increase the different pressure, <i>&Delta;p</i>, of the chilled water loop to increase the mass flow rate. If <i>&Delta;p</i> reaches the maximum value and further cooling is still needed, the chiller remperature setpoint, <i>T<sub>chi,set</i></sub>, is reduced. If there is too much cooling, the <i>T<sub>chi,set</i></sub> and <i>&Delta;p</i> will be changed in the reverse direction. </p>
+<p>The model implements a discrete time trim and respond logic as follows: </p>
+<ul>
+<li>A cooling request is triggered if the input signal, <i>y</i>, is larger than 0. <i>y</i> is the difference between the actual and set temperature of the suppuly air to the data center room.</li>
+<li>The request is sampled every 2 minutes. If there is a cooling request, the control signal <i>u</i> is increased by <i>0.03</i>, where <i>0 &le; u &le; 1</i>. If there is no cooling request, <i>u</i> is decreased by <i>0.03</i>. </li>
+</ul>
+<p>The control signal <i>u</i> is converted to setpoints for <i>&Delta;p</i> and <i>T<sub>chi,set</i></sub> as follows: </p>
+<ul>
+<li>If <i>u &isin; [0, x]</i> then <i>&Delta;p = &Delta;p<sub>min</sub> + u &nbsp;(&Delta;p<sub>max</sub>-&Delta;p<sub>min</sub>)/x</i> and <i>T = T<sub>max</i></sub></li>
+<li>If <i>u &isin; (x, 1]</i> then <i>&Delta;p = &Delta;p<sub>max</i></sub> and <i>T = T<sub>max</sub> - (u-x)&nbsp;(T<sub>max</sub>-T<sub>min</sub>)/(1-x) </i></li>
+</ul>
+<p>where <i>&Delta;p<sub>min</i></sub> and <i>&Delta;p<sub>max</i></sub> are minimum and maximum values for <i>&Delta;p</i>, and <i>T<sub>min</i></sub> and <i>T<sub>max</i></sub> are the minimum and maximum values for <i>T<sub>chi,set</i></sub>. </p>
+<p>Note that we deactivate the trim and response when the chillers are off.</p>
+
+<h4>Reference</h4>
+<p>Stein, J. (2009). Waterside Economizing in Data Centers: Design and Control Considerations. ASHRAE Transactions, 115(2), 192-200.</p>
+<p>Taylor, S.T. (2007). Increasing Efficiency with VAV System Static Pressure Setpoint Reset. ASHRAE Journal, June, 24-32. </p>
+</html>",       revisions="<html>
+<ul>
+<li><i>December 19, 2018</i> by Yangyang Fu:<br/>
+        Deactivate reset when chillers are off.
+</li>
+<li><i>June 23, 2018</i> by Xing Lu:<br/>
+        First implementation.
+</li>
+</ul>
+</html>"));
+      end TemperatureDifferentialPressureReset;
+
+      annotation (Documentation(info="<html>
+<p>This package contains a collection of the local controls in the chilled water loop.</p>
+</html>"));
+    end CHWLoopEquipment;
+
+    package CWLoopEquipment "Collection of local controls in the condenser water loop"
+    extends Modelica.Icons.Package;
+
+      model MaximumSpeedFan
+        "The maximum fan speed in cooling towers are reset based on the operation mode"
+          extends Modelica.Blocks.Icons.Block;
+        parameter Real lowMax = 0.9 "Low value of maximum speed";
+        parameter Real pmcMax = 0.95 "Maximum speed in PMC mode";
+        parameter Integer numPum = 2 "Number of design pumps in condenser water loop";
+
+        Modelica.Blocks.Interfaces.IntegerInput uOpeMod
+          "Cooling mode in WSEControls.Type.OperationaModes" annotation (Placement(
+              transformation(extent={{-140,-60},{-100,-20}}),iconTransformation(
+                extent={{-140,-60},{-100,-20}})));
+        Modelica.Blocks.Interfaces.IntegerInput
+                                             numActPum
+          "Number of active pumps in condenser water loop"
+          annotation (Placement(transformation(extent={{-140,20},{-100,60}})));
+        Buildings.Controls.OBC.CDL.Integers.GreaterEqualThreshold intGreEquThr(
+            threshold=numPum)
+          annotation (Placement(transformation(extent={{-80,10},{-60,30}})));
+        Buildings.Controls.OBC.CDL.Logical.Switch swi1
+          annotation (Placement(transformation(extent={{-20,10},{0,30}})));
+        Buildings.Controls.OBC.CDL.Continuous.Sources.Constant lowMaxSpe(k=lowMax)
+          "Low maximum speed"
+          annotation (Placement(transformation(extent={{-80,-30},{-60,-10}})));
+        Buildings.Controls.OBC.CDL.Continuous.Sources.Constant uni(k=1)
+          "full maximum speed"
+          annotation (Placement(transformation(extent={{-80,50},{-60,70}})));
+        Buildings.Controls.OBC.CDL.Logical.Switch swi3
+          annotation (Placement(transformation(extent={{40,-50},{60,-30}})));
+        Modelica.Blocks.Sources.BooleanExpression FreOrFul(y=uOpeMod == Integer(
+              FiveZone.Types.CoolingModes.FreeCooling)
+               or uOpeMod == Integer(FiveZone.Types.CoolingModes.FullMechanical))
+          "Free cooling or full mechanical cooling"
+          annotation (Placement(transformation(extent={{-20,-50},{0,-30}})));
+        Buildings.Controls.OBC.CDL.Interfaces.RealOutput y
+          "Connector of Real output signal"
+          annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+        Buildings.Controls.OBC.CDL.Logical.Switch swi2
+          annotation (Placement(transformation(extent={{-20,-80},{0,-60}})));
+        Buildings.Controls.OBC.CDL.Continuous.Sources.Constant pmcMaxSpe(k=pmcMax)
+          "Maximum speed for pmc and ppmc mode"
+          annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));
+        Modelica.Blocks.Sources.BooleanExpression Pmc(y=uOpeMod == Integer(
+              FiveZone.Types.CoolingModes.PartialMechanical))
+          "Partial mechanical cooling"
+          annotation (Placement(transformation(extent={{-80,-80},{-60,-60}})));
+      equation
+        connect(intGreEquThr.y, swi1.u2)
+          annotation (Line(points={{-58,20},{-22,20}},   color={255,0,255}));
+        connect(numActPum, intGreEquThr.u)
+          annotation (Line(points={{-120,40},{-90,40},{-90,20},{-82,20}},
+                                                          color={255,127,0}));
+        connect(uni.y, swi1.u1) annotation (Line(points={{-58,60},{-40,60},{-40,28},{-22,
+                28}},  color={0,0,127}));
+        connect(lowMaxSpe.y, swi1.u3) annotation (Line(points={{-58,-20},{-40,-20},{-40,
+                12},{-22,12}},   color={0,0,127}));
+        connect(swi1.y, swi3.u1) annotation (Line(points={{2,20},{20,20},{20,-32},{38,
+                -32}}, color={0,0,127}));
+        connect(FreOrFul.y, swi3.u2)
+          annotation (Line(points={{1,-40},{38,-40}}, color={255,0,255}));
+        connect(swi3.y, y) annotation (Line(points={{62,-40},{80,-40},{80,0},{110,0}},
+              color={0,0,127}));
+        connect(pmcMaxSpe.y, swi2.u1) annotation (Line(points={{-58,-50},{-40,-50},{-40,
+                -62},{-22,-62}}, color={0,0,127}));
+        connect(swi2.y, swi3.u3) annotation (Line(points={{2,-70},{20,-70},{20,-48},{38,
+                -48}}, color={0,0,127}));
+        connect(uni.y, swi2.u3) annotation (Line(points={{-58,60},{-40,60},{-40,-78},{
+                -22,-78}}, color={0,0,127}));
+        connect(Pmc.y, swi2.u2)
+          annotation (Line(points={{-59,-70},{-22,-70}}, color={255,0,255}));
+        annotation (defaultComponentName = "maxSpeFan",
+          Documentation(info="<html>
+<p>
+The maximum fan speed in cooling towers is reset based on cooling modes and operation status.
+</p>
+<ul>
+<li>
+When in unoccupied mode, the maximum speed is not reset.
+</li>
+<li>
+When in free cooling mode, if all condenser pumps are enabled, the maximum fan speed is reset to full speed 100%; Otherwise the maximum fan speed is reset to a lower speed, e.g. 90%.
+</li>
+<li>
+When in pre-partial and partial mechanical cooling mode, the maximum fan speed is set to a high speed e.g. 95%.
+</li>
+<li>
+When in full mechanical cooling mode, if all the condenser water pumps are active, the maximum fan speed is reset to full speed 100%; Otherwise it is reset to a lower speed, e.g. 90%.
+</li>
+</ul>
+</html>"));
+      end MaximumSpeedFan;
+
+      model StageCell "Cooling tower cell stage number control"
+        extends Modelica.Blocks.Icons.Block;
+        parameter Integer numCooTow = 2 "Design number of cooling towers";
+        parameter Modelica.SIunits.MassFlowRate m_flow_nominal = 50
+          "Nominal mass flow rate of one cooling tower";
+        parameter Real staUpThr = 1.25 "Staging up threshold";
+        parameter Real staDowThr = 0.55 "Staging down threshold";
+        parameter Modelica.SIunits.Time waiTimStaUp=900
+          "Time duration of for staging up";
+        parameter Modelica.SIunits.Time waiTimStaDow=300
+          "Time duration of for staging down";
+        parameter Modelica.SIunits.Time shoCycTim=1200
+          "Time duration to avoid short cycling of equipment";
+
+        Modelica.Blocks.Interfaces.RealInput aveMasFlo
+          "Average mass flowrate of condenser water in active cooling towers"
+          annotation (Placement(
+              transformation(extent={{-140,-62},{-100,-22}}),iconTransformation(
+                extent={{-140,-62},{-100,-22}})));
+        Modelica.Blocks.Interfaces.IntegerOutput yNumCel
+          "Stage number of next time step" annotation (Placement(transformation(
+                extent={{100,30},{120,50}}), iconTransformation(extent={{100,30},{120,
+                  50}})));
+
+        Modelica.Blocks.Interfaces.IntegerInput minNumCel
+          "Minimum number of active tower cells determined by minimum cell controller"
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}}),
+              iconTransformation(extent={{-140,-20},{-100,20}})));
+        BaseClasses.SequenceSignal seqSig(n=numCooTow)
+          "Simple model that is used to determine the on and off sequence of equipment"
+          annotation (Placement(transformation(extent={{60,-10},{80,10}})));
+        Modelica.Blocks.Interfaces.RealOutput y[numCooTow]
+          "On and off signal of cooling tower cell"
+          annotation (Placement(transformation(extent={{100,-50},{120,-30}})));
+        BaseClasses.Stage sta(
+          staUpThr=staUpThr*m_flow_nominal,
+          staDowThr=staDowThr*m_flow_nominal,
+          waiTimStaUp=waiTimStaUp,
+          waiTimStaDow=waiTimStaDow,
+          shoCycTim=shoCycTim) "Stage controller"
+          annotation (Placement(transformation(extent={{-40,-56},{-20,-36}})));
+        Buildings.Controls.OBC.CDL.Integers.Max maxInt "Max"
+          annotation (Placement(transformation(extent={{-10,-50},{10,-30}})));
+
+        Modelica.Blocks.Interfaces.IntegerInput uOpeMod
+          "Cooling mode in WSEControls.Type.OperationaModes" annotation (Placement(
+              transformation(extent={{-140,20},{-100,60}}),  iconTransformation(
+                extent={{-140,20},{-100,60}})));
+        Buildings.Controls.OBC.CDL.Logical.Switch swi1
+          annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
+        Buildings.Controls.OBC.CDL.Conversions.IntegerToReal intToRea1
+          annotation (Placement(transformation(extent={{22,-50},{42,-30}})));
+        Modelica.Blocks.Sources.BooleanExpression unOcc(y=uOpeMod == Integer(
+              FiveZone.Types.CoolingModes.Off))
+          "Unoccupied mode"
+          annotation (Placement(transformation(extent={{-80,-10},{-60,10}})));
+        Buildings.Controls.OBC.CDL.Continuous.Sources.Constant zer(k=0) "Zero"
+          annotation (Placement(transformation(extent={{-50,20},{-30,40}})));
+        Buildings.Controls.OBC.CDL.Conversions.RealToInteger reaToInt
+          annotation (Placement(transformation(extent={{20,-10},{40,10}})));
+        Buildings.Controls.OBC.CDL.Logical.Not not2
+          annotation (Placement(transformation(extent={{-74,-72},{-54,-52}})));
+      equation
+        connect(seqSig.y, y)
+          annotation (Line(points={{81,0},{90,0},{90,-40},{110,-40}},
+                                                    color={0,0,127}));
+        connect(aveMasFlo, sta.u) annotation (Line(points={{-120,-42},{-42,-42}},
+                          color={0,0,127}));
+        connect(unOcc.y, swi1.u2)
+          annotation (Line(points={{-59,0},{-12,0}}, color={255,0,255}));
+        connect(minNumCel, maxInt.u1) annotation (Line(points={{-120,0},{-92,0},{-92,
+                -20},{-20,-20},{-20,-34},{-12,-34}},
+                                     color={255,127,0}));
+        connect(intToRea1.y, swi1.u3) annotation (Line(points={{44,-40},{50,-40},{50,-16},
+                {-40,-16},{-40,-8},{-12,-8}},      color={0,0,127}));
+        connect(zer.y, swi1.u1) annotation (Line(points={{-28,30},{-20,30},{-20,8},{-12,
+                8}},     color={0,0,127}));
+        connect(seqSig.u, reaToInt.y)
+          annotation (Line(points={{58,0},{42,0}}, color={255,127,0}));
+        connect(swi1.y, reaToInt.u)
+          annotation (Line(points={{12,0},{18,0}}, color={0,0,127}));
+        connect(reaToInt.y, yNumCel) annotation (Line(points={{42,0},{50,0},{50,40},{110,
+                40}},     color={255,127,0}));
+        connect(sta.ySta, maxInt.u2) annotation (Line(points={{-19,-46},{-12,-46}},
+                                     color={255,127,0}));
+        connect(maxInt.y, intToRea1.u) annotation (Line(points={{12,-40},{20,-40}},
+                               color={255,127,0}));
+        connect(unOcc.y, not2.u) annotation (Line(points={{-59,0},{-50,0},{-50,-18},{
+                -80,-18},{-80,-62},{-76,-62}}, color={255,0,255}));
+        connect(not2.y, sta.on) annotation (Line(points={{-52,-62},{-48,-62},{-48,-50},
+                {-42,-50}}, color={255,0,255}));
+        annotation (defaultComponentName = "staCel",
+          Documentation(info="<html>
+<p>The cooling tower cell staging control is based on the water flowrate going through the cooling tower under the operation mode except the unoccuiped mode.  In the unoccupied mode, all the cells are staged off.</p>
+<ul>
+<li>One additional cell stages on if average flowrate through active cells is greater than a stage-up threshold <code>staUpThr*m_flow_nominal</code> for 15 minutes. </li>
+<li>One additional cell stages off if average flowrate through active cells is lower than a stage-down threshold <code>staDowThr*m_flow_nominal</code> for 5 minutes. </li>
+</ul>
+</html>",       revisions=""),
+          Diagram(coordinateSystem(extent={{-100,-80},{100,80}})),
+          __Dymola_Commands);
+      end StageCell;
+
+      model SpeedFan "Cooling tower fan speed control"
+        extends Modelica.Blocks.Icons.Block;
+
+        parameter Modelica.Blocks.Types.SimpleController controllerType=
+          Modelica.Blocks.Types.SimpleController.PID
+          "Type of controller"
+          annotation(Dialog(tab="Controller"));
+        parameter Real k = 1
+          "Gain of controller"
+          annotation(Dialog(tab="Controller"));
+        parameter Modelica.SIunits.Time Ti=0.5
+          "Time constant of integrator block"
+           annotation (Dialog(enable=
+                (controllerType == Modelica.Blocks.Types.SimpleController.PI or
+                controllerType == Modelica.Blocks.Types.SimpleController.PID),tab="Controller"));
+        parameter Modelica.SIunits.Time Td(min=0)=0.1
+          "Time constant of derivative block"
+           annotation (Dialog(enable=
+                (controllerType == Modelica.Blocks.Types.SimpleController.PD or
+                controllerType == Modelica.Blocks.Types.SimpleController.PID),tab="Controller"));
+        parameter Real yMax(start=1)=1
+         "Upper limit of output"
+          annotation(Dialog(tab="Controller"));
+        parameter Real yMin=0.2
+         "Lower limit of output"
+          annotation(Dialog(tab="Controller"));
+        parameter Boolean reverseAction = true
+          "Set to true for throttling the water flow rate through a cooling coil controller"
+          annotation(Dialog(tab="Controller"));
+        parameter Boolean pre_y_start=false "Value of pre(y) at initial time"
+          annotation(Dialog(tab="Controller"));
+
+        Modelica.Blocks.Interfaces.RealInput TCHWSupSet(
+          final quantity="ThermodynamicTemperature",
+          final unit="K",
+          displayUnit="degC") "Chilled water supply temperature setpoint"
+          annotation (Placement(transformation(extent={{-140,40},{-100,80}}),
+              iconTransformation(extent={{-140,40},{-100,80}})));
+        Modelica.Blocks.Interfaces.RealInput TCWSupSet(
+          final quantity="ThermodynamicTemperature",
+          final unit="K",
+          displayUnit="degC") "Condenser water supply temperature setpoint"
+          annotation (Placement(transformation(extent={{-140,0},{-100,40}}),
+              iconTransformation(extent={{-140,0},{-100,40}})));
+        Modelica.Blocks.Interfaces.RealInput TCHWSup(
+          final quantity="ThermodynamicTemperature",
+          final unit="K",
+          displayUnit="degC") "Chilled water supply temperature " annotation (
+            Placement(transformation(
+              extent={{-20,-20},{20,20}},
+              origin={-120,-20}), iconTransformation(extent={{-140,-40},{-100,0}})));
+        Buildings.Controls.Continuous.LimPID conPID(
+          controllerType=controllerType,
+          k=k,
+          Ti=Ti,
+          Td=Td,
+          yMax=yMax,
+          yMin=yMin,
+          reverseAction=reverseAction,
+          initType=Modelica.Blocks.Types.InitPID.DoNotUse_InitialIntegratorState,
+          y_reset=1) "PID controller to maintain the CW/CHW supply temperature"
+          annotation (Placement(transformation(extent={{0,-40},{20,-20}})));
+        Modelica.Blocks.Interfaces.RealInput TCWSup(
+          final quantity="ThermodynamicTemperature",
+          final unit="K",
+          displayUnit="degC") "Condenser water supply temperature " annotation (
+            Placement(transformation(
+              extent={{20,20},{-20,-20}},
+              rotation=180,
+              origin={-120,-60}), iconTransformation(
+              extent={{20,20},{-20,-20}},
+              rotation=180,
+              origin={-120,-60})));
+
+        Modelica.Blocks.Sources.Constant off(k=0) "Turn off"
+          annotation (Placement(transformation(extent={{0,20},{20,40}})));
+        Modelica.Blocks.Sources.BooleanExpression unOcc(y=uOpeMod == Integer(
+              FiveZone.Types.CoolingModes.Off))
+          "Unoccupied mode"
+          annotation (Placement(transformation(extent={{0,-10},{20,10}})));
+        Modelica.Blocks.Sources.BooleanExpression freCoo(y=uOpeMod == Integer(
+              FiveZone.Types.CoolingModes.FreeCooling))
+          "Free cooling"
+          annotation (Placement(transformation(extent={{-90,50},{-70,70}})));
+        Modelica.Blocks.Interfaces.IntegerInput uOpeMod "Cooling mode" annotation (
+            Placement(transformation(extent={{-140,80},{-100,120}}),
+              iconTransformation(extent={{-140,80},{-100,120}})));
+        Modelica.Blocks.Interfaces.RealInput uFanMax "Maximum fan speed"
+          annotation (Placement(transformation(extent={{-140,-120},{-100,-80}}),
+              iconTransformation(extent={{-140,-120},{-100,-80}})));
+        Modelica.Blocks.Interfaces.RealOutput y "Cooling tower fan speed"
+          annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+        Modelica.Blocks.Math.Min min "Minum value"
+          annotation (Placement(transformation(extent={{72,-10},{92,10}})));
+
+      protected
+        Modelica.Blocks.Logical.Switch swi1
+          "The switch based on whether it is in FMC mode"
+          annotation (Placement(transformation(extent={{-38,50},{-18,70}})));
+        Modelica.Blocks.Logical.Switch swi2
+          "The switch based on whether it is in the FMC mode"
+          annotation (Placement(transformation(extent={{-10,-10},{10,10}},
+              origin={-30,-52})));
+        Modelica.Blocks.Logical.Switch swi3
+          "The switch based on whether it is in PMC mode"
+          annotation (Placement(transformation(extent={{-10,-10},{10,10}},
+              origin={50,0})));
+
+        Modelica.Blocks.Logical.Switch swi4
+          "The switch based on whether it is in PMC mode"
+          annotation (Placement(transformation(extent={{-10,-10},{10,10}},
+              origin={50,70})));
+      public
+        Buildings.Controls.OBC.CDL.Logical.OnOffController onOffCon(
+                         final pre_y_start=pre_y_start, final bandwidth=0.5)
+                                         "Electric heater on-off controller"
+          annotation (Placement(transformation(extent={{-20,94},{0,114}})));
+        Buildings.Controls.OBC.CDL.Continuous.Sources.Constant froTem(k=273.15)
+          "Frozen temperature"
+          annotation (Placement(transformation(extent={{-80,100},{-60,120}})));
+      equation
+        connect(swi1.y, conPID.u_s)
+          annotation (Line(points={{-17,60},{-10,60},{-10,-30},{-2,-30}},
+                       color={0,0,127}));
+        connect(swi2.y, conPID.u_m)
+          annotation (Line(points={{-19,-52},{10,-52},{10,-42}}, color={0,0,127}));
+        connect(unOcc.y, swi3.u2)
+          annotation (Line(points={{21,0},{38,0}}, color={255,0,255}));
+        connect(off.y, swi3.u1)
+          annotation (Line(points={{21,30},{30,30},{30,8},{38,8}}, color={0,0,127}));
+        connect(conPID.y, swi3.u3)
+          annotation (Line(points={{21,-30},{30,-30},{30,-8},{38,-8}},
+                          color={0,0,127}));
+        connect(swi3.y, min.u1)
+          annotation (Line(points={{61,0},{66,0},{66,6},{70,6}}, color={0,0,127}));
+        connect(min.u2,uFanMax)  annotation (Line(points={{70,-6},{64,-6},{64,-100},{-120,
+                -100}}, color={0,0,127}));
+        connect(TCHWSupSet, swi1.u1) annotation (Line(points={{-120,60},{-94,60},{-94,
+                80},{-50,80},{-50,68},{-40,68}},
+                               color={0,0,127}));
+        connect(TCWSupSet, swi1.u3) annotation (Line(points={{-120,20},{-50,20},{-50,52},
+                {-40,52}}, color={0,0,127}));
+        connect(TCHWSup, swi2.u1) annotation (Line(points={{-120,-20},{-50,-20},{-50,-44},
+                {-42,-44}}, color={0,0,127}));
+        connect(TCWSup, swi2.u3)
+          annotation (Line(points={{-120,-60},{-42,-60}}, color={0,0,127}));
+        connect(freCoo.y, swi1.u2)
+          annotation (Line(points={{-69,60},{-40,60}}, color={255,0,255}));
+        connect(freCoo.y, swi2.u2) annotation (Line(points={{-69,60},{-60,60},{-60,-52},
+                {-42,-52}}, color={255,0,255}));
+        connect(off.y, swi4.u1) annotation (Line(points={{21,30},{30,30},{30,78},{38,
+                78}}, color={0,0,127}));
+        connect(min.y, swi4.u3) annotation (Line(points={{93,0},{96,0},{96,46},{32,46},
+                {32,62},{38,62}}, color={0,0,127}));
+        connect(swi4.y, y) annotation (Line(points={{61,70},{98,70},{98,0},{110,0}},
+              color={0,0,127}));
+        connect(froTem.y, onOffCon.reference)
+          annotation (Line(points={{-58,110},{-22,110}}, color={0,0,127}));
+        connect(TCWSup, onOffCon.u) annotation (Line(points={{-120,-60},{-94,-60},{-94,
+                82},{-50,82},{-50,98},{-22,98}}, color={0,0,127}));
+        connect(onOffCon.y, swi4.u2) annotation (Line(points={{2,104},{26,104},{26,70},
+                {38,70}}, color={255,0,255}));
+        annotation (defaultComponentName = "speFan",
+        Documentation(info="<html>
+<p>
+Cooling tower fan speed is controlled in different ways when operation mode changes.
+</p>
+<ul>
+<li>
+For unoccupied operation mode, the fan is turned off.
+</li>
+<li>
+For free cooling mode, the fan speed is controlled to maintain a predefined chilled water supply temperature at the downstream of the economizer, 
+and not exceed the predefined maximum fan
+speed. 
+</li>
+<li>
+For pre-partial, partial and full mechanical cooling, the fan speed is controlled to maintain the supply condenser water at its setpoint. 
+</li>
+</ul>
+</html>",       revisions=""),
+          Diagram(coordinateSystem(extent={{-100,-120},{100,120}})));
+      end SpeedFan;
+
+      model SpeedPump "Pump speed control in condenser water loop"
+        extends Modelica.Blocks.Icons.Block;
+        parameter Modelica.SIunits.Pressure dpSetDes "Differential pressure setpoint at design condition ";
+
+        parameter Modelica.Blocks.Types.SimpleController controllerType=Modelica.Blocks.Types.SimpleController.PID
+          "Type of controller";
+        parameter Real k=1 "Gain of controller";
+        parameter Modelica.SIunits.Time Ti=0.5 "Time constant of Integrator block";
+        parameter Modelica.SIunits.Time Td=0.1 "Time constant of Derivative block";
+        parameter Real yMax=1 "Upper limit of output";
+        parameter Real yMin=0.4 "Lower limit of output";
+        parameter Boolean reverseAction=false
+          "Set to true for throttling the water flow rate through a cooling coil controller";
+        Modelica.Blocks.Interfaces.RealInput uLoa
+          "Percentage of load in chillers (total loads divided by nominal capacity of all operating chillers)"
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}}),
+              iconTransformation(extent={{-140,-20},{-100,20}})));
+        Modelica.Blocks.Interfaces.IntegerInput uOpeMod
+          "Cooling mode in WSEControls.Type.OperationaModes" annotation (Placement(
+              transformation(extent={{-140,60},{-100,100}}), iconTransformation(
+                extent={{-140,60},{-100,100}})));
+        Modelica.Blocks.Interfaces.RealInput uSpeTow "Speed of cooling tower fans"
+          annotation (Placement(transformation(extent={{-140,20},{-100,60}}),
+              iconTransformation(extent={{-140,20},{-100,60}})));
+        Buildings.Controls.OBC.CDL.Continuous.Sources.Constant minPumSpe(k=yMin)
+          "Minimum pump speed"
+          annotation (Placement(transformation(extent={{-80,50},{-60,70}})));
+        Buildings.Controls.OBC.CDL.Continuous.Sources.Constant zer(k=0) "Zero"
+          annotation (Placement(transformation(extent={{32,40},{52,60}})));
+        Modelica.Blocks.Sources.BooleanExpression notOcc(y=uOpeMod == Integer(
+              FiveZone.Types.CoolingModes.Off))
+          "Not occupied"
+          annotation (Placement(transformation(extent={{32,10},{52,30}})));
+        Buildings.Controls.OBC.CDL.Logical.Switch swi
+          annotation (Placement(transformation(extent={{70,-10},{90,10}})));
+        Buildings.Controls.OBC.CDL.Continuous.Max max
+          annotation (Placement(transformation(extent={{-32,20},{-12,40}})));
+        Buildings.Controls.OBC.CDL.Logical.Switch swi1
+          annotation (Placement(transformation(extent={{32,-18},{52,2}})));
+        Modelica.Blocks.Sources.BooleanExpression freCoo(y=uOpeMod == Integer(
+              FiveZone.Types.CoolingModes.FreeCooling))
+          "Free cooling"
+          annotation (Placement(transformation(extent={{0,-18},{20,2}})));
+        Buildings.Controls.Continuous.LimPID con(
+          controllerType=controllerType,
+          k=k,
+          Ti=Ti,
+          Td=Td,
+          yMax=yMax,
+          yMin=yMin,
+          reverseAction=reverseAction)           "PID controller"
+          annotation (Placement(transformation(extent={{-40,-60},{-20,-40}})));
+        Modelica.Blocks.Interfaces.RealInput dpSet "Differential pressure setpoint"
+          annotation (Placement(transformation(extent={{-140,-60},{-100,-20}}),
+              iconTransformation(extent={{-140,-60},{-100,-20}})));
+        Modelica.Blocks.Interfaces.RealInput dpMea
+          "Differential pressure measurement"
+          annotation (Placement(transformation(extent={{-140,-100},{-100,-60}}),
+              iconTransformation(extent={{-140,-100},{-100,-60}})));
+        Buildings.Controls.OBC.CDL.Continuous.Gain gai1(k=1/dpSetDes)
+          annotation (Placement(transformation(extent={{-80,-40},{-60,-20}})));
+        Buildings.Controls.OBC.CDL.Continuous.Gain gai2(k=1/dpSetDes)
+          annotation (Placement(transformation(extent={{-80,-90},{-60,-70}})));
+        Buildings.Utilities.Math.Max max2(nin=3)
+          annotation (Placement(transformation(extent={{0,-50},{20,-30}})));
+
+        Buildings.Controls.OBC.CDL.Interfaces.RealOutput y "Speed signal"
+          annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+      equation
+        connect(notOcc.y, swi.u2) annotation (Line(points={{53,20},{58,20},{58,0},{68,
+                0}},  color={255,0,255}));
+        connect(zer.y, swi.u1) annotation (Line(points={{54,50},{60,50},{60,8},{68,8}},
+              color={0,0,127}));
+        connect(minPumSpe.y,max. u1) annotation (Line(points={{-58,60},{-50,60},{-50,36},
+                {-34,36}}, color={0,0,127}));
+        connect(uSpeTow,max. u2) annotation (Line(points={{-120,40},{-86,40},{-86,24},
+                {-34,24}}, color={0,0,127}));
+        connect(max.y, swi1.u1) annotation (Line(points={{-10,30},{20,30},{20,0},{30,0}},
+              color={0,0,127}));
+        connect(freCoo.y, swi1.u2) annotation (Line(points={{21,-8},{30,-8}},
+                      color={255,0,255}));
+        connect(gai1.y, con.u_s) annotation (Line(points={{-58,-30},{-50,-30},{-50,-50},
+                {-42,-50}}, color={0,0,127}));
+        connect(dpSet, gai1.u)
+          annotation (Line(points={{-120,-40},{-90,-40},{-90,-30},{-82,-30}},
+                                                          color={0,0,127}));
+        connect(dpMea, gai2.u) annotation (Line(points={{-120,-80},{-102,-80},{-102,
+                -80},{-82,-80}},
+                            color={0,0,127}));
+        connect(gai2.y, con.u_m)
+          annotation (Line(points={{-58,-80},{-30,-80},{-30,-62}}, color={0,0,127}));
+        connect(minPumSpe.y,max2. u[1]) annotation (Line(points={{-58,60},{-50,
+                60},{-50,-18},{-14,-18},{-14,-41.3333},{-2,-41.3333}},
+                                                          color={0,0,127}));
+        connect(uLoa,max2. u[2]) annotation (Line(points={{-120,0},{-52,0},{-52,-20},
+                {-16,-20},{-16,-40},{-2,-40}},color={0,0,127}));
+        connect(con.y,max2. u[3]) annotation (Line(points={{-19,-50},{-12,-50},
+                {-12,-38.6667},{-2,-38.6667}},
+                                color={0,0,127}));
+        connect(max2.y, swi1.u3) annotation (Line(points={{21,-40},{24,-40},{24,-16},
+                {30,-16}},
+                      color={0,0,127}));
+        connect(swi1.y, swi.u3) annotation (Line(points={{54,-8},{68,-8}},
+              color={0,0,127}));
+        connect(swi.y, y) annotation (Line(points={{92,0},{110,0}}, color={0,0,127}));
+        annotation (defaultComponentName="spePum", Diagram(
+              coordinateSystem(preserveAspectRatio=false)),
+          Documentation(info="<html>
+<p>
+Condenser water pump speed control is different in different operation modes.
+</p>
+<ul>
+<li>
+For unoccupied operation mode, the pump is turned off.
+</li>
+<li>
+For free cooling mode, the condenser water pump speed is equal to a high signal select of a PID loop output and a minimum speed (e.g. 40%). The PID loop outputs the cooling tower
+fan speed signal to maintain chilled water supply temperature at its setpoint. 
+</li>
+<li>
+For pre-partial, partial and full mechanical cooling, the condenser water pump speed is equal to a high signal select of the following three: (1) a minimum speed (e.g. 40%); (2) highest chiller percentage load; 
+(3) CW system differential pressure PID output signal. 
+</li>
+</ul>
+</html>"));
+      end SpeedPump;
+
+      model SupplyTemperatureReset
+        "Cooling tower supply temperature setpoint reset"
+        extends Modelica.Blocks.Icons.Block;
+        parameter Modelica.SIunits.ThermodynamicTemperature TSetMinFulMec = 273.15 + 12.78
+        "Minimum cooling tower supply temperature setpoint for full mechanical cooling";
+        parameter Modelica.SIunits.ThermodynamicTemperature TSetMaxFulMec = 273.15 + 35
+        "Maximum cooling tower supply temperature setpoint for full mechanical cooling";
+        parameter Modelica.SIunits.ThermodynamicTemperature TSetParMec = 273.15 + 10
+        "Cooling tower supply temperature setpoint for partial mechanical cooling";
+        Modelica.Blocks.Interfaces.IntegerInput uOpeMod
+          "Cooling mode signal, integer value of WSEControlLogics.Controls.WSEControls.Type.OperationModes"
+          annotation (
+            Placement(transformation(extent={{-140,30},{-100,70}}),
+              iconTransformation(extent={{-140,30},{-100,70}})));
+        Modelica.Blocks.Interfaces.RealOutput TSet(
+          final quantity="ThermodynamicTemperature",
+          final unit="K",
+          displayUnit="degC") "Temperature setpoint" annotation (
+           Placement(transformation(extent={{100,-10},{120,10}}), iconTransformation(
+                extent={{100,-10},{120,10}})));
+
+        Modelica.Blocks.Sources.BooleanExpression fmcMod(y=uOpeMod == Integer(
+              FiveZone.Types.CoolingModes.FullMechanical))
+          "Full mechanical cooling mode"
+          annotation (Placement(transformation(extent={{0,-30},{20,-10}})));
+
+        Modelica.Blocks.Interfaces.RealInput TWetBul(
+          final quantity="ThermodynamicTemperature",
+          final unit="K",
+          displayUnit="degC") "Outdoor air wet bulb emperature" annotation (Placement(
+              transformation(extent={{-140,-20},{-100,20}}),iconTransformation(extent={{-140,
+                  -20},{-100,20}})));
+        Modelica.Blocks.Interfaces.RealInput TAppCooTow(
+          final quantity="ThermodynamicTemperature",
+          final unit="K",
+          displayUnit="degC") "Approach temperature in cooling towers" annotation (
+            Placement(transformation(extent={{-140,-70},{-100,-30}}),
+              iconTransformation(extent={{-140,-70},{-100,-30}})));
+        Buildings.Controls.OBC.CDL.Continuous.Add add1 "Addition"
+          annotation (Placement(transformation(extent={{-80,-10},{-60,10}})));
+        Buildings.Controls.OBC.CDL.Continuous.Sources.Constant con1(k(unit="K")=
+            TSetParMec)
+          annotation (Placement(transformation(extent={{0,-68},{20,-48}})));
+
+      protected
+        Modelica.Blocks.Logical.Switch swi1
+          "The switch based on whether it is in FMC"
+          annotation (Placement(transformation(extent={{60,-10},{80,10}})));
+
+      public
+        Modelica.Blocks.Math.Min min
+          annotation (Placement(transformation(extent={{-40,30},{-20,50}})));
+        Modelica.Blocks.Math.Max max
+          annotation (Placement(transformation(extent={{0,0},{20,20}})));
+        Buildings.Controls.OBC.CDL.Continuous.Sources.Constant con2(k(unit="K")=
+            TSetMinFulMec)
+          annotation (Placement(transformation(extent={{-40,-30},{-20,-10}})));
+        Buildings.Controls.OBC.CDL.Continuous.Sources.Constant con3(k(unit="K")=
+            TSetMaxFulMec)
+          annotation (Placement(transformation(extent={{-80,60},{-60,80}})));
+      equation
+        connect(fmcMod.y, swi1.u2)
+          annotation (Line(points={{21,-20},{38,-20},{38,0},{58,0}},
+                                                    color={255,0,255}));
+        connect(swi1.y, TSet)
+          annotation (Line(points={{81,0},{110,0}}, color={0,0,127}));
+        connect(TWetBul, add1.u1) annotation (Line(points={{-120,0},{-94,0},{-94,6},{-82,
+                6}},       color={0,0,127}));
+        connect(TAppCooTow, add1.u2) annotation (Line(points={{-120,-50},{-90,-50},{-90,
+                -6},{-82,-6}},
+                           color={0,0,127}));
+        connect(con1.y, swi1.u3) annotation (Line(points={{22,-58},{40,-58},{40,-8},{58,
+                -8}}, color={0,0,127}));
+        connect(con3.y, min.u1) annotation (Line(points={{-58,70},{-52,70},{-52,46},{-42,
+                46}}, color={0,0,127}));
+        connect(add1.y, min.u2) annotation (Line(points={{-58,0},{-52,0},{-52,34},{-42,
+                34}}, color={0,0,127}));
+        connect(min.y, max.u1) annotation (Line(points={{-19,40},{-12,40},{-12,16},{-2,
+                16}}, color={0,0,127}));
+        connect(con2.y, max.u2) annotation (Line(points={{-18,-20},{-12,-20},{-12,4},{
+                -2,4}}, color={0,0,127}));
+        connect(max.y, swi1.u1)
+          annotation (Line(points={{21,10},{40,10},{40,8},{58,8}}, color={0,0,127}));
+       annotation (defaultComponentName="temRes", Diagram(
+              coordinateSystem(preserveAspectRatio=false)),
+          Documentation(info="<html>
+<p>This model describes a cooling tower supply temperature reset for a chilled water system with integrated waterside economizers.</p>
+<ul>
+<li>When in unoccupied mode, the condenser supply temperature is free floated, and keep unchanged from previous mode</li>
+<li>When in free cooling, the condenser water supply temperature is free floated, and keep unchanged from previous mode</li>
+<li>When in pre-partial, and partial mechanical cooling, the condenser water supply temperature is reset to a predefined value <code>TSetParMec</code>.This could be changed
+based on advanced control algorithm.</li>
+<li>When in full mechanical cooling mode, the condenser water supply temperature is reset according to the environment.
+ <i>T<sub>sup,CW,set</sub> = T<sub>wb,OA</sub> + T<sub>app,pre</sub></i>. T<sub>sup,CW,set</sub> means the supply condenser water temperature setpoint, T<sub>wb,OA</sub>
+is the outdoor air wet bulb temperature, and T<sub>app,pre</sub> is the predicted approach temperature, which could be a fixed or various value.</li>
+</ul>
+</html>"));
+      end SupplyTemperatureReset;
+
+      annotation (Documentation(info="<html>
+<p>This package contains a collection of the local controls in the condenser water loop.</p>
+</html>"));
+    end CWLoopEquipment;
+
+    package BaseClasses "Base classes for local controls of the chilled water system with water economizer"
+
+      model LinearMap "Ratio function"
+        extends Modelica.Blocks.Interfaces.SISO;
+        parameter Boolean use_uInpRef1_in = false "True if use outside values for uInpRef1";
+        parameter Boolean use_uInpRef2_in = false "True if use outside values for uInpRef2";
+        parameter Boolean use_yOutRef1_in = false "True if use outside values for uOutRef1";
+        parameter Boolean use_yOutRef2_in = false "True if use outside values for uOutRef2";
+        parameter Real uInpRef1= 0 "Minimum limit"
+          annotation(Dialog(enable = not use_uInpRef1_in));
+        parameter Real uInpRef2= 1 "Maximum limit"
+          annotation(Dialog(enable = not use_uInpRef2_in));
+        parameter Real yOutRef1= 0 "Minimum limit"
+          annotation(Dialog(enable = not use_yOutRef1_in));
+        parameter Real yOutRef2= 1 "Maximum limit"
+          annotation(Dialog(enable = not use_yOutRef2_in));
+        parameter Real dy= 1e-3 "Transition interval";
+
+        Modelica.Blocks.Interfaces.RealInput uInpRef1_in if use_uInpRef1_in "Connector of Real input signal"
+          annotation (Placement(transformation(extent={{-140,60},{-100,100}})));
+        Modelica.Blocks.Interfaces.RealInput uInpRef2_in if use_uInpRef2_in "Connector of Real input signal"
+          annotation (Placement(transformation(extent={{-140,20},{-100,60}})));
+
+        Modelica.Blocks.Interfaces.RealInput yOutRef2_in if use_yOutRef2_in "Connector of Real input signal"
+          annotation (Placement(transformation(extent={{-140,-100},{-100,-60}})));
+
+        Modelica.Blocks.Interfaces.RealInput yOutRef1_in if use_yOutRef1_in "Connector of Real input signal"
+          annotation (Placement(transformation(extent={{-140,-60},{-100,-20}})));
+
+      protected
+        Real outInt "Intermediate output";
+        Modelica.Blocks.Interfaces.RealInput y1;
+        Modelica.Blocks.Interfaces.RealInput y2;
+        Modelica.Blocks.Interfaces.RealInput u1;
+        Modelica.Blocks.Interfaces.RealInput u2;
+
+      equation
+        connect(u1,uInpRef1_in);
+        connect(u2,uInpRef2_in);
+        connect(y1,yOutRef1_in);
+        connect(y2,yOutRef2_in);
+
+        if not use_uInpRef1_in then
+          u1 = uInpRef1;
+        end if;
+        if not use_uInpRef2_in then
+          u2 = uInpRef2;
+        end if;
+        if not use_yOutRef1_in then
+          y1 = yOutRef1;
+        end if;
+        if not use_yOutRef2_in then
+          y2 = yOutRef2;
+        end if;
+
+        outInt = y1 + (u - u1)*(y2 - y1)/(u2 - u1);
+
+        y=Buildings.Utilities.Math.Functions.smoothLimit(
+                     outInt,min(y1,y2),max(y1,y2),dy);
+
+        annotation (defaultComponentName = "linMap",
+        Icon(graphics={Text(
+              extent={{-98,24},{100,-12}},
+              lineColor={238,46,47},
+                textString="%name")}));
+      end LinearMap;
+
+      block LinearPiecewiseTwo
+        "A two-pieces linear piecewise function"
+        extends Modelica.Blocks.Icons.Block;
+        parameter Real x0 "First interval [x0, x1]";
+        parameter Real x1 "First interval [x0, x1] and second interval (x1, x2]";
+        parameter Real x2 "Second interval (x1, x2]";
+        parameter Real y10 "y[1] at u = x0";
+        parameter Real y11 "y[1] at u = x1";
+        parameter Real y20 "y[2] at u = x1";
+        parameter Real y21 "y[2] at u = x2";
+        Modelica.Blocks.Interfaces.RealInput u "Set point" annotation (extent=[-190,
+              80; -150, 120], Placement(transformation(extent={{-140,-20},{-100,20}})));
+        Modelica.Blocks.Interfaces.RealOutput y[2] "Connectors of Real output signal"
+          annotation (extent=[148, -10; 168, 10], Placement(transformation(extent={{100,-10},
+                  {120,10}})));
+        Buildings.Controls.SetPoints.Table y1Tab(table=[x0, y10; x1, y11; x2, y11])
+          "Table for y[1]"
+          annotation (Placement(transformation(extent={{-40,20},{-20,40}})));
+        Buildings.Controls.SetPoints.Table y2Tab(table=[x0, y20; x1, y20; x2, y21])
+          "Table for y[2]"
+          annotation (Placement(transformation(extent={{-40,-40},{-20,-20}})));
+      equation
+        connect(u, y1Tab.u) annotation (Line(
+            points={{-120,1.11022e-15},{-58,1.11022e-15},{-58,30},{-42,30}},
+            color={0,0,127},
+            smooth=Smooth.None));
+        connect(u, y2Tab.u) annotation (Line(
+            points={{-120,1.11022e-15},{-58,1.11022e-15},{-58,-30},{-42,-30}},
+            color={0,0,127},
+            smooth=Smooth.None));
+        connect(y1Tab.y, y[1]) annotation (Line(
+            points={{-19,30},{26,30},{26,-5},{110,-5}},
+            color={0,0,127},
+            smooth=Smooth.None));
+        connect(y2Tab.y, y[2]) annotation (Line(
+            points={{-19,-30},{42,-30},{42,5},{110,5}},
+            color={0,0,127},
+            smooth=Smooth.None));
+        annotation (
+          defaultComponentName="linPieTwo",
+          Documentation(info="<HTML>
+<p>
+This component calcuates the output according to two piecewise linear function as
+</p>
+<table>
+<tr>
+<td>
+<i>u &isin; [x<sub>0</sub>, x<sub>1</sub>]:</i></td>
+    <td><i>y<sub>1</sub> = y<sub>10</sub> + u (y<sub>11</sub>-y<sub>10</sub>)/(x<sub>1</sub>-x<sub>0</sub>)</i><br/>
+        <i>y<sub>2</sub> = y<sub>20</sub></i></td>
+</tr>
+<tr>
+<td><i>u &isin; (x<sub>1</sub>, x<sub>2</sub>]:</i></td>
+    <td><i>y<sub>1</sub> = y<sub>11</sub></i><br/>
+    <i>y<sub>2</sub> = y<sub>20</sub> + (u-x<sub>1</sub>)
+       (y<sub>21</sub>-y<sub>20</sub>)/(x<sub>2</sub>-x<sub>1</sub>)</i></td>
+</tr>
+</table>
+</HTML>",       revisions="<html>
+<ul>
+<li>
+July 20, 2011, by Wangda Zuo:<br/>
+Add comments and merge to library.
+</li>
+<li>
+January 18, 2011, by Wangda Zuo:<br/>
+First implementation.
+</li>
+</ul>
+</html>"),Icon(graphics={
+              Line(
+                points={{-68,62},{-68,-50},{62,-50}},
+                color={0,0,0},
+                smooth=Smooth.None,
+                arrow={Arrow.Filled,Arrow.Filled}),
+              Line(
+                points={{46,-50},{46,62}},
+                color={0,0,0},
+                smooth=Smooth.None,
+                arrow={Arrow.None,Arrow.Filled}),
+              Text(
+                extent={{-52,6},{-42,-2}},
+                lineColor={0,0,0},
+                textString="y[1]"),
+              Text(
+                extent={{24,6},{34,-2}},
+                lineColor={128,0,255},
+                textString="y[2]",
+                lineThickness=1),
+              Text(
+                extent={{-74,-52},{-64,-60}},
+                lineColor={0,0,0},
+                textString="x0"),
+              Text(
+                extent={{-18,-52},{-8,-60}},
+                lineColor={0,0,0},
+                textString="x1"),
+              Text(
+                extent={{40,-52},{50,-60}},
+                lineColor={0,0,0},
+                textString="x2"),
+              Text(
+                extent={{-80,-38},{-70,-46}},
+                lineColor={0,0,0},
+                textString="y10"),
+              Text(
+                extent={{-80,34},{-68,26}},
+                lineColor={0,0,0},
+                textString="y11"),
+              Text(
+                extent={{48,50},{60,42}},
+                lineColor={128,0,255},
+                textString="y21"),
+              Text(
+                extent={{48,-32},{58,-40}},
+                lineColor={128,0,255},
+                textString="y20",
+                lineThickness=1),
+              Line(
+                points={{-68,-42},{-14,30},{46,30}},
+                color={0,0,0},
+                smooth=Smooth.None,
+                thickness=1),
+              Line(
+                points={{-68,44},{-14,44},{46,-36}},
+                color={128,0,255},
+                thickness=1,
+                smooth=Smooth.None),
+              Line(
+                points={{-14,44},{-14,-50}},
+                color={175,175,175},
+                smooth=Smooth.None,
+                pattern=LinePattern.Dash),
+              Line(
+                points={{-68,30},{-14,30}},
+                color={175,175,175},
+                pattern=LinePattern.Dash,
+                smooth=Smooth.None),
+              Line(
+                points={{-14,44},{46,44}},
+                color={175,175,175},
+                pattern=LinePattern.Dash,
+                smooth=Smooth.None),
+              Text(
+                extent={{62,-46},{72,-54}},
+                lineColor={0,0,0},
+                textString="x")}));
+      end LinearPiecewiseTwo;
+
+      model SequenceSignal "Signal for each cell"
+        extends Modelica.Blocks.Icons.Block;
+        parameter Integer n(min=1) "Length of the signal";
+
+        Modelica.Blocks.Interfaces.RealOutput y[n]
+          "On/off signals for each equipment (1: on, 0: off)"
+          annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+
+        Modelica.Blocks.Interfaces.IntegerInput u
+          "Number of active tower cells" annotation (Placement(transformation(extent={{-140,
+                  -20},{-100,20}}),      iconTransformation(extent={{-140,-20},{-100,20}})));
+
+      algorithm
+        y := fill(0,n);
+        for i in 1:u loop
+          y[i] := 1;
+        end for;
+
+        annotation (defaultComponentName = "seqSig",
+        Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+              coordinateSystem(preserveAspectRatio=false)),
+          Documentation(info="<html>
+<p>
+Simple model that is used to determine the on and off sequence of equipment. This model can be replaced by rotation control models.
+The logic in this model is explained as follows:
+</p>
+<ul>
+<li>
+Among <code>n</code> equipment, the first <code>u</code> equipment are switched on, and the rest <code>n-u</code> are switched off.
+</li>
+</ul>
+</html>"));
+      end SequenceSignal;
+
+      model Stage "General stage control model"
+        extends Modelica.Blocks.Icons.Block;
+
+        parameter Real staUpThr = 1.25 "Staging up threshold";
+        parameter Real staDowThr = 0.55 "Staging down threshold";
+
+        parameter Modelica.SIunits.Time waiTimStaUp=300
+          "Time duration of for staging up";
+        parameter Modelica.SIunits.Time waiTimStaDow=600
+          "Time duration of for staging down";
+        parameter Modelica.SIunits.Time shoCycTim=1200
+          "Time duration to avoid short cycling of equipment";
+
+        Modelica.Blocks.Interfaces.RealInput u "Measured signal" annotation (
+            Placement(transformation(extent={{-140,20},{-100,60}}),
+              iconTransformation(extent={{-140,20},{-100,60}})));
+        Modelica.Blocks.Interfaces.IntegerOutput ySta(start=0)
+          "Stage number of next time step" annotation (Placement(transformation(
+                extent={{100,-10},{120,10}}), iconTransformation(extent={{100,-10},{120,
+                  10}})));
+
+        Modelica.StateGraph.InitialStepWithSignal off "All off" annotation (Placement(
+              transformation(
+              extent={{-10,10},{10,-10}},
+              rotation=-90,
+              origin={-22,50})));
+        Modelica.StateGraph.StepWithSignal oneOn(nIn=2, nOut=2)
+          "One equipment is staged" annotation (Placement(transformation(
+              extent={{-10,10},{10,-10}},
+              rotation=-90,
+              origin={-22,-10})));
+        Modelica.StateGraph.StepWithSignal twoOn "Two equipment are staged"
+          annotation (Placement(transformation(
+              extent={{-10,10},{10,-10}},
+              rotation=-90,
+              origin={-22,-90})));
+        Modelica.StateGraph.Transition tra1(
+          condition=(timGreEqu.y >= waiTimStaUp and offTim.y >= shoCycTim) or on)
+           "Transition 1" annotation (Placement(
+              transformation(
+              extent={{-10,-10},{10,10}},
+              rotation=-90,
+              origin={-52,20})));
+        Modelica.StateGraph.Transition tra2(
+          condition=timGreEqu.y >= waiTimStaUp and oneOnTim.y >= shoCycTim)
+          "Transition 1"
+           annotation (Placement(
+              transformation(
+              extent={{-10,-10},{10,10}},
+              rotation=-90,
+              origin={-42,-50})));
+        FiveZone.PrimarySideControl.BaseClasses.TimerGreatEqual timGreEqu(threshold=
+             staUpThr) "Timer"
+          annotation (Placement(transformation(extent={{-80,70},{-60,90}})));
+        FiveZone.PrimarySideControl.BaseClasses.TimeLessEqual timLesEqu(threshold=
+             staDowThr) "Timer"
+          annotation (Placement(transformation(extent={{-80,40},{-60,60}})));
+        Modelica.StateGraph.Transition tra3(condition=(timLesEqu.y >= waiTimStaDow
+               and twoOnTim.y >= shoCycTim) or not on)
+         "Transition 1" annotation (Placement(
+              transformation(
+              extent={{10,10},{-10,-10}},
+              rotation=-90,
+              origin={-2,-50})));
+        Modelica.StateGraph.Transition tra4(
+          enableTimer=false, condition=(
+              timLesEqu.y >= waiTimStaDow and oneOnTim.y >= shoCycTim) or not on)
+         "Transition 1" annotation (
+            Placement(transformation(
+              extent={{10,10},{-10,-10}},
+              rotation=-90,
+              origin={0,20})));
+        FiveZone.PrimarySideControl.BaseClasses.Timer offTim
+          "Timer for the state where equipment is off"
+          annotation (Placement(transformation(extent={{18,40},{38,60}})));
+        FiveZone.PrimarySideControl.BaseClasses.Timer oneOnTim
+          "Timer for the state where only one equipment is on"
+          annotation (Placement(transformation(extent={{18,-20},{38,0}})));
+        FiveZone.PrimarySideControl.BaseClasses.Timer twoOnTim
+          "Timer for the state where two equipment are on"
+          annotation (Placement(transformation(extent={{18,-100},{38,-80}})));
+        Modelica.Blocks.MathInteger.MultiSwitch mulSwi(expr={0,1,2}, nu=3)
+          annotation (Placement(transformation(extent={{60,-10},{80,10}})));
+        Modelica.Blocks.Interfaces.BooleanInput on
+          "Set to true to enable equipment, or false to disable equipment"
+          annotation (Placement(transformation(extent={{-140,-60},{-100,-20}}),
+              iconTransformation(extent={{-140,-60},{-100,-20}})));
+      equation
+        connect(u, timGreEqu.u)
+          annotation (Line(points={{-120,40},{-92,40},{-92,80},{-82,80}},
+                                                        color={0,0,127}));
+        connect(u, timLesEqu.u) annotation (Line(points={{-120,40},{-92,40},{-92,50},
+                {-82,50}},color={0,0,127}));
+        connect(off.active, offTim.u) annotation (Line(points={{-11,50},{16,50}},
+                              color={255,0,255}));
+        connect(oneOn.active, oneOnTim.u)
+          annotation (Line(points={{-11,-10},{16,-10}},
+                                                     color={255,0,255}));
+        connect(twoOn.active, twoOnTim.u)
+          annotation (Line(points={{-11,-90},{16,-90}},color={255,0,255}));
+        connect(off.outPort[1], tra1.inPort) annotation (Line(points={{-22,39.5},{-22,
+                34},{-52,34},{-52,24}},
+                                    color={0,0,0}));
+        connect(tra1.outPort, oneOn.inPort[1]) annotation (Line(points={{-52,18.5},{-52,
+                8},{-22.5,8},{-22.5,1}},  color={0,0,0}));
+        connect(oneOn.outPort[1], tra2.inPort) annotation (Line(points={{-22.25,-20.5},
+                {-22.25,-30},{-42,-30},{-42,-46}},
+                                                 color={0,0,0}));
+        connect(tra2.outPort, twoOn.inPort[1]) annotation (Line(points={{-42,-51.5},{-42,
+                -68},{-22,-68},{-22,-79}},
+                                       color={0,0,0}));
+        connect(twoOn.outPort[1], tra3.inPort) annotation (Line(points={{-22,-100.5},{
+                -22,-112},{-2,-112},{-2,-54}},
+                                    color={0,0,0}));
+        connect(tra3.outPort, oneOn.inPort[2]) annotation (Line(points={{-2,-48.5},{-2,
+                8},{-21.5,8},{-21.5,1}},color={0,0,0}));
+        connect(oneOn.outPort[2], tra4.inPort) annotation (Line(points={{-21.75,-20.5},
+                {-21.75,-30},{0,-30},{0,16}},
+                                        color={0,0,0}));
+        connect(tra4.outPort, off.inPort[1])
+          annotation (Line(points={{0,21.5},{0,66},{-22,66},{-22,61}},
+                                                                     color={0,0,0}));
+        connect(mulSwi.y, ySta)
+          annotation (Line(points={{80.5,0},{110,0}}, color={255,127,0}));
+        connect(off.active, mulSwi.u[1]) annotation (Line(points={{-11,50},{8,50},{8,
+                70},{54,70},{54,2},{60,2}}, color={255,0,255}));
+        connect(oneOn.active, mulSwi.u[2]) annotation (Line(points={{-11,-10},{10,-10},
+                {10,-28},{54,-28},{54,0},{60,0}}, color={255,0,255}));
+        connect(twoOn.active, mulSwi.u[3]) annotation (Line(points={{-11,-90},{10,-90},
+                {10,-110},{56,-110},{56,-2},{60,-2}}, color={255,0,255}));
+        annotation (defaultComponentName = "sta",
+          Documentation(info="<html>
+<p>
+General stage control for two equipment using state-graph package in Modelica.
+</p>
+<ul>
+<li>
+One additional equipment stages on if measured signal is greater than a stage-up threshold <code>staUpThr</code> for a predefined time period 
+<code>waiTimStaUp</code>, and the elapsed time since the staged equipment was off is greater than <code>shoCycTim</code> to avoid short cycling.
+</li>
+<li>
+One additional equipment stages off if measured signal is less than a stage-down threshold <code>staUpThr</code> for a predefined time period 
+<code>waiTimStaDow</code>, and the elapsed time since the staged equipment was on is greater than <code>shoCycTim</code> to avoid short cycling.
+</li>
+</ul>
+</html>",       revisions=""),
+          Diagram(coordinateSystem(extent={{-100,-140},{100,100}})),
+          __Dymola_Commands);
+      end Stage;
+
+      model StageBackup
+        "General stage control model as a back model which needs to be improved and tested"
+        extends Modelica.Blocks.Icons.Block;
+        parameter Integer numSta "Design number of equipment that can be staged";
+        parameter Real staUpThr = 1.25 "Staging up threshold";
+        parameter Real staDowThr = 0.55 "Staging down threshold";
+
+        parameter Modelica.SIunits.Time waiTimStaUp = 900 "Time duration of TFlo1 condition for staging on one tower cell";
+        parameter Modelica.SIunits.Time waiTimStaDow = 300 "Time duration of TFlo2 condition for staging off one tower cell";
+
+        Modelica.Blocks.Interfaces.RealInput u "Measured signal" annotation (
+            Placement(transformation(extent={{-140,60},{-100,100}}),
+              iconTransformation(extent={{-140,60},{-100,100}})));
+        Modelica.Blocks.Interfaces.IntegerOutput ySta
+          "Stage number of next time step" annotation (Placement(transformation(
+                extent={{100,-10},{120,10}}), iconTransformation(extent={{100,-10},{120,
+                  10}})));
+
+        Modelica.Blocks.Interfaces.IntegerInput minSta "Minimum number of stages"
+          annotation (Placement(transformation(extent={{-140,-100},{-100,-60}}),
+              iconTransformation(extent={{-140,-100},{-100,-60}})));
+        Modelica.Blocks.Interfaces.IntegerInput uSta "Number of active stages"
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}}),
+              iconTransformation(extent={{-140,-20},{-100,20}})));
+        Buildings.Controls.OBC.CDL.Conversions.IntegerToReal intToRea
+          annotation (Placement(transformation(extent={{-80,50},{-60,70}})));
+        BaseClasses.TimerGreatEqual timGreEqu(threshold=staUpThr)
+                                              "Timer"
+          annotation (Placement(transformation(extent={{-20,70},{0,90}})));
+        BaseClasses.TimeLessEqual timLesEqu(threshold=staDowThr)
+                                            "Timer"
+          annotation (Placement(transformation(extent={{-40,-70},{-20,-50}})));
+        Buildings.Controls.OBC.CDL.Continuous.GreaterEqualThreshold staUpAct(threshold=
+             waiTimStaUp)
+          "Stageup activated"
+          annotation (Placement(transformation(extent={{40,70},{60,90}})));
+        Buildings.Controls.OBC.CDL.Continuous.GreaterEqualThreshold staDowAct(threshold=
+             waiTimStaDow)
+          "Stage down activated"
+          annotation (Placement(transformation(extent={{20,-70},{40,-50}})));
+      protected
+        Modelica.Blocks.Logical.Switch swi1
+          "The switch based on whether it is in FMC mode"
+          annotation (Placement(transformation(extent={{20,12},{40,32}})));
+      public
+        Buildings.Controls.OBC.CDL.Continuous.Add add1
+          annotation (Placement(transformation(extent={{-40,20},{-20,40}})));
+        Modelica.Blocks.Sources.Constant uni(k=1) "One"
+          annotation (Placement(transformation(extent={{-80,14},{-60,34}})));
+        Buildings.Controls.OBC.CDL.Continuous.Add add2(k2=-1)
+          annotation (Placement(transformation(extent={{-40,-30},{-20,-10}})));
+      protected
+        Modelica.Blocks.Logical.Switch swi2
+          "The switch based on whether it is in FMC mode"
+          annotation (Placement(transformation(extent={{8,-38},{28,-18}})));
+      public
+        Buildings.Controls.OBC.CDL.Conversions.RealToInteger reaToInt
+          annotation (Placement(transformation(extent={{-80,-108},{-60,-88}})));
+        Buildings.Controls.OBC.CDL.Integers.Max maxInt
+          annotation (Placement(transformation(extent={{-40,-114},{-20,-94}})));
+        Buildings.Controls.OBC.CDL.Integers.Min minInt
+          annotation (Placement(transformation(extent={{20,-130},{40,-110}})));
+        Buildings.Controls.OBC.CDL.Integers.Sources.Constant conInt(k=numSta)
+          annotation (Placement(transformation(extent={{-40,-140},{-20,-120}})));
+      equation
+        connect(uSta, intToRea.u) annotation (Line(points={{-120,0},{-90,0},{-90,60},{
+                -82,60}}, color={255,127,0}));
+        connect(timGreEqu.y, staUpAct.u)
+          annotation (Line(points={{1,80},{38,80}},  color={0,0,127}));
+        connect(timLesEqu.y, staDowAct.u)
+          annotation (Line(points={{-19,-60},{18,-60}},color={0,0,127}));
+        connect(intToRea.y, add1.u1) annotation (Line(points={{-58,60},{-54,60},
+                {-54,36},{-42,36}},
+                           color={0,0,127}));
+        connect(uni.y, add1.u2)
+          annotation (Line(points={{-59,24},{-42,24}}, color={0,0,127}));
+        connect(add1.y, swi1.u1)
+          annotation (Line(points={{-18,30},{18,30}}, color={0,0,127}));
+        connect(staUpAct.y, swi1.u2) annotation (Line(points={{62,80},{80,80},{
+                80,54},{0,54},{0,22},{18,22}},
+                                        color={255,0,255}));
+        connect(intToRea.y, swi1.u3) annotation (Line(points={{-58,60},{-52,60},
+                {-52,14},{18,14}},
+                          color={0,0,127}));
+        connect(intToRea.y, add2.u1) annotation (Line(points={{-58,60},{-50,60},
+                {-50,-14},{-42,-14}},
+                            color={0,0,127}));
+        connect(staDowAct.y, swi2.u2) annotation (Line(points={{42,-60},{50,-60},
+                {50,-44},{-6,-44},{-6,-28},{6,-28}},
+                                           color={255,0,255}));
+        connect(add2.y, swi2.u1)
+          annotation (Line(points={{-18,-20},{6,-20}},  color={0,0,127}));
+        connect(uni.y, add2.u2) annotation (Line(points={{-59,24},{-54,24},{-54,-26},{
+                -42,-26}}, color={0,0,127}));
+        connect(swi1.y, swi2.u3) annotation (Line(points={{41,22},{50,22},{50,0},{-10,
+                0},{-10,-36},{6,-36}},   color={0,0,127}));
+        connect(swi2.y, reaToInt.u) annotation (Line(points={{29,-28},{60,-28},{60,-80},
+                {-92,-80},{-92,-98},{-82,-98}},    color={0,0,127}));
+        connect(minSta, maxInt.u2) annotation (Line(points={{-120,-80},{-94,-80},{-94,
+                -110},{-42,-110}}, color={255,127,0}));
+        connect(reaToInt.y, maxInt.u1)
+          annotation (Line(points={{-58,-98},{-42,-98}},color={255,127,0}));
+        connect(maxInt.y, minInt.u1) annotation (Line(points={{-18,-104},{-10,
+                -104},{-10,-114},{18,-114}},
+                                  color={255,127,0}));
+        connect(conInt.y, minInt.u2) annotation (Line(points={{-18,-130},{-10,
+                -130},{-10,-126},{18,-126}},
+                                  color={255,127,0}));
+        connect(minInt.y, ySta) annotation (Line(points={{42,-120},{80,-120},{
+                80,0},{110,0}},
+                     color={255,127,0}));
+        connect(u, timGreEqu.u)
+          annotation (Line(points={{-120,80},{-22,80}}, color={0,0,127}));
+        connect(u, timLesEqu.u) annotation (Line(points={{-120,80},{-48,80},{-48,-60},
+                {-42,-60}}, color={0,0,127}));
+        annotation (defaultComponentName = "sta",
+          Documentation(info="<html>
+<p>
+The cooling tower cell staging control is based on the water flowrate going through the cooling tower.
+</p>
+<ul>
+<li>
+One additional cell stages on if average flowrate through active cells is greater than a stage-up threshold <code>staUpThr*m_flow_nominal</code> for 15 minutes.
+</li>
+<li>
+One additional cell stages off if average flowrate through active cells is lower than a stage-down threshold <code>staDowThr*m_flow_nominal</code> for 5 minutes.
+</li>
+</ul>
+</html>",       revisions=""),
+          Diagram(coordinateSystem(extent={{-100,-140},{100,100}})),
+          __Dymola_Commands);
+      end StageBackup;
+
+      block Timer
+        "Timer measuring the time from the time instant where the Boolean input became true"
+
+        extends Modelica.Blocks.Icons.PartialBooleanBlock;
+        Modelica.Blocks.Interfaces.BooleanInput u "Connector of Boolean input signal"
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+        Modelica.Blocks.Interfaces.RealOutput y "Connector of Real output signal"
+          annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+
+      protected
+        discrete Modelica.SIunits.Time entryTime "Time instant when u became true";
+      initial equation
+        pre(entryTime) = 0;
+      equation
+        when u then
+          entryTime = time;
+        end when;
+        y = if u then time - entryTime else 0.0;
+        annotation (
+          Icon(
+            coordinateSystem(preserveAspectRatio=true,
+              extent={{-100.0,-100.0},{100.0,100.0}}),
+              graphics={
+            Line(points={{-90.0,-70.0},{82.0,-70.0}},
+              color={192,192,192}),
+            Line(points={{-80.0,68.0},{-80.0,-80.0}},
+              color={192,192,192}),
+            Polygon(lineColor={192,192,192},
+              fillColor={192,192,192},
+              fillPattern=FillPattern.Solid,
+              points={{90.0,-70.0},{68.0,-62.0},{68.0,-78.0},{90.0,-70.0}}),
+            Polygon(lineColor={192,192,192},
+              fillColor={192,192,192},
+              fillPattern=FillPattern.Solid,
+              points={{-80.0,90.0},{-88.0,68.0},{-72.0,68.0},{-80.0,90.0}}),
+            Line(points={{-80.0,-70.0},{-60.0,-70.0},{-60.0,-26.0},{38.0,-26.0},{38.0,-70.0},{66.0,-70.0}},
+              color={255,0,255}),
+            Line(points={{-80.0,0.0},{-62.0,0.0},{40.0,90.0},{40.0,0.0},{68.0,0.0}},
+              color={0,0,127})}),
+          Diagram(coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{
+                  100,100}}), graphics={Line(points={{-90,-70},{82,-70}}, color={0,
+                0,0}),Line(points={{-80,68},{-80,-80}}),Polygon(
+                  points={{90,-70},{68,-62},{68,-78},{90,-70}},
+                  lineColor={0,0,0},
+                  fillColor={255,255,255},
+                  fillPattern=FillPattern.Solid),Polygon(
+                  points={{-80,90},{-88,68},{-72,68},{-80,90}},
+                  lineColor={0,0,0},
+                  fillColor={255,255,255},
+                  fillPattern=FillPattern.Solid),Line(points={{-80,-68},{-60,-68},{
+                -60,-40},{20,-40},{20,-68},{60,-68}}, color={255,0,255}),Line(
+                points={{-80,-20},{-60,-20},{20,60},{20,-20},{60,-20},{60,-20}},
+                color={0,0,255}),Text(
+                  extent={{-88,6},{-54,-4}},
+                  lineColor={0,0,0},
+                  textString="y"),Text(
+                  extent={{48,-80},{84,-88}},
+                  lineColor={0,0,0},
+                  textString="time"),Text(
+                  extent={{-88,-36},{-54,-46}},
+                  lineColor={0,0,0},
+                  textString="u")}),
+          Documentation(info="<html>
+<p>When the Boolean input &quot;u&quot; becomes true, the timer is started and the output &quot;y&quot; is the time from the time instant where u became true. The timer is stopped and the output is reset to zero, once the input becomes false. </p>
+</html>"));
+      end Timer;
+
+      model TimerGreat
+        "Timer calculating the time when A is greater than B"
+
+        parameter Real threshold=0 "Comparison with respect to threshold";
+
+        Modelica.Blocks.Interfaces.RealInput u "Connector of Boolean input signal"
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+        Modelica.Blocks.Interfaces.RealOutput y(
+          final quantity="Time",
+          final unit="s")
+          "Connector of Real output signal"
+          annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+
+        Modelica.Blocks.Logical.GreaterThreshold      greEqu(
+           threshold = threshold)
+          annotation (Placement(transformation(extent={{-50,-10},{-30,10}})));
+
+        Timer tim "Timer"
+          annotation (Placement(transformation(extent={{20,-10},{40,10}})));
+
+      equation
+        connect(greEqu.y, tim.u)
+          annotation (Line(points={{-29,0},{18,0}}, color={255,0,255}));
+        connect(greEqu.u, u)
+          annotation (Line(points={{-52,0},{-120,0}}, color={0,0,127}));
+        connect(tim.y,y)  annotation (Line(points={{41,0},{110,0}}, color={0,0,127}));
+        annotation (defaultComponentName="greEqu",
+        Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+              Rectangle(
+                extent={{-100,100},{100,-100}},
+                lineColor={0,0,0},
+                lineThickness=5.0,
+                fillColor={210,210,210},
+                fillPattern=FillPattern.Solid,
+                borderPattern=BorderPattern.Raised),
+                                         Text(
+                extent={{-90,-40},{60,40}},
+                lineColor={0,0,0},
+                textString=">"),
+              Ellipse(
+                extent={{71,7},{85,-7}},
+                lineColor=DynamicSelect({235,235,235}, if y > 0.5 then {0,255,0}
+                     else {235,235,235}),
+                fillColor=DynamicSelect({235,235,235}, if y > 0.5 then {0,255,0}
+                     else {235,235,235}),
+                fillPattern=FillPattern.Solid),
+                                              Text(
+              extent={{-150,152},{150,112}},
+              textString="%name",
+              lineColor={0,0,255})}),                                  Diagram(
+              coordinateSystem(preserveAspectRatio=false)),
+          Documentation(info="<html>
+<p>This model represents a timer that starts to calculate the time when the input is greater than or equal to a certain threshold. It will return to zero when the condition does not satisfy.</p>
+</html>"));
+      end TimerGreat;
+
+      model TimerGreatEqual
+        "Timer calculating the time when A is greater than or equal than B"
+
+        parameter Real threshold=0 "Comparison with respect to threshold";
+
+        Modelica.Blocks.Interfaces.RealInput u "Connector of Boolean input signal"
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+        Modelica.Blocks.Interfaces.RealOutput y(
+          final quantity="Time",
+          final unit="s")
+          "Connector of Real output signal"
+          annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+
+        Modelica.Blocks.Logical.GreaterEqualThreshold greEqu(
+           threshold = threshold)
+          annotation (Placement(transformation(extent={{-50,-10},{-30,10}})));
+
+        Timer tim "Timer"
+          annotation (Placement(transformation(extent={{20,-10},{40,10}})));
+
+      equation
+        connect(greEqu.y, tim.u)
+          annotation (Line(points={{-29,0},{18,0}}, color={255,0,255}));
+        connect(greEqu.u, u)
+          annotation (Line(points={{-52,0},{-120,0}}, color={0,0,127}));
+        connect(tim.y,y)  annotation (Line(points={{41,0},{110,0}}, color={0,0,127}));
+        annotation (defaultComponentName="greEqu",
+        Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+              Rectangle(
+                extent={{-100,100},{100,-100}},
+                lineColor={0,0,0},
+                lineThickness=5.0,
+                fillColor={210,210,210},
+                fillPattern=FillPattern.Solid,
+                borderPattern=BorderPattern.Raised),
+                                         Text(
+                extent={{-90,-40},{60,40}},
+                lineColor={0,0,0},
+                textString=">="),
+              Ellipse(
+                extent={{71,7},{85,-7}},
+                lineColor=DynamicSelect({235,235,235}, if y > 0.5 then {0,255,0}
+                     else {235,235,235}),
+                fillColor=DynamicSelect({235,235,235}, if y > 0.5 then {0,255,0}
+                     else {235,235,235}),
+                fillPattern=FillPattern.Solid),
+                                              Text(
+              extent={{-150,152},{150,112}},
+              textString="%name",
+              lineColor={0,0,255})}),                                  Diagram(
+              coordinateSystem(preserveAspectRatio=false)),
+          Documentation(info="<html>
+<p>This model represents a timer that starts to calculate the time when the input is greater than or equal to a certain threshold. It will return to zero when the condition does not satisfy.</p>
+</html>"));
+      end TimerGreatEqual;
+
+      model TimeLess "Timer calculating the time when A is less than B"
+
+        parameter Real threshold=0 "Comparison with respect to threshold";
+
+        Modelica.Blocks.Interfaces.RealInput u "Connector of Boolean input signal"
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+        Modelica.Blocks.Interfaces.RealOutput y(
+          final quantity="Time",
+          final unit="s")
+          "Connector of Real output signal"
+          annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+
+        Modelica.Blocks.Logical.LessThreshold         lesEqu(
+           threshold = threshold)
+          annotation (Placement(transformation(extent={{-52,-10},{-32,10}})));
+
+        Timer tim "Timer"
+          annotation (Placement(transformation(extent={{20,-10},{40,10}})));
+
+      equation
+        connect(lesEqu.y, tim.u)
+          annotation (Line(points={{-31,0},{18,0}}, color={255,0,255}));
+        connect(lesEqu.u, u)
+          annotation (Line(points={{-54,0},{-120,0}}, color={0,0,127}));
+        connect(tim.y,y)  annotation (Line(points={{41,0},{110,0}}, color={0,0,127}));
+        annotation (defaultComponentName="lesEqu",
+        Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+              Rectangle(
+                extent={{-100,100},{100,-100}},
+                lineColor={0,0,0},
+                lineThickness=5.0,
+                fillColor={210,210,210},
+                fillPattern=FillPattern.Solid,
+                borderPattern=BorderPattern.Raised),
+                                         Text(
+                extent={{-90,-40},{60,40}},
+                lineColor={0,0,0},
+                textString="<"),
+              Ellipse(
+                extent={{71,7},{85,-7}},
+                lineColor=DynamicSelect({235,235,235}, if y > 0.5 then {0,255,0}
+                     else {235,235,235}),
+                fillColor=DynamicSelect({235,235,235}, if y > 0.5 then {0,255,0}
+                     else {235,235,235}),
+                fillPattern=FillPattern.Solid),
+                                              Text(
+              extent={{-150,150},{150,110}},
+              textString="%name",
+              lineColor={0,0,255})}),                                  Diagram(
+              coordinateSystem(preserveAspectRatio=false)),
+          Documentation(info="<html>
+<p>This model represents a timer that starts to calculate the time when the input is less than a certain threshold. It will return to zero when the condition does not satisfy.</p>
+</html>"));
+      end TimeLess;
+
+      model TimeLessEqual
+        "Timer calculating the time when A is less than or equal than B"
+
+        parameter Real threshold=0 "Comparison with respect to threshold";
+
+        Modelica.Blocks.Interfaces.RealInput u "Connector of Boolean input signal"
+          annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+        Modelica.Blocks.Interfaces.RealOutput y(
+          final quantity="Time",
+          final unit="s")
+          "Connector of Real output signal"
+          annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+
+        Modelica.Blocks.Logical.LessEqualThreshold    lesEqu(
+           threshold = threshold)
+          annotation (Placement(transformation(extent={{-52,-10},{-32,10}})));
+
+        Timer tim "Timer"
+          annotation (Placement(transformation(extent={{20,-10},{40,10}})));
+
+      equation
+        connect(lesEqu.y, tim.u)
+          annotation (Line(points={{-31,0},{18,0}}, color={255,0,255}));
+        connect(lesEqu.u, u)
+          annotation (Line(points={{-54,0},{-120,0}}, color={0,0,127}));
+        connect(tim.y,y)  annotation (Line(points={{41,0},{110,0}}, color={0,0,127}));
+        annotation (defaultComponentName="lesEqu",
+        Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+              Rectangle(
+                extent={{-100,100},{100,-100}},
+                lineColor={0,0,0},
+                lineThickness=5.0,
+                fillColor={210,210,210},
+                fillPattern=FillPattern.Solid,
+                borderPattern=BorderPattern.Raised),
+                                         Text(
+                extent={{-90,-40},{60,40}},
+                lineColor={0,0,0},
+                textString="<="),
+              Ellipse(
+                extent={{71,7},{85,-7}},
+                lineColor=DynamicSelect({235,235,235}, if y > 0.5 then {0,255,0}
+                     else {235,235,235}),
+                fillColor=DynamicSelect({235,235,235}, if y > 0.5 then {0,255,0}
+                     else {235,235,235}),
+                fillPattern=FillPattern.Solid),
+                                              Text(
+              extent={{-150,150},{150,110}},
+              textString="%name",
+              lineColor={0,0,255})}),                                  Diagram(
+              coordinateSystem(preserveAspectRatio=false)),
+          Documentation(info="<html>
+<p>This model represents a timer that starts to calculate the time when the input is less than or equal to a certain threshold. It will return to zero when the condition does not satisfy.</p>
+</html>"));
+      end TimeLessEqual;
+
+      block TrimAndRespond "Trim and respond logic"
+        extends Modelica.Blocks.Interfaces.DiscreteSISO(firstTrigger(start=false, fixed=true));
+        parameter Real uTri "Value to triggering the request for actuator";
+        parameter Real yEqu0 "y setpoint when equipment starts";
+        parameter Real yDec(max=0) "y decrement (must be negative)";
+        parameter Real yInc(min=0) "y increment (must be positive)";
+
+        Modelica.Blocks.Logical.GreaterEqualThreshold incY(threshold=uTri)
+          "Outputs true if y needs to be increased"
+          annotation (extent=[-20, 98; 0, 118], Placement(transformation(extent={{-20,
+                  50},{0,70}})));
+        Modelica.Blocks.Logical.Switch swi annotation (extent=[100, 110; 120, 130],
+            Placement(transformation(extent={{60,50},{80,70}})));
+        Sampler sam(samplePeriod=samplePeriod) "Sampler"
+          annotation (extent=[-60, 90; -40, 110], Placement(transformation(extent={{-60,
+                  50},{-40,70}})));
+
+        Modelica.Blocks.Sources.Constant conYDec(k=yDec) "y decrease"
+          annotation (extent=[26, 90; 46, 110], Placement(transformation(extent={{20,30},
+                  {40,50}})));
+        Modelica.Blocks.Sources.Constant conYInc(k=yInc) "y increase"
+          annotation (extent=[-20, 124; 0, 144], Placement(transformation(extent={{20,70},
+                  {40,90}})));
+        UnitDelay uniDel1(
+          y_start=yEqu0,
+          samplePeriod=samplePeriod,
+          startTime=samplePeriod)
+                         annotation (extent=[-52, -40; -32, -20], Placement(
+              transformation(extent={{-60,-16},{-40,4}})));
+        Modelica.Blocks.Math.Add add annotation (extent=[-20, -20; 0, 0], Placement(
+              transformation(extent={{-20,-10},{0,10}})));
+        Modelica.Blocks.Nonlinear.Limiter lim(uMax=1, uMin=0) "State limiter"
+          annotation (extent=[20, -20; 40, 0], Placement(transformation(extent={{20,-10},
+                  {40,10}})));
+
+        // The UnitDelay and Sampler is reimplemented to avoid in Dymola 2016 the translation warning
+        //   The initial conditions for variables of type Boolean are not fully specified.
+        //   Dymola has selected default initial conditions.
+        //   Assuming fixed default start value for the discrete non-states:
+        //     ...firstTrigger(start = false)
+        //     ...
+
+      protected
+        block UnitDelay
+          extends Modelica.Blocks.Discrete.UnitDelay(
+            firstTrigger(start=false, fixed=true));
+        end UnitDelay;
+
+        block Sampler
+          extends Modelica.Blocks.Discrete.Sampler(
+            firstTrigger(start=false, fixed=true));
+        end Sampler;
+      equation
+        connect(lim.y, y) annotation (Line(
+            points={{41,6.10623e-16},{70,6.10623e-16},{70,5.55112e-16},{110,5.55112e-16}},
+            color={0,0,127},
+            smooth=Smooth.None));
+
+        connect(add.y, lim.u) annotation (Line(
+            points={{1,6.10623e-16},{9.5,6.10623e-16},{9.5,6.66134e-16},{18,
+                6.66134e-16}},
+            color={0,0,127},
+            smooth=Smooth.None));
+
+        connect(uniDel1.y, add.u2) annotation (Line(
+            points={{-39,-6},{-22,-6}},
+            color={0,0,127},
+            smooth=Smooth.None));
+
+        connect(incY.y, swi.u2) annotation (Line(
+            points={{1,60},{58,60}},
+            color={255,0,255},
+            smooth=Smooth.None));
+        connect(sam.y, incY.u) annotation (Line(
+            points={{-39,60},{-22,60}},
+            color={0,0,127},
+            smooth=Smooth.None));
+        connect(lim.y, uniDel1.u) annotation (Line(
+            points={{41,6.66134e-16},{60,6.66134e-16},{60,-40},{-80,-40},{-80,-6},{-62,
+                -6}},
+            color={0,0,127},
+            smooth=Smooth.None));
+        connect(swi.y, add.u1) annotation (Line(
+            points={{81,60},{88,60},{88,20},{-30,20},{-30,6},{-22,6}},
+            color={0,0,127},
+            smooth=Smooth.None));
+        connect(swi.u3, conYDec.y) annotation (Line(
+            points={{58,52},{50,52},{50,40},{41,40}},
+            color={0,0,127},
+            smooth=Smooth.None));
+        connect(conYInc.y, swi.u1) annotation (Line(
+            points={{41,80},{50,80},{50,68},{58,68}},
+            color={0,0,127},
+            smooth=Smooth.None));
+        connect(sam.u, u) annotation (Line(
+            points={{-62,60},{-80,60},{-80,1.11022e-15},{-120,1.11022e-15}},
+            color={0,0,127},
+            smooth=Smooth.None));
+        annotation (
+          defaultComponentName="triAndRes",
+          Documentation(info="<html>
+<p>
+   This model implements the trim and respond logic. The model samples the outputs of actuators every <code>tSam</code>.
+   The control sequence is as follows:
+</p>
+<ul>
+  <li>If <code>u &ge; 0</code>, then <code>y = y + nActInc</code>,</li>
+  <li>If <code>u &lt; 0</code>, then <code>y = y - yDec</code>.</li>
+</ul>
+</html>",       revisions="<html>
+<ul>
+<li>
+September 24, 2015 by Michael Wetter:<br/>
+Implemented <code>UnitDelay</code> and <code>Sampler</code> to avoid a translation warning
+because these blocks do not set the <code>fixed</code> attribute of <code>firstTrigger</code>
+in MSL 3.2.1.
+</li>
+<li>
+December 5, 2012, by Michael Wetter:<br/>
+Simplified implementation.
+</li>
+<li>
+September 21, 2012, by Wangda Zuo:<br/>
+Deleted the status input that was not needed for new control.
+</li>
+<li>
+July 20, 2011, by Wangda Zuo:<br/>
+Added comments, redefine variable names, and merged to library.
+</li>
+<li>
+January 6 2011, by Michael Wetter and Wangda Zuo:<br/>
+First implementation.
+</li>
+</ul>
+</html>"));
+      end TrimAndRespond;
+
+      block TrimAndRespondContinuousTimeApproximation
+        "Trim and respond logic"
+        extends Modelica.Blocks.Interfaces.SISO;
+        parameter Real uTri "Value to triggering the request for actuator";
+        parameter Real k=0.1 "Gain of controller";
+        parameter Modelica.SIunits.Time Ti=120 "Time constant of Integrator block";
+
+        Buildings.Controls.Continuous.LimPID conPID(
+          Td=1,
+          reverseAction=true,
+          controllerType=Modelica.Blocks.Types.SimpleController.PI,
+          k=k,
+          Ti=Ti)     annotation (Placement(transformation(extent={{-20,40},{0,60}})));
+        Modelica.Blocks.Sources.Constant const(k=uTri)
+          annotation (Placement(transformation(extent={{-60,40},{-40,60}})));
+
+      equation
+        connect(const.y, conPID.u_s) annotation (Line(
+            points={{-39,50},{-22,50}},
+            color={0,0,127},
+            smooth=Smooth.None));
+        connect(conPID.y, y) annotation (Line(
+            points={{1,50},{76,50},{76,4.44089e-16},{110,4.44089e-16}},
+            color={0,0,127},
+            smooth=Smooth.None));
+        connect(u, conPID.u_m) annotation (Line(
+            points={{-120,0},{-10,0},{-10,38}},
+            color={0,0,127},
+            smooth=Smooth.None));
+        annotation (
+          defaultComponentName="triAndRes",
+          Documentation(info="<html>
+<p>
+   This model implements a continuous time approximation to the trim and respond
+   control algorithm.
+</p>
+   </html>",       revisions="<html>
+<ul>
+<li>
+December 5, 2012, by Michael Wetter:<br/>
+First implementation.
+</li>
+</ul>
+</html>"));
+      end TrimAndRespondContinuousTimeApproximation;
+
+      package Validation "Collection of validation models that the base classes of the local controls"
+        extends Modelica.Icons.ExamplesPackage;
+
+        model Stage "Test the general stage model"
+          extends Modelica.Icons.Example;
+          parameter Integer numSta=4 "Design number of equipment that can be staged";
+          parameter Real staUpThr=0.8 "Staging up threshold";
+          parameter Real staDowThr=0.45 "Staging down threshold";
+          FiveZone.PrimarySideControl.BaseClasses.Stage sta(
+            staUpThr=staUpThr,
+            staDowThr=staDowThr,
+            waiTimStaUp=300,
+            shoCycTim=200)
+            annotation (Placement(transformation(extent={{-10,-10},{10,10}})));
+
+          Buildings.Controls.OBC.CDL.Continuous.Sources.Sine u(
+            amplitude=0.5,
+            offset=0.5,
+            freqHz=1/1500) "Input signal"
+            annotation (Placement(transformation(extent={{-60,20},{-40,40}})));
+
+          Modelica.Blocks.Sources.BooleanPulse on(period=3000)
+            annotation (Placement(transformation(extent={{-60,-40},{-40,-20}})));
+        equation
+          connect(u.y, sta.u)
+            annotation (Line(points={{-39,30},{-26,30},{-26,4},{-12,4}},
+                                                       color={0,0,127}));
+          connect(on.y, sta.on) annotation (Line(points={{-39,-30},{-26,-30},{-26,-4},{
+                  -12,-4}}, color={255,0,255}));
+          annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+                coordinateSystem(preserveAspectRatio=false)),
+            experiment(StopTime=3600),
+            __Dymola_Commands(file=
+                  "modelica://WSEControlLogics/Resources/Scripts/Dymola/Controls/LocalControls/BaseClasses/Validation/Stage.mos"
+                "Simulate and Plot"));
+        end Stage;
+        annotation (Documentation(info="<html>
+<p>This package contains validation models for the classes in 
+<a href=\"modelica://WSEControlLogics.Controls.LocalControls.BaseClasses\">
+WSEControlLogics/Controls/LocalControls/BaseClasses</a>. </p>
+</html>"));
+      end Validation;
+      annotation (Documentation(info="<html>
+<p>This package contains base classes that are used to construct the models in 
+<a href=\"modelica://WSEControlLogics.Controls.LocalControls\">
+WSEControlLogics.Controls.LocalControl</a>.
+</p>
+</html>"));
+    end BaseClasses;
+  annotation (Documentation(info="<html>
+<p>This package contains a collection of models for the local controls of chilled water system with waterside economizer. </p>
+</html>"),   Icon(graphics={
+        Rectangle(
+          origin={0.0,35.1488},
+          fillColor={255,255,255},
+          extent={{-30.0,-20.1488},{30.0,20.1488}}),
+        Polygon(
+          origin={-40.0,35.0},
+          pattern=LinePattern.None,
+          fillPattern=FillPattern.Solid,
+          points={{10.0,0.0},{-5.0,5.0},{-5.0,-5.0}}),
+        Line(
+          origin={-51.25,0.0},
+          points={{21.25,-35.0},{-13.75,-35.0},{-13.75,35.0},{6.25,35.0}}),
+        Line(
+          origin={51.25,0.0},
+          points={{-21.25,35.0},{13.75,35.0},{13.75,-35.0},{-6.25,-35.0}}),
+        Rectangle(
+          origin={0.0,-34.8512},
+          fillColor={255,255,255},
+          extent={{-30.0,-20.1488},{30.0,20.1488}})}));
+  end PrimarySideControl;
+
+  package Data "Performance data"
+
+    record Chiller =
+      Buildings.Fluid.Chillers.Data.ElectricEIR.Generic (
+        QEva_flow_nominal =  -1076100,
+        COP_nominal =         5.52,
+        PLRMin =              0.10,
+        PLRMinUnl =           0.10,
+        PLRMax =              1.02,
+        mEva_flow_nominal =   1000 * 0.03186,
+        mCon_flow_nominal =   1000 * 0.04744,
+        TEvaLvg_nominal =     273.15 + 5.56,
+        TConEnt_nominal =     273.15 + 24.89,
+        TEvaLvgMin =          273.15 + 5.56,
+        TEvaLvgMax =          273.15 + 10.00,
+        TConEntMin =          273.15 + 12.78,
+        TConEntMax =          273.15 + 24.89,
+        capFunT =             {1.785912E-01,-5.900023E-02,-5.946963E-04,9.297889E-02,-2.841024E-03,4.974221E-03},
+        EIRFunT =             {5.245110E-01,-2.850126E-02,8.034720E-04,1.893133E-02,1.151629E-04,-9.340642E-05},
+        EIRFunPLR =           {2.619878E-01,2.393605E-01,4.988306E-01},
+        etaMotor =            1.0)
+      "ElectricEIRChiller Carrier 19XR 1076kW/5.52COP/Vanes" annotation (
+      defaultComponentName="datChi",
+      defaultComponentPrefixes="parameter",
+      Documentation(info=
+                     "<html>
+Performance data for chiller model.
+This data corresponds to the following EnergyPlus model:
+
+</html>"));
+  end Data;
+
+  package Types "Package with type definitions"
+    extends Modelica.Icons.TypesPackage;
+
+    type CoolingModes = enumeration(
+        FreeCooling "Free cooling mode",
+        PartialMechanical "Partial mechanical cooling",
+        FullMechanical "Full mechanical cooling",
+        Off "Off") annotation (
+        Documentation(info="<html>
+<p>Enumeration for the type cooling mode. </p>
+<ol>
+<li>FreeCooling </li>
+<li>PartialMechanical </li>
+<li>FullMechanical </li>
+<li>Off</li>
+</ol>
+</html>",     revisions=
+                      "<html>
+<ul>
+<li>
+August 29, 2017, by Michael Wetter:<br/>
+First implementation.
+</li>
+</ul>
+</html>"));
+    annotation (Documentation(info="<html>
+<p>
+This package contains type definitions.
+</p>
+</html>"));
+  end Types;
+
 annotation (uses(
     Buildings(version="7.0.0"),
-    Modelica(version="3.2.3")),
+    Modelica(version="3.2.3"),
+      Complex(version="3.2.3"),
+      Modelica_LinearSystems2(version="2.3.5"),
+      Modelica_Synchronous(version="0.93.0")),
   version="1.0.0",
   conversion(noneFromVersion=""));
 end FiveZone;
