@@ -1,5 +1,5 @@
 import os
-import gym_singlezone_jmodelica
+import gym_fivezone_jmodelica
 import gym
 import torch
 import pprint
@@ -28,7 +28,7 @@ def get_args(folder):
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task', type=str, default='JModelicaCSSingleZoneEnv-v2')
+    parser.add_argument('--task', type=str, default='JModelicaCSFiveZoneEnv-v2')
     parser.add_argument('--time-step', type=float, default=time_step)
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--seed', type=int, default=0)
@@ -36,7 +36,7 @@ def get_args(folder):
     parser.add_argument('--hidden-sizes', type=int, nargs='*', default=[128,128,128,128])#!!!
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--epoch', type=int, default=2)
     parser.add_argument('--step-per-collect', type=int, default=96*4)#!!!!!!!!!!!!!
     parser.add_argument('--repeat-per-collect', type=int, default=10)
     parser.add_argument('--batch-size', type=int, default=64)
@@ -68,10 +68,9 @@ def get_args(folder):
     return parser.parse_args()
 
 def make_building_env(args):
-    weather_file_path = "./USA_CA_Riverside.Muni.AP.722869_TMY3.epw"
-    mass_flow_nor = [0.75]
-    npre_step = 3
-    simulation_start_time = 212*24*3600.0
+    weather_file_path = "./USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
+    npre_step = 0
+    simulation_start_time = 204*24*3600.0
     simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
     log_level = 0
     alpha = 1
@@ -81,22 +80,26 @@ def make_building_env(args):
             rw_func.x = 0
             rw_func.y = 0
 
+        print(cost, penalty)
+        #res = cost + penalty 
         cost = cost[0]
         penalty = penalty[0]
-
+        
+        print(cost, penalty)
+        
         if rw_func.x > cost:
             rw_func.x = cost
         if rw_func.y > penalty:
             rw_func.y = penalty
 
-        #print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
-
-        res = (penalty * 500.0 + cost*5e4)/1000.0#!!!!!!!!!!!!!!!!!!
+        print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
+        #res = penalty * 10.0
+        #res = penalty * 300.0 + cost*1e4
+        res = (penalty * 5000 + cost*500) / 1000
         
         return res
 
     env = gym.make(args.task,
-                   mass_flow_nor = mass_flow_nor,
                    weather_file = weather_file_path,
                    npre_step = npre_step,
                    simulation_start_time = simulation_start_time,
@@ -114,6 +117,7 @@ def test_ppo(args):
     args.max_action = env.action_space.high[0]
     print("Observations shape:", args.state_shape)
     print("Actions shape:", args.action_shape)
+    print("Max action:",args.max_action)
     print("Action range:", np.min(env.action_space.low),
           np.max(env.action_space.high))
 
@@ -219,7 +223,7 @@ def test_ppo(args):
         np.save(args.save_buffer_name+'/his_act.npy', buffer._meta.__dict__['act'])
         np.save(args.save_buffer_name+'/his_obs.npy', buffer._meta.__dict__['obs'])
         np.save(args.save_buffer_name+'/his_rew.npy', buffer._meta.__dict__['rew'])
-        #print(buffer._meta.__dict__.keys())
+        print(buffer._meta.__dict__.keys())
         rew = result["rews"].mean()
         print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
 

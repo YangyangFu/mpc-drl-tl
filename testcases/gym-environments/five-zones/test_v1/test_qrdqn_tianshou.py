@@ -14,7 +14,7 @@ from tianshou.policy import QRDQNPolicy
 from tianshou.trainer import offpolicy_trainer
 from tianshou.utils import TensorboardLogger
 import torch.nn as nn
-import gym_singlezone_jmodelica
+import gym_fivezone_jmodelica
 import gym
 
 
@@ -24,7 +24,7 @@ def get_args(folder="experiment_results"):
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-v1")
+    parser.add_argument('--task', type=str, default="JModelicaCSFiveZoneEnv-v1")
     parser.add_argument('--time-step', type=float, default=time_step)
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--seed', type=int, default=0)
@@ -37,7 +37,7 @@ def get_args(folder="experiment_results"):
     parser.add_argument('--num-quantiles', type=int, default=400)#!!!!!!200
     parser.add_argument('--n-step', type=int, default=1)
     parser.add_argument('--target-update-freq', type=int, default=300)
-    parser.add_argument('--epoch', type=int, default=3)#!!!!!!!!!!!!300
+    parser.add_argument('--epoch', type=int, default=100)#!!!!!!!!!!!!300
     parser.add_argument('--step-per-collect', type=int, default=1)
     parser.add_argument('--update-per-step', type=float, default=1)
     parser.add_argument('--batch-size', type=int, default=128)
@@ -55,10 +55,9 @@ def get_args(folder="experiment_results"):
     return parser.parse_args()
 
 def make_building_env(args):
-    weather_file_path = "./USA_CA_Riverside.Muni.AP.722869_TMY3.epw"
-    mass_flow_nor = [0.75]
-    npre_step = 3
-    simulation_start_time = 212*24*3600.0
+    weather_file_path = "./USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
+    npre_step = 0
+    simulation_start_time = 204*24*3600.0
     simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
     log_level = 7
     alpha = 1
@@ -69,11 +68,13 @@ def make_building_env(args):
             rw_func.x = 0
             rw_func.y = 0
 
-        #print(cost, penalty)
-        #res = cost + penalty
+        print(cost, penalty)
+        #res = cost + penalty 
         cost = cost[0]
         penalty = penalty[0]
-
+        
+        print(cost, penalty)
+        
         if rw_func.x > cost:
             rw_func.x = cost
         if rw_func.y > penalty:
@@ -82,12 +83,11 @@ def make_building_env(args):
         print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
         #res = penalty * 10.0
         #res = penalty * 300.0 + cost*1e4
-        res = (penalty * 500.0 + cost*5e4) / 1000.0#!!!!!!!!!!!!!!!!!!!
+        res = (penalty * 5000 + cost*500) / 1000
         
         return res
 
     env = gym.make(args.task,
-                   mass_flow_nor = mass_flow_nor,
                    weather_file = weather_file_path,
                    npre_step = npre_step,
                    simulation_start_time = simulation_start_time,
@@ -175,9 +175,9 @@ def test_qrdqn(args=get_args()):
         target_update_freq=args.target_update_freq
     ).to(args.device)
     # load a previous policy
-    if args.resume_path:
-        policy.load_state_dict(torch.load(args.resume_path, map_location=args.device))
-        print("Loaded agent from: ", args.resume_path)
+    #if args.resume_path:
+    #    policy.load_state_dict(torch.load(args.resume_path, map_location=args.device))
+    #    print("Loaded agent from: ", args.resume_path)
     # replay buffer: `save_last_obs` and `stack_num` can be removed together
     # when you have enough RAM
     buffer = VectorReplayBuffer(
@@ -203,17 +203,18 @@ def test_qrdqn(args=get_args()):
     def train_fn(epoch, env_step):
         # nature DQN setting, linear decay in the first 1M steps
         max_eps_steps = args.epoch * args.step_per_epoch * 0.9
-
-        total_epoch_pass = epoch*args.step_per_epoch + env_step
-
-        #print("observe eps:  max_eps_steps, total_epoch_pass ", max_eps_steps, total_epoch_pass)
+        total_epoch_pass = env_step
+        #total_epoch_pass = epoch*args.step_per_epoch + env_step
+        print("env_step: ", env_step)
+        print("observe eps:  current epoch, step in current epoch, total_epoch_pass,  max_eps_steps", epoch, env_step % args.step_per_epoch, total_epoch_pass, max_eps_steps)
         if env_step <= max_eps_steps:
             eps = args.eps_train - total_epoch_pass * (args.eps_train - args.eps_train_final) / max_eps_steps
+        # observe eps:  max_eps_steps, total_epoch_pass  60480.0 103477 train/eps env_step eps 51733 -0.625382771164021
         else:
             eps = args.eps_train_final
         policy.set_eps(eps)
-        #print('train/eps', env_step, eps)
-        #logger.write('train/eps', env_step, eps)
+        print('train/eps', env_step, eps)
+        logger.write("train/eps", env_step, {"train/eps": eps})
 
     def test_fn(epoch, env_step):
         policy.set_eps(args.eps_test)
@@ -233,11 +234,13 @@ def test_qrdqn(args=get_args()):
         collector = Collector(policy, test_envs, buffer, exploration_noise=False)
         result = collector.collect(n_step=args.step_per_epoch)
         #buffer.save_hdf5(args.save_buffer_name)
+        print (result) 
+        #{'n/ep': 1, 'n/st': 672, 'rews': array([-1032753.50984556]), 'lens': array([672]), 'idxs': array([0]), 'rew': -1032753.5098455583, 'len': 672.0, 'rew_std': 0.0, 'len_std': 0.0}
         
-        np.save(args.save_buffer_name+'/his_act.npy', buffer._meta.__dict__['act'])
-        np.save(args.save_buffer_name+'/his_obs.npy', buffer._meta.__dict__['obs'])
-        np.save(args.save_buffer_name+'/his_rew.npy', buffer._meta.__dict__['rew'])
-        #print(buffer._meta.__dict__.keys())
+        np.save(args.save_buffer_name+'/his_act_final.npy', buffer._meta.__dict__['act'])
+        np.save(args.save_buffer_name+'/his_obs_final.npy', buffer._meta.__dict__['obs'])
+        np.save(args.save_buffer_name+'/his_rew_final.npy', buffer._meta.__dict__['rew'])
+        print(buffer._meta.__dict__.keys())
         rew = result["rews"].mean()
         print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
 

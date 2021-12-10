@@ -11,7 +11,6 @@ import math
 import numpy as np
 import pandas as pd
 from gym import spaces
-from gym.utils import seeding
 from modelicagym.environment import FMI2CSEnv, FMI1CSEnv
 
 
@@ -29,24 +28,25 @@ class FiveZoneEnv(object):
     Reference:
         None
     Observation:
-        Type: Box(8)
+        Type: Box(10)
         Num    Observation                                   Min            Max
         0      Time                                          0              86400
         1      Zone air temperature total violations         0              5
         2      Outdoor temperature                           273.15 + 0     273.15 + 40
         3      Solar radiation                               0              1200
         4      Total electricity power                       0              50000
-        5      Fan speed                                     0              1
+        5      AHU fan speed                                 0              1
         6      Maximum damper position of five zones         0              1
         7      Minimum damper position of five zones         0              1
+		8	   Supply chilled water valve position           0				1
+		9	   Cooling tower fan speed						 0				1
 
     Actions:
-        Type: Discret(nActions)
-        Num         Action           
-        0           Minimum supply air temperature (273.15 +12)
-        ...
-        ...
-        nAction-1   Maximum supply air temperature (273.15 +18)
+        Type: Box(3)
+        Num    Action           					 Min       Max
+        0      Supply air temperature spt		      0         1
+		1	   Supply chilled water temperature spt   0			1
+		2      Supply chilled water dp spt			  0			1
     Reward:
          Sum of energy consumption and zone temperature violations
 
@@ -76,9 +76,15 @@ class FiveZoneEnv(object):
         Internal logic that is utilized by parent classes.
         Returns action space according to OpenAI Gym API requirements
 
-        :return: Discrete action space of size n, n-levels of mass flowrate from [0,1] with an increment of 1/(n-1)
+        :return: Three dimensional continuous action space, normalized supply air temperature, water temperature, and dp spt from [0-1]
         """
-        return spaces.Discrete(self.nActions)
+        action_space=spaces.Box(
+                low = self.min_action,
+                high = self.max_action,
+                shape=(3,),
+                dtype=np.float32
+                )
+        return action_space
 
     def _get_observation_space(self):
         """
@@ -94,13 +100,13 @@ class FiveZoneEnv(object):
         5. fan speed
         6. Maximum damper position of five zones
         7. Minimum damper position of five zones
-        
+        8. Supply chilled water valve position
         :return: Box state space with specified lower and upper bounds for state variables.
         """
         # open gym requires an observation space during initialization
 
-        high = np.array([86400.] + [5.] +[273.15+40, 1200., 50000.,1., 1., 1.])
-        low = np.array([0.]+[0.] + [273.15+0,0, 0,0,  0, 0])
+        high = np.array([86400.] + [5.] +[273.15+40, 1200., 50000.,1., 1., 1., 1., 1.])
+        low = np.array([0.]+[0.] + [273.15+0,0, 0,0,  0, 0, 0, 0])
         return spaces.Box(low, high)
 
     # OpenAI Gym API implementation
@@ -115,7 +121,7 @@ class FiveZoneEnv(object):
         """ 
 
         action = np.array(action)
-        action = [273.15+12+6*action/float(self.nActions-1)]
+        action = [273.15+12+6*action[0], 273.15+5+5*action[1], 18000+18000*action[2]]
         return super(FiveZoneEnv,self).step(action)
     
     def _reward_policy(self):
@@ -319,7 +325,6 @@ class JModelicaCSFiveZoneEnv(FiveZoneEnv, FMI2CSEnv):
     """
 
     def __init__(self,
-                 #mass_flow_nor,
                  weather_file,
                  npre_step,
                  simulation_start_time,
@@ -330,7 +335,8 @@ class JModelicaCSFiveZoneEnv(FiveZoneEnv, FMI2CSEnv):
                  fmu_result_ncp=100,
                  filter_flag=True,
                  alpha=0.01,
-                 nActions=11,
+                 min_action=np.array([0., 0., 0.]),
+                 max_action=np.array([1., 1., 1.]),
                  rf=None,
                  p_g=None,
                  n_substeps=15):
@@ -338,7 +344,6 @@ class JModelicaCSFiveZoneEnv(FiveZoneEnv, FMI2CSEnv):
         logger.setLevel(log_level)
 
         # system parameters
-        #self.mass_flow_nor = mass_flow_nor 
         self.weather_file = weather_file 
         self.npre_step = npre_step 
 
@@ -349,7 +354,8 @@ class JModelicaCSFiveZoneEnv(FiveZoneEnv, FMI2CSEnv):
         
         # experiment parameters
         self.alpha = alpha # Positive: penalty coefficients for temperature violation in reward function 
-        self.nActions = nActions # Integer: number of actions for one control variable (level of damper position)
+        self.min_action = min_action # scalor for 1-dimensional action space, np.array for multi-dimensional action space
+        self.max_action = max_action # scalor for 1-dimensional action space, np.array for multi-dimensional action space
 
         # customized reward return
         self.rf = rf # this is an external function
@@ -374,8 +380,8 @@ class JModelicaCSFiveZoneEnv(FiveZoneEnv, FMI2CSEnv):
         self.display = None
 
         config = {
-            'model_input_names': ['uTSupSet'],
-            'model_output_names': ['time','TAirDev.y','TAirOut','GHI','PHVAC','fanSup.y','yDamMax','yDamMin'],
+            'model_input_names': ['oveAct_TSupSet','oveAct_TCHWSupSet','oveAct_dpSet'],
+            'model_output_names': ['time','TZoneAirDev_y','TOutAir_y','GHI_y','PHVAC_y','yFanSpe_y','yDamMax_y','yDamMin_y','yWatVal_y','yCooTowFan_y'],
             'model_parameters': {},
             'time_step': time_step,
             'fmu_result_handling':fmu_result_handling,
@@ -387,7 +393,7 @@ class JModelicaCSFiveZoneEnv(FiveZoneEnv, FMI2CSEnv):
         self._cost = []
         self._max_temperature_violation = []
 
-        super(JModelicaCSFiveZoneEnv,self).__init__("./FiveZoneVAV.fmu",
+        super(JModelicaCSFiveZoneEnv,self).__init__("./FiveZoneSystem.fmu",
                          config, log_level=log_level,
                          simulation_start_time=simulation_start_time)
        # location of fmu is set to current working directory

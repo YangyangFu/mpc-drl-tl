@@ -117,7 +117,7 @@ class FiveZoneEnv(object):
         """ 
 
         action = np.array(action)
-        action = [12+6*action/float(self.nActions-1)]
+        action = [273.15+12+6*action/float(self.nActions-1)]
         return super(FiveZoneEnv,self).step(action)
     
     def _reward_policy(self):

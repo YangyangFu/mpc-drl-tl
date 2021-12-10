@@ -36,7 +36,7 @@ def get_args(folder="experiment_results"):
     parser.add_argument('--n-step', type=int, default=1)
     parser.add_argument('--target-update-freq', type=int, default=100)
 
-    parser.add_argument('--epoch', type=int, default=300)
+    parser.add_argument('--epoch', type=int, default=3)
 
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--step-per-collect', type=int, default=1)
@@ -268,7 +268,7 @@ def test_dqn(args=get_args()):
         args.buffer_size, buffer_num=len(train_envs), ignore_obs_next=True)
 
     # collector
-    train_collector = Collector(policy, train_envs, buffer, exploration_noise=False)
+    train_collector = Collector(policy, train_envs, buffer, exploration_noise=True)
 
 
 
@@ -299,7 +299,8 @@ def test_dqn(args=get_args()):
         # nature DQN setting, linear decay in the first 1M steps
         max_eps_steps = args.epoch * args.step_per_epoch * 0.9
 
-        total_epoch_pass = epoch*args.step_per_epoch + env_step
+        #total_epoch_pass = epoch*args.step_per_epoch + env_step
+        total_epoch_pass = env_step
 
         #print("observe eps:  max_eps_steps, total_epoch_pass ", max_eps_steps, total_epoch_pass)
         if env_step <= max_eps_steps:
