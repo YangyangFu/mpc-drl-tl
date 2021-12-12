@@ -26,17 +26,17 @@ dt = 60*15.
 
 # define some filters to save simulation time using fmu
 measurement_names = ['time','TZoneAirDev_y','TOutAir_y','GHI_y','PHVAC_y','yFanSpe_y','yDamMax_y',
-'yDamMin_y','oveAct_TSupSet','oveAct_dpSet','modCoo.conAHU.TSup','modCoo.conAHU.ducStaPre']
+'yDamMin_y','yWatVal_y','yCooTowFan_y','modCoo.conAHU.TSup','modCoo.conAHU.TSupSet','modCoo.eleTot.y','oveAct_TSupSet']
 
 ## load fmu - cs
-fmu_name = "FiveZoneAir"
-fmu = load_fmu(fmu_name+'.fmu', log_level=6)
-fmu.set_log_level(6) # log level 0-7
+fmu_name = "FiveZoneSystemSim"
+fmu = load_fmu(fmu_name+'.fmu')
+fmu.set_log_level(0) # log level 0-7
 options = fmu.simulate_options()
 options['filter']=measurement_names
 options['result_handling']="memory" #"memory"
 
-options['ncp'] = 15
+options['ncp'] = 100
 
 # initialize output
 y = []
@@ -60,8 +60,9 @@ while ts < endTime:
     options['initialize'] = initialize  
     # generate inputs
     u = uniform(12+273.15,18+273.15)
-    v = uniform(25,410)
-    data = np.transpose(np.vstack(([ts,ts+dt],[u,u],[v,v])))
+    v = uniform(5+273.15,10+273.15)
+    w = uniform(18000,36000)
+    data = np.transpose(np.vstack(([ts,ts+dt],[u,u],[v,v],[w,w])))
     print ("data", data)
     input_object = (list(input_names),data)
     res_step = fmu.simulate(start_time=ts, final_time=te, options=options, input = input_object)
@@ -86,24 +87,15 @@ for name in measurement_names:
 
    
 plt.figure(figsize=(8,10))
-plt.subplot(311)
-plt.plot(measurement_base['time'],measurement_base['modCoo.conAHU.TSup'],'b-',label="TSup")
-plt.plot(measurement_base['time'],measurement_base['oveAct_TSupSet'],'r--',label="TSupSet")
-plt.ylabel('TSup')
+plt.subplot(211)
+plt.plot(measurement_base['time'],measurement_base['oveAct_TSupSet'],'b-',label="TSup")
+plt.plot(measurement_base['time'],measurement_base['modCoo.conAHU.TSupSet'],'r--',label="TSupSet")
 plt.legend()
-
-plt.subplot(312)
-plt.plot(measurement_base['time'],measurement_base['modCoo.conAHU.ducStaPre'],'b-',label="dp")
-plt.plot(measurement_base['time'],measurement_base['oveAct_dpSet'],'r--',label="dpSet")
-plt.ylabel('dp')
-plt.legend()
-
-plt.subplot(313)
-plt.plot(measurement_base['time'],measurement_base['PHVAC_y'])
+plt.ylabel('TSupSet')
+plt.subplot(212)
+plt.plot(measurement_base['time'],measurement_base['modCoo.eleTot.y'])
 plt.ylabel('PHVAC')
-plt.legend()
 plt.savefig('simulateFMUInputs.pdf')
-
 
 
 # clean folder after simulation
