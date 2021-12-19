@@ -13,7 +13,7 @@ from pymodelica import compile_fmu
 ### Compile Baseline Model
 # ------------
 mopath = 'FiveZoneAir.mo'
-modelpath = 'FiveZoneAir.SystemCoolSeasonBaseline'
+modelpath = 'FiveZoneAir.SystemShoulderSeasonBaseline'
 # ------------
 
 # COMPILE FMU: set JVM maximum leap to 1G to avoid memory issues
@@ -21,13 +21,13 @@ modelpath = 'FiveZoneAir.SystemCoolSeasonBaseline'
 # the defauted compilation target is model exchange, where no numerical integrator is integrated into the fmu. 
 # The equations in FMU is solved by numerical solvers in the importing tool.
 compiler_options = {"cs_rel_tol":1.0E-04}
-fmupath = compile_fmu(modelpath,[mopath], jvm_args='-Xmx8g',target='cs',version='2.0',compile_to='FiveZoneAirBaseline.fmu',compiler_options=compiler_options)
+fmupath = compile_fmu(modelpath,[mopath], jvm_args='-Xmx8g',target='cs',version='2.0',compile_to='FiveZoneAirBaselineSho.fmu',compiler_options=compiler_options)
 # -----------
 
 # ### Compile FiveZone
 # # ---------------------
 # mopath = 'FiveZoneAir.mo'
-# modelpath = 'FiveZoneAir.wrappedcool'
+# modelpath = 'FiveZoneAir.wrappedshoulder'
 # # ------------
 
 # # COMPILE FMU: set JVM maximum leap to 1G to avoid memory issues
@@ -35,7 +35,7 @@ fmupath = compile_fmu(modelpath,[mopath], jvm_args='-Xmx8g',target='cs',version=
 # # the defauted compilation target is model exchange, where no numerical integrator is integrated into the fmu. 
 # # The equations in FMU is solved by numerical solvers in the importing tool.
 # compiler_options = {"cs_rel_tol":1.0E-04}
-# fmupath = compile_fmu(modelpath,[mopath], jvm_args='-Xmx8g',target='cs',version='2.0',compile_to='FiveZoneAir.fmu',compiler_options=compiler_options)
+# fmupath = compile_fmu(modelpath,[mopath], jvm_args='-Xmx8g',target='cs',version='2.0',compile_to='FiveZoneAirSho.fmu',compiler_options=compiler_options)
 # # -----------
 
 

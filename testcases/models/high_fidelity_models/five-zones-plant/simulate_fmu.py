@@ -19,7 +19,7 @@ def uniform(a,b):
     return (b-a)*random.random_sample()+a
 
 # simulate setup
-time_stop = 7*24*3600. 
+time_stop = 5*24*3600. 
 startTime = 204*24*3600.
 endTime = startTime + time_stop
 dt = 60*15.
@@ -29,9 +29,9 @@ measurement_names = ['time','TZoneAirDev_y','TOutAir_y','GHI_y','PHVAC_y','yFanS
 'yDamMin_y','yWatVal_y','yCooTowFan_y','modCoo.conAHU.TSup','modCoo.conAHU.TSupSet','modCoo.eleTot.y','oveAct_TSupSet']
 
 ## load fmu - cs
-fmu_name = "FiveZoneSystemSim"
-fmu = load_fmu(fmu_name+'.fmu')
-fmu.set_log_level(0) # log level 0-7
+fmu_name = "FiveZonePlantSim"
+fmu = load_fmu(fmu_name+'.fmu',log_level=7)
+#fmu.set_log_level(7) # log level 0-7
 options = fmu.simulate_options()
 options['filter']=measurement_names
 options['result_handling']="memory" #"memory"
@@ -72,6 +72,10 @@ while ts < endTime:
     ts = te
 
     # get results
+loglist=fmu.get_log()
+with open('log.txt', 'w') as f:
+    for item in loglist:
+        f.write("%s\n" % item)
 
 toc = time.process_time()
 
@@ -96,6 +100,7 @@ plt.subplot(212)
 plt.plot(measurement_base['time'],measurement_base['modCoo.eleTot.y'])
 plt.ylabel('PHVAC')
 plt.savefig('simulateFMUInputs.pdf')
+
 
 
 # clean folder after simulation

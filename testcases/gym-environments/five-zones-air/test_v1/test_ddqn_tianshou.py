@@ -92,7 +92,7 @@ def make_building_env(args):
         print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
         #res = penalty * 10.0
         #res = penalty * 300.0 + cost*1e4
-        res = penalty * 500.0 + cost*500
+        res = penalty * 5000.0 + cost*500
         
         return res
 
@@ -313,8 +313,8 @@ def test_dqn(args=get_args()):
     def train_fn(epoch, env_step):
         # nature DQN setting, linear decay in the first 1M steps
         max_eps_steps = args.epoch * args.step_per_epoch * 0.9
-        total_epoch_pass = epoch*args.step_per_epoch + env_step
-        #total_epoch_pass = env_step
+        #total_epoch_pass = epoch*args.step_per_epoch + env_step
+        total_epoch_pass = env_step
         print("env_step: ", env_step)
         print("observe eps:  current epoch, step in current epoch, total_epoch_pass,  max_eps_steps", epoch, env_step % args.step_per_epoch, total_epoch_pass, max_eps_steps)
         if env_step <= max_eps_steps:
