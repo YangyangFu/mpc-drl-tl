@@ -14,15 +14,3 @@ register(
     entry_point='gym_fivezoneplant_jmodelica.envs.five_zone_plant_env_v0:JModelicaCSFiveZonePlantEnv',
     kwargs = config
 )
-
-register(
-    id='JModelicaCSFiveZonePlantEnv-v1',
-    entry_point='gym_fivezoneplant_jmodelica.envs.five_zone_plant_env_v1:JModelicaCSFiveZonePlantEnv',
-    kwargs = config
-)
-
-register(
-    id='JModelicaCSFiveZonePlantEnv-v2',
-    entry_point='gym_fivezoneplant_jmodelica.envs.five_zone_plant_env_v2:JModelicaCSFiveZonePlantEnv',
-    kwargs = config
-)

@@ -13,7 +13,7 @@ package FiveZoneAir "Five zone air system supervisory control"
     extends FiveZoneAir.VAVReheat.BaseClasses.EnergyMeterAirSide(
       eleCoiVAV(y=cor.terHea.Q1_flow + nor.terHea.Q1_flow + wes.terHea.Q1_flow +
             eas.terHea.Q1_flow + sou.terHea.Q1_flow),
-      eleSupFan(y=fanSup.P),
+      eleSupFan(y=fanSup.P*booToReaSupFan.y),
       elePla(y=cooCoi.Q1_flow/cooCOP),
       gasBoi(y=-heaCoi.Q1_flow));
     extends FiveZoneAir.VAVReheat.BaseClasses.ZoneAirTemperatureDeviation(
@@ -109,7 +109,6 @@ package FiveZoneAir "Five zone air system supervisory control"
       "Replicate real input"
       annotation (Placement(transformation(extent={{-120,320},{-100,340}})));
     FiveZoneAir.VAVReheat.Controls.ControllerOve conAHU(
-      kMinOut=0.01,
       final pMaxSet=410,
       final yFanMin=yFanMin,
       final VPriSysMax_flow=VPriSysMax_flow,
@@ -193,6 +192,14 @@ package FiveZoneAir "Five zone air system supervisory control"
       y(unit="1")) "Read the fan speed"
       annotation (Placement(transformation(extent={{300,-100},{320,-80}})));
 
+    Buildings.Utilities.IO.SignalExchange.Read TWetBul(
+      description=" wetbulb air temperature",
+      KPIs=Buildings.Utilities.IO.SignalExchange.SignalTypes.SignalsForKPIs.None,
+
+      y(unit="K")) "Read the wetbulb air temperature"
+      annotation (Placement(transformation(extent={{-300,60},{-280,80}})));
+    Buildings.Controls.OBC.CDL.Conversions.BooleanToReal booToReaSupFan
+      annotation (Placement(transformation(extent={{500,600},{520,620}})));
   equation
     connect(fanSup.port_b, dpDisSupFan.port_a) annotation (Line(
         points={{320,-40},{320,0},{320,-10},{320,-10}},
@@ -564,6 +571,14 @@ package FiveZoneAir "Five zone air system supervisory control"
             {1304,490},{1295.02,490}}, color={0,0,127}));
     connect(yFanSpe.u, fanSup.y) annotation (Line(points={{298,-90},{280,-90},{280,
             -10},{310,-10},{310,-28}}, color={0,0,127}));
+    connect(TWetBul.u, weaBus.TWetBul) annotation (Line(points={{-302,70},{-312,
+            70},{-312,180},{-320,180}}, color={0,0,127}), Text(
+        string="%second",
+        index=1,
+        extent={{-6,3},{-6,3}},
+        horizontalAlignment=TextAlignment.Right));
+    connect(booToReaSupFan.u, conAHU.ySupFan) annotation (Line(points={{498,610},
+            {476,610},{476,631.333},{424,631.333}}, color={255,0,255}));
     annotation (
       Diagram(coordinateSystem(preserveAspectRatio=false,extent={{-380,-320},{1400,
               680}})),
@@ -671,13 +686,37 @@ This is for
 
   model SystemCoolSeasonBaseline
     extends Guideline36(
+        conAHU(kTSup=0.1),
         flo(
         cor(T_start=273.15 + 24),
         sou(T_start=273.15 + 24),
         eas(T_start=273.15 + 24),
         wes(T_start=273.15 + 24),
-        nor(T_start=273.15 + 24)));
+        nor(T_start=273.15 + 24)),
+      elePla(y=max((11187.9 + 0.1754*cooCoi.Q1_flow + 24.235*TOutAir.y - 44.438
+            *TWetBul.y - 0.05*GHI.y), 0)*booToReaSupFan.y));
   end SystemCoolSeasonBaseline;
+
+  model SystemShoulderSeasonBaseline
+    extends Guideline36(
+        conAHU(kTSup=0.01),
+        flo(
+        cor(T_start=273.15 + 24),
+        sou(T_start=273.15 + 24),
+        eas(T_start=273.15 + 24),
+        wes(T_start=273.15 + 24),
+        nor(T_start=273.15 + 24)),
+      elePla(y=max((726655.8 + 4.12*cooCoi.Q1_flow - 2816.1*TOutAir.y - 2638.7*
+            TWetBul.y + 26.192*GHI.y - 0.0037*cooCoi.Q1_flow*TOutAir.y - 0.0097
+            *cooCoi.Q1_flow*TWetBul.y + 2.009*10^(-5)*cooCoi.Q1_flow*GHI.y +
+            10.2128*TOutAir.y*TWetBul.y + 0.1587*TOutAir.y*GHI.y - 0.2547*
+            TWetBul.y*GHI.y), 0)*booToReaSupFan.y));
+    annotation (experiment(
+        StartTime=13737600,
+        StopTime=14342400,
+        Tolerance=1e-06,
+        __Dymola_Algorithm="Cvode"));
+  end SystemShoulderSeasonBaseline;
 
   model wrappedcool "Wrapped model for cooling case"
    // Input overwrite
@@ -692,7 +731,7 @@ This is for
    Modelica.Blocks.Interfaces.RealOutput yDamMax_y(unit="1") = modCoo.yDamMax.y "Maximum zone air damper position";
    Modelica.Blocks.Interfaces.RealOutput yDamMin_y(unit="1") = modCoo.yDamMin.y "Minimum zone air damper position";
    // Original model
-    FiveZoneAir.SystemCoolSeasonBaseline modCoo(conAHU(
+   FiveZoneAir.SystemCoolSeasonBaseline modCoo(conAHU(
             supTemSetPoi(oveActTAirSup(uExt(y=oveAct_TSupSet), activate(y=true))),
             supFan(oveActdpAir(uExt(y=oveAct_dpSet), activate(y=true)))))
       "Original model with overwrites";
@@ -700,6 +739,48 @@ This is for
     annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
           coordinateSystem(preserveAspectRatio=false)));
   end wrappedcool;
+
+  model wrappedshoulder "Wrapped model for shoulder case"
+   // Input overwrite
+   Modelica.Blocks.Interfaces.RealInput oveAct_TSupSet(unit="K", min=273.15+12, max=273.15+18) "Supply air temperature setpoint";
+   Modelica.Blocks.Interfaces.RealInput oveAct_dpSet(unit="Pa") "Supply air dp setpoint";
+   // Out read
+   Modelica.Blocks.Interfaces.RealOutput TZoneAirDev_y(unit="K") = modCoo.dtTZonAir.y "Total zone air temperature deviation";
+   Modelica.Blocks.Interfaces.RealOutput TOutAir_y(unit="K") = modCoo.TOutAir.y "Outdoor air temperature";
+   Modelica.Blocks.Interfaces.RealOutput GHI_y(unit="W/m2") = modCoo.GHI.y "Global horizontal solar radiation";
+   Modelica.Blocks.Interfaces.RealOutput PHVAC_y(unit="W") = modCoo.PHVAC.y "Total HVAC power";
+   Modelica.Blocks.Interfaces.RealOutput yFanSpe_y(unit="1") = modCoo.yFanSpe.y "AHU fan speed";
+   Modelica.Blocks.Interfaces.RealOutput yDamMax_y(unit="1") = modCoo.yDamMax.y "Maximum zone air damper position";
+   Modelica.Blocks.Interfaces.RealOutput yDamMin_y(unit="1") = modCoo.yDamMin.y "Minimum zone air damper position";
+   // Original model
+    FiveZoneAir.SystemShoulderSeasonBaseline modCoo(conAHU(
+            supTemSetPoi(oveActTAirSup(uExt(y=oveAct_TSupSet), activate(y=true))),
+            supFan(oveActdpAir(uExt(y=oveAct_dpSet), activate(y=true)))))
+      "Original model with overwrites";
+
+    annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+          coordinateSystem(preserveAspectRatio=false)));
+  end wrappedshoulder;
+
+  model wrappedcooltsup "Wrapped model for cooling case"
+   // Input overwrite
+   Modelica.Blocks.Interfaces.RealInput oveAct_TSupSet(unit="K", min=273.15+12, max=273.15+18) "Supply air temperature setpoint";
+   // Out read
+   Modelica.Blocks.Interfaces.RealOutput TZoneAirDev_y(unit="K") = modCoo.dtTZonAir.y "Total zone air temperature deviation";
+   Modelica.Blocks.Interfaces.RealOutput TOutAir_y(unit="K") = modCoo.TOutAir.y "Outdoor air temperature";
+   Modelica.Blocks.Interfaces.RealOutput GHI_y(unit="W/m2") = modCoo.GHI.y "Global horizontal solar radiation";
+   Modelica.Blocks.Interfaces.RealOutput PHVAC_y(unit="W") = modCoo.PHVAC.y "Total HVAC power";
+   Modelica.Blocks.Interfaces.RealOutput yFanSpe_y(unit="1") = modCoo.yFanSpe.y "AHU fan speed";
+   Modelica.Blocks.Interfaces.RealOutput yDamMax_y(unit="1") = modCoo.yDamMax.y "Maximum zone air damper position";
+   Modelica.Blocks.Interfaces.RealOutput yDamMin_y(unit="1") = modCoo.yDamMin.y "Minimum zone air damper position";
+   // Original model
+    FiveZoneAir.SystemCoolSeasonBaseline modCoo(conAHU(
+            supTemSetPoi(oveActTAirSup(uExt(y=oveAct_TSupSet), activate(y=true)))))
+      "Original model with overwrites";
+
+    annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+          coordinateSystem(preserveAspectRatio=false)));
+  end wrappedcooltsup;
 
   package VAVReheat "Variable air volume flow system with terminal reheat and five thermal zone"
     extends Modelica.Icons.ExamplesPackage;

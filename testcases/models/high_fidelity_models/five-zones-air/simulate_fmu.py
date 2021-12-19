@@ -20,7 +20,7 @@ def uniform(a,b):
 
 # simulate setup
 time_stop = 7*24*3600. 
-startTime = 204*24*3600.
+startTime = 159*24*3600.
 endTime = startTime + time_stop
 dt = 60*15.
 
@@ -29,7 +29,7 @@ measurement_names = ['time','TZoneAirDev_y','TOutAir_y','GHI_y','PHVAC_y','yFanS
 'yDamMin_y','oveAct_TSupSet','oveAct_dpSet','modCoo.conAHU.TSup','modCoo.conAHU.ducStaPre']
 
 ## load fmu - cs
-fmu_name = "FiveZoneAir"
+fmu_name = "FiveZoneAirSho"
 fmu = load_fmu(fmu_name+'.fmu', log_level=6)
 fmu.set_log_level(6) # log level 0-7
 options = fmu.simulate_options()
@@ -101,8 +101,8 @@ plt.legend()
 plt.subplot(313)
 plt.plot(measurement_base['time'],measurement_base['PHVAC_y'])
 plt.ylabel('PHVAC')
-plt.legend()
-plt.savefig('simulateFMUInputs.pdf')
+
+plt.savefig('simulateFMUInputsSho.pdf')
 
 
 

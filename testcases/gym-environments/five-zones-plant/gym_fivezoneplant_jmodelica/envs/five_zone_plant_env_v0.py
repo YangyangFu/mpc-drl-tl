@@ -44,9 +44,9 @@ class FiveZonePlantEnv(object):
     Actions:
         Type: Box(3)
         Num    Action           					 Min       Max
-        0      Supply air temperature spt		      0         1
-		1	   Supply chilled water temperature spt   0			1
-		2      Supply chilled water dp spt			  0			1
+        0      Supply air temperature spt		      -1        1
+		1	   Supply chilled water temperature spt   -1		1
+		2      Supply chilled water dp spt			  -1		1
     Reward:
          Sum of energy consumption and zone temperature violations
 
@@ -121,7 +121,7 @@ class FiveZonePlantEnv(object):
         """ 
 
         action = np.array(action)
-        action = [273.15+12+6*action[0], 273.15+5+5*action[1], 18000+18000*action[2]]
+        action = [273.15+12+6*(action[0]+1)/2, 273.15+5+5*(action[1]+1)/2, 18000+18000*(action[2]+1)/2]
         return super(FiveZonePlantEnv,self).step(action)
     
     def _reward_policy(self):
@@ -332,10 +332,10 @@ class JModelicaCSFiveZonePlantEnv(FiveZonePlantEnv, FMI2CSEnv):
                  time_step,
                  log_level,
                  fmu_result_handling='memory',
-                 fmu_result_ncp=100,
+                 fmu_result_ncp=15,
                  filter_flag=True,
                  alpha=0.01,
-                 min_action=np.array([0., 0., 0.]),
+                 min_action=np.array([-1., -1., -1.]),
                  max_action=np.array([1., 1., 1.]),
                  rf=None,
                  p_g=None,

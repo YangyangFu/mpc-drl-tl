@@ -37,8 +37,8 @@ def get_args(folder):
     parser.add_argument('--hidden-sizes', type=int, nargs='*', default=[128,128,128,128])#!!!
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--epoch', type=int, default=2)
-    parser.add_argument('--step-per-collect', type=int, default=96*4) #96*4 2048
+    parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--step-per-collect', type=int, default=96*4) #2048
     parser.add_argument('--repeat-per-collect', type=int, default=10)
     parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--training-num', type=int, default=1)
@@ -46,8 +46,8 @@ def get_args(folder):
     # ppo special
     parser.add_argument('--rew-norm', type=int, default=True)
     # In theory, `vf-coef` will not make any difference if using Adam optimizer.
-    parser.add_argument('--vf-coef', type=float, default=0.25)
-    parser.add_argument('--ent-coef', type=float, default=0.0)
+    parser.add_argument('--vf-coef', type=float, default=0.5)
+    parser.add_argument('--ent-coef', type=float, default=0)
     parser.add_argument('--gae-lambda', type=float, default=0.95)
     parser.add_argument('--bound-action-method', type=str, default="clip")
     parser.add_argument('--lr-decay', type=int, default=True)
@@ -71,7 +71,7 @@ def get_args(folder):
 def make_building_env(args):
     weather_file_path = "./USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
     npre_step = 0
-    simulation_start_time = 204*24*3600.0
+    simulation_start_time = 159*24*3600.0
     simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
     log_level = 0
     alpha = 1
@@ -231,6 +231,8 @@ def onpolicy_trainer1(
                 result = train_collector.collect(
                     n_step=step_per_collect, n_episode=episode_per_collect
                 )
+                print ("result", result)
+                
                 if result["n/ep"] > 0 and reward_metric:
                     result["rews"] = reward_metric(result["rews"])
                 env_step += int(result["n/st"])
@@ -389,7 +391,7 @@ def test_ppo(args):
         buffer = VectorReplayBuffer(args.buffer_size, len(train_envs))
     else:
         buffer = ReplayBuffer(args.buffer_size)
-    train_collector = Collector(policy, train_envs, buffer, exploration_noise=True)
+    train_collector = Collector(policy, train_envs, buffer)#, exploration_noise=False)
     test_collector = Collector(policy, test_envs)
     # log
     t0 = datetime.datetime.now().strftime("%m%d_%H%M%S")
@@ -425,7 +427,7 @@ def test_ppo(args):
         print("Testing agent ...")
         buffer = VectorReplayBuffer(args.step_per_epoch+1, len(test_envs))
 
-        collector = Collector(policy, test_envs, buffer, exploration_noise=False)
+        collector = Collector(policy, test_envs, buffer)#, exploration_noise=False)
         result = collector.collect(n_step=args.step_per_epoch)
         
         np.save(args.save_buffer_name+'/his_act_final.npy', buffer._meta.__dict__['act'])
@@ -439,7 +441,8 @@ def test_ppo(args):
 
 
 if __name__ == '__main__':
-    
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(device)    
     folder='./ppo_results'
     if not os.path.exists(folder):
         os.mkdir(folder)

@@ -42,8 +42,8 @@ class FiveZoneAirEnv(object):
     Actions:
         Type: Box(3)
         Num    Action           					 Min       Max
-        0      Supply air temperature spt		      0         1
-		1      Supply air water dp spt			      0			1
+        0      Supply air temperature spt		      -1        1
+		1      Supply air water dp spt			      -1		1
     Reward:
          Sum of energy consumption and zone temperature violations
 
@@ -113,12 +113,12 @@ class FiveZoneAirEnv(object):
         in the current state perform given action to move to the next action.
         Applies force of the defined magnitude in one of two directions, depending on the action parameter sign.
 
-        :param action: alias of an action [0-10] to be performed. 
+        :param action: alias of an action [-1,1] to be performed. 
         :return: next (resulting) state
         """ 
 
         action = np.array(action)
-        action = [273.15+12+6*action[0], 25+(410-25)*action[1]]
+        action = [273.15+12+6*(action[0]+1)/2, 25+(410-25)*(action[1]+1)/2]
         return super(FiveZoneAirEnv,self).step(action)
     
     def _reward_policy(self):
@@ -206,8 +206,17 @@ class FiveZoneAirEnv(object):
         #predictor_list = self.predictor(self.npre_step)
 
         state_list[0] = int(state_list[0]) % 86400
-        return tuple(state_list) #+predictor_list) 
-
+        return tuple(state_list) #+predictor_list)
+    
+    
+    def get_action(self):
+        # 1. get actions at the time step
+        #   model_inputs    
+        model_inputs = self.model_input_names
+        action_list = [self.result.final(k) for k in model_inputs]
+        return tuple(action_list)
+        
+        
     def predictor(self,n):
         """
         Predict weather conditions over a period
@@ -332,7 +341,7 @@ class JModelicaCSFiveZoneAirEnv(FiveZoneAirEnv, FMI2CSEnv):
                  fmu_result_ncp=15,
                  filter_flag=True,
                  alpha=0.01,
-                 min_action=np.array([0., 0.]),
+                 min_action=np.array([-1., -1.]),
                  max_action=np.array([1., 1.]),
                  rf=None,
                  p_g=None,
