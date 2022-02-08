@@ -210,14 +210,13 @@ def test_c51(args=get_args()):
         torch.save(policy.state_dict(), os.path.join(log_path, 'policy.pth'))
 
     def train_fn(epoch, env_step):
-        # nature DQN setting, linear decay in the first 1M steps
-        max_eps_steps = args.epoch * args.step_per_epoch * 0.9
 
-        total_epoch_pass = epoch*args.step_per_epoch + env_step
+        # nature DQN setting, linear decay in the first 1M steps
+        max_eps_steps = int(args.epoch * args.step_per_epoch * 0.9)
 
         #print("observe eps:  max_eps_steps, total_epoch_pass ", max_eps_steps, total_epoch_pass)
         if env_step <= max_eps_steps:
-            eps = args.eps_train - total_epoch_pass * (args.eps_train - args.eps_train_final) / max_eps_steps
+            eps = args.eps_train - env_step * (args.eps_train - args.eps_train_final) / max_eps_steps
         else:
             eps = args.eps_train_final
         policy.set_eps(eps)
