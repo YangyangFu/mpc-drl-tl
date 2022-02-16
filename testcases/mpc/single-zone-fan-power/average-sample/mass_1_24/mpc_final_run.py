@@ -26,7 +26,7 @@ baseline = load_fmu('SingleZoneDamperControlBaseline.fmu')
 
 ## fmu settings
 options = baseline.simulate_options()
-options['ncp'] = 5000
+options['ncp'] = 500
 options['initialize'] = True
 
 ## construct optimal input for fmu
@@ -52,7 +52,7 @@ mpc = load_fmu('SingleZoneDamperControl.fmu')
 
 ## fmu settings
 options = mpc.simulate_options()
-options['ncp'] = 5000
+options['ncp'] = 50
 options['initialize'] = True
 
 ## construct optimal input for fmu
@@ -137,7 +137,3 @@ plt.ylabel('Total [W]')
 plt.legend()
 plt.savefig('mpc-vs-rbc.pdf')
 plt.savefig('mpc-vs-rbc.png')
-
-
-
-

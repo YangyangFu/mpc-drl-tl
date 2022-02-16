@@ -8,7 +8,7 @@ import json
 # load testbed
 from pyfmi import load_fmu
 # import mpc
-from mpc_revise import mpc_case
+from mpc1 import mpc_case
 
 # get measurement
 def get_measurement(fmu_result,names):
@@ -106,7 +106,7 @@ hvac = load_fmu('SingleZoneDamperControl.fmu')
 
 ## fmu settings
 options = hvac.simulate_options()
-options['ncp'] = 500
+options['ncp'] = 50
 options['initialize'] = True
 
 # Warm up FMU simulation settings
@@ -158,6 +158,7 @@ predictor['Toa'] = get_Toa(ts+dt,dt,PH,Toa_year)
 
 ### ==================================
 ### 3- MPC Control Loop
+mFan_nominal=0.75 # kg/s
 uFan_ini = 0.
 # initialize fan speed for warmup setup
 uFan = uFan_ini
@@ -194,6 +195,8 @@ while ts<end:
         case.set_measurement(measurement)
         case.set_states(states)   
         case.set_predictor(predictor)
+        case.set_u_prev(u_opt_ch)
+
         # call optimizer
         optimum = case.optimize()
 
@@ -210,11 +213,12 @@ while ts<end:
         # update start points for optimizer using previous optimum value
         case.set_u_start(u_opt_ph)
 
-        
         # update predictions after MPC predictor is called otherwise use measurement 
-        Tz_pred = float(case._Tz(u_opt_ph)[0])
+        print(u_opt_ph, case._autoerror)
+        Tz_pred = float(case.predict_zone_temp(
+            case.states['Tz_his_meas'], case.states['To_his_meas'], u_opt_ch[0]*mFan_nominal, 13, case._autoerror))
         # update power prediction after MPC call
-        P_pred = float(case._P(u_opt_ph)[0])
+        P_pred = float(case.predict_power(u_opt_ch[0]*mFan_nominal))
 
     ### advance building simulation by one step
     #u_traj = np.transpose(np.vstack(([ts,te],[uFan,uFan])))
@@ -236,7 +240,8 @@ while ts<end:
     if warmup:
         Tz_pred = measurement['TRoo'].values[0] - 273.15
         P_pred = measurement['PTot'].values[0]
- 
+        u_opt_ch = [uFan, 0.1]
+
     states = get_states(states,measurement, Tz_pred)
     print ("\nstate 4")
     print (states)
