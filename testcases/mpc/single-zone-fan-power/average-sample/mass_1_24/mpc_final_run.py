@@ -12,7 +12,7 @@ from pyfmi import load_fmu
 
 # simulation setup
 ts = 195*24*3600.#+13*24*3600
-nday = 1
+nday = 7
 period = nday*24*3600.
 te = ts + period
 dt = 15*60.
@@ -52,7 +52,7 @@ mpc = load_fmu('SingleZoneDamperControl.fmu')
 
 ## fmu settings
 options = mpc.simulate_options()
-options['ncp'] = 50
+options['ncp'] = 500
 options['initialize'] = True
 
 ## construct optimal input for fmu
@@ -92,7 +92,7 @@ for i in range(nday):
 price_tou = [0.02987, 0.02987, 0.02987, 0.02987, 
         0.02987, 0.02987, 0.04667, 0.04667, 
         0.04667, 0.04667, 0.04667, 0.04667, 
-        0.04667, 0.04667, 0.15877, 0.15877, 
+        0.15877, 0.15877, 0.15877, 0.15877,
         0.15877, 0.15877, 0.15877, 0.04667, 
         0.04667, 0.04667, 0.02987, 0.02987]*nday
 

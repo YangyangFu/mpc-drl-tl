@@ -66,7 +66,7 @@ def get_price(time,dt,PH):
     price_tou = [0.02987, 0.02987, 0.02987, 0.02987, 
         0.02987, 0.02987, 0.04667, 0.04667, 
         0.04667, 0.04667, 0.04667, 0.04667, 
-        0.04667, 0.04667, 0.15877, 0.15877, 
+        0.15877, 0.15877, 0.15877, 0.15877,
         0.15877, 0.15877, 0.15877, 0.04667, 
         0.04667, 0.04667, 0.02987, 0.02987]
     t_ph = np.arange(time,time+dt*PH,dt)
@@ -99,14 +99,14 @@ def get_Toa(time,dt,PH,Toa_year):
 
 ### 0- Simulation setup
 start = 195*24*3600. # 181 - 7/1 
-end = start + 1*24*3600.
+end = start + 7*24*3600.
 
 ### 1- Load virtual building model
 hvac = load_fmu('SingleZoneDamperControl.fmu')
 
 ## fmu settings
 options = hvac.simulate_options()
-options['ncp'] = 50
+options['ncp'] = 100
 options['initialize'] = True
 
 # Warm up FMU simulation settings
@@ -158,7 +158,7 @@ predictor['Toa'] = get_Toa(ts+dt,dt,PH,Toa_year)
 
 ### ==================================
 ### 3- MPC Control Loop
-mFan_nominal=0.75 # kg/s
+mFan_nominal=0.4 # kg/s
 uFan_ini = 0.
 # initialize fan speed for warmup setup
 uFan = uFan_ini

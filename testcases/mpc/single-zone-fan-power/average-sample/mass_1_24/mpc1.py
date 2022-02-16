@@ -187,7 +187,7 @@ class mpc_case():
 
         # some mpc settings
         self.n = 2 # number of control variable for each step
-        self.w = [1000., 1., 1.] # weights between energy cost and temperature violation and actions violations
+        self.w = [1., 1., 0.05] # weights between energy cost and temperature violation and actions violations
         self.u_lb = [0.]*self.n
         self.u_ub = [1.,0.1]
         # initialize optimiztion
@@ -227,7 +227,7 @@ class mpc_case():
         P_pred_ph = []
         Tz_his_meas_k = [Tz_meas for Tz_meas in Tz_his_meas]
         To_his_meas_k = [To_meas for To_meas in To_his_meas]
-        mFan_nominal = 0.75 #kg/s
+        mFan_nominal = 0.4 #kg/s
         u_prev = self.x_opt_0
 
         for k in range(self.PH):
