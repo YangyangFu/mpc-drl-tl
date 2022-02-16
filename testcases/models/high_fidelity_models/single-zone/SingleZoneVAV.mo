@@ -33,7 +33,7 @@ package SingleZoneVAV
     BaseClasses.Airflow hvac(
       redeclare package MediumA = MediumA,
       redeclare package MediumW = MediumW,
-      mAir_flow_nominal=0.75,
+      mAir_flow_nominal=0.4,
       etaHea_nominal=0.99,
       QHea_flow_nominal=7000,
       QCoo_flow_nominal=-7000,
@@ -207,8 +207,9 @@ package SingleZoneVAV
             -10},{-116,-10},{-116,-70},{-102,-70}}, color={0,0,127}));
     connect(oveTSetRooHea.y, senTSetRooHea.u) annotation (Line(points={{-119,30},
             {-116,30},{-116,50},{-102,50}}, color={0,0,127}));
-    connect(zon.CO2, CO2RooAir.u) annotation (Line(points={{81,-4},{100,-4},{100,-30},
-            {118,-30}}, color={0,0,127}));
+    connect(zon.CO2, CO2RooAir.u) annotation (Line(points={{81,-4},{100,-4},{
+            100,-30},{118,-30}},
+                        color={0,0,127}));
     connect(TRooAir.y, TRoo)
       annotation (Line(points={{141,0},{170,0}}, color={0,0,127}));
     connect(CO2RooAir.y, CO2Roo)
@@ -316,7 +317,7 @@ First implementation.
     BaseClasses.Airflow hvac(
       redeclare package MediumA = MediumA,
       redeclare package MediumW = MediumW,
-      mAir_flow_nominal=0.75,
+      mAir_flow_nominal=0.4,
       etaHea_nominal=0.99,
       QHea_flow_nominal=7000,
       QCoo_flow_nominal=-7000,
@@ -597,7 +598,7 @@ First implementation.
     BaseClasses.Airflow hvac(
       redeclare package MediumA = MediumA,
       redeclare package MediumW = MediumW,
-      mAir_flow_nominal=0.75,
+      mAir_flow_nominal=0.4,
       etaHea_nominal=0.99,
       QHea_flow_nominal=7000,
       QCoo_flow_nominal=-7000,
@@ -889,7 +890,7 @@ First implementation.
     BaseClasses.Airflow hvac(
       redeclare package MediumA = MediumA,
       redeclare package MediumW = MediumW,
-      mAir_flow_nominal=0.75,
+      mAir_flow_nominal=0.4,
       etaHea_nominal=0.99,
       QHea_flow_nominal=7000,
       QCoo_flow_nominal=-7000,
