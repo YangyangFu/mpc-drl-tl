@@ -8,7 +8,7 @@ import json
 # load testbed
 from pyfmi import load_fmu
 # import mpc
-from mpc1 import mpc_case
+from mpc import mpc_case
 
 # get measurement
 def get_measurement(fmu_result,names):
