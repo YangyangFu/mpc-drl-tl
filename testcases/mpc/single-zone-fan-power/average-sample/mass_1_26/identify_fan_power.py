@@ -89,7 +89,7 @@ plt.savefig('power.pdf')
 
 
 ### check robustness
-x_fit = np.arange(0,0.75,0.01)
+x_fit = np.arange(0,0.4,0.01)
 print(x_fit)
 y_fit = [func_P(i,*popt) for i in x_fit]
 

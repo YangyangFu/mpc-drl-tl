@@ -8,4 +8,4 @@ docker run \
 	-i \
 	-t \
 	mpcdrl /bin/bash -c \
-	"source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/test_power_casadi.py"  
+	"source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/mpc_final_run.py"  
