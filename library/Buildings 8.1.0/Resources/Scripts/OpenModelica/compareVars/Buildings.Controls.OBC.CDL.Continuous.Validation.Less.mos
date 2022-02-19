@@ -1,0 +1,7 @@
+compareVars :=
+  {
+    "les.u1",
+    "les.u2",
+    "les.y",
+    "lesHys.y"
+  };

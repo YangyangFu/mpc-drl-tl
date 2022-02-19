@@ -1,9 +1,0 @@
-compareVars :=
-  {
-    "controller.TZonCooSet",
-    "controller.TZonHeaSet",
-    "controller.TZon",
-    "controller.yFan",
-    "controller.yHeaCoi",
-    "controller.yCooCoi"
-  };
