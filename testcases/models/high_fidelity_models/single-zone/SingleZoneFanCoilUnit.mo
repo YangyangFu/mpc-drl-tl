@@ -26,7 +26,7 @@ package SingleZoneFanCoilUnit
         annotation (Placement(transformation(extent={{36,-50},{56,-30}})));
       Modelica.Blocks.Interfaces.RealOutput TOut "Value of Real output"
         annotation (Placement(transformation(extent={{100,-50},{120,-30}})));
-      Modelica.Blocks.Sources.RealExpression reaSupAirFlo(y=fcu.fan.m_flow_in)
+      Modelica.Blocks.Sources.RealExpression reaSupAirFlo(y=fcu.returnAir.m_flow)
         "Read supply air flowrate"
         annotation (Placement(transformation(extent={{36,-80},{56,-60}})));
       Modelica.Blocks.Interfaces.RealOutput m_flow_in "Value of Real output"
