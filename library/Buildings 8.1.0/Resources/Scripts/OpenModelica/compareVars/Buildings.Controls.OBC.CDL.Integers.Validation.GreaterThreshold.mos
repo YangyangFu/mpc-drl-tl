@@ -1,0 +1,6 @@
+compareVars :=
+  {
+    "intGreThr.t",
+    "intGreThr.u",
+    "intGreThr.y"
+  };
