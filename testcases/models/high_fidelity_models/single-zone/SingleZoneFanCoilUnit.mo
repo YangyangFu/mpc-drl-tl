@@ -2252,8 +2252,8 @@ First implementation.
         annotation (Placement(transformation(extent={{36,-30},{66,0}})));
       Modelica.Blocks.Routing.Multiplex3 multiplex3_1
         annotation (Placement(transformation(extent={{-18,64},{-10,72}})));
-      Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(filNam=
-            Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/DRYCOLD.mos"),
+      Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
+        filNam="Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos",
           computeWetBulbTemperature=true)
         annotation (Placement(transformation(extent={{98,-94},{86,-82}})));
       Modelica.Blocks.Sources.Constant uSha(k=0)
