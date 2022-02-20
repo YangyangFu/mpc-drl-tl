@@ -25,11 +25,11 @@ endTime = startTime + time_stop
 dt = 60*15.
 
 ## load fmu - cs
-fmu_name = "SingleZoneDamperControl"
+fmu_name = "SingleZoneFCU"
 fmu = load_fmu(fmu_name+'.fmu')
 fmu.set_log_level(7) # log level 0-7
 options = fmu.simulate_options()
-options['filter']=['uFan','TRoo','hvac.uFan']
+options['filter']=['uFan','TRoo']
 options['result_handling']="memory" #"memory"
 
 options['ncp'] = 100
