@@ -722,7 +722,7 @@ First implementation.
       Modelica.Blocks.Sources.RealExpression reaTOut(y=zon.weaSta.reaWeaTDryBul.y)
         "Read T out"
         annotation (Placement(transformation(extent={{36,-68},{56,-48}})));
-      Modelica.Blocks.Sources.RealExpression reaSupAirFlo(y=fcu.fan.m_flow_in)
+      Modelica.Blocks.Sources.RealExpression reaSupAirFlo(y=fcu.returnAir.m_flow)
         "Read supply air flowrate"
         annotation (Placement(transformation(extent={{36,-98},{56,-78}})));
     equation
