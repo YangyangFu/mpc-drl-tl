@@ -66,8 +66,8 @@ def get_price(time,dt,PH):
     price_tou = [0.02987, 0.02987, 0.02987, 0.02987, 
         0.02987, 0.02987, 0.04667, 0.04667, 
         0.04667, 0.04667, 0.04667, 0.04667, 
-        0.15877, 0.15877, 0.15877, 0.15877,
-        0.15877, 0.15877, 0.15877, 0.04667, 
+        2*0.15877, 2*0.15877, 2*0.15877, 2*0.15877,
+        2*0.15877, 2*0.15877, 2*0.15877, 0.04667, 
         0.04667, 0.04667, 0.02987, 0.02987]
     t_ph = np.arange(time,time+dt*PH,dt)
     price_ph = [price_tou[int(t % 86400 /3600)] for t in t_ph]
@@ -98,8 +98,8 @@ def get_Toa(time,dt,PH,Toa_year):
     return list(Toa.values.flatten())
 
 ### 0- Simulation setup
-start = 195*24*3600. # 181 - 7/1 
-end = start + 7*24*3600.
+start = 198*24*3600. # 181 - 7/1 
+end = start + 2*24*3600.
 
 ### 1- Load virtual building model
 hvac = load_fmu('SingleZoneDamperControl.fmu')
@@ -108,6 +108,7 @@ hvac = load_fmu('SingleZoneDamperControl.fmu')
 options = hvac.simulate_options()
 options['ncp'] = 100
 options['initialize'] = True
+print("mSenFac: ", hvac.get("mSenFac"))
 
 # Warm up FMU simulation settings
 ts = start
@@ -115,7 +116,7 @@ te_warm = ts + 1*3600
 
 ### 2- Initialize MPC case 
 dt = 15*60.
-PH = 4
+PH = 4*12
 CH = 1
 with open('zone_arx.json') as f:
   parameters_zone = json.load(f)
@@ -152,9 +153,9 @@ states_ini = {'Tz_his_meas':[Tz_ini]*lag_Tz,
 ### predictors
 predictor = {}
 # energy prices 
-predictor['price'] = get_price(ts+dt,dt,PH)
+predictor['price'] = get_price(ts,dt,PH)
 # outdoor air temperature
-predictor['Toa'] = get_Toa(ts+dt,dt,PH,Toa_year)
+predictor['Toa'] = get_Toa(ts,dt,PH,Toa_year)
 
 ### ==================================
 ### 3- MPC Control Loop
@@ -250,8 +251,8 @@ while ts<end:
     # update parameter_zones and parameters_power - NOT IMPLEMENTED
     
     # update predictor
-    predictor['price'] = get_price(ts+dt,dt,PH)
-    predictor['Toa'] = get_Toa(ts+dt,dt,PH,Toa_year)
+    predictor['price'] = get_price(ts,dt,PH)
+    predictor['Toa'] = get_Toa(ts,dt,PH,Toa_year)
 
     # update fmu settings
     options['initialize'] = False

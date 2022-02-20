@@ -11,8 +11,8 @@ import json
 from pyfmi import load_fmu
 
 # simulation setup
-ts = 195*24*3600.#+13*24*3600
-nday = 7
+ts = 198*24*3600.#+13*24*3600
+nday = 2
 period = nday*24*3600.
 te = ts + period
 dt = 15*60.
@@ -137,3 +137,87 @@ plt.ylabel('Total [W]')
 plt.legend()
 plt.savefig('mpc-vs-rbc.pdf')
 plt.savefig('mpc-vs-rbc.png')
+
+## some KPIs
+# save baseline and mpc measurements from simulation
+## save interpolated measurement data for comparison
+def interpolate_dataframe(df,new_index):
+    """Interpolate a dataframe along its index based on a new index
+    """
+    df_out = pd.DataFrame(index=new_index)
+    df_out.index.name = df.index.name
+
+    for col_name, col in df.items():
+        df_out[col_name] = np.interp(new_index, df.index, col)    
+    return df_out
+
+measurement_base = pd.DataFrame(measurement_base,index=measurement_base['time'])
+measurement_mpc = pd.DataFrame(measurement_mpc,index=measurement_mpc['time'])
+
+tim_intp = np.arange(ts,te+1,60)
+measurement_base_60 = interpolate_dataframe(measurement_base[['PTot','TRoo']],tim_intp)
+measurement_mpc_60 = interpolate_dataframe(measurement_mpc[['PTot','TRoo']],tim_intp)
+measurement_base_900 = measurement_base_60.groupby(measurement_base_60.index//900).mean() # every 15 minutes
+measurement_mpc_900 = measurement_mpc_60.groupby(measurement_mpc_60.index//900).mean() # every 15 minutes
+
+
+def get_metrics(Ptot, TZone, price_tou, nsteps_h=4):
+    """
+    TZone: ixk - k is the number of zones
+    """
+    n = len(Ptot)
+    energy_cost = []
+    temp_violation = []
+    energy = []
+
+    for i in range(n):
+        # assume 1 step is 15 minutes and data starts from hour 0
+        hindex = (i % (nsteps_h*24))//nsteps_h
+
+        # energy cost
+        power = Ptot[i]
+        price = price_tou[hindex]
+        energy_cost.append(power/1000./nsteps_h*price)
+        energy.append(power/1000./nsteps_h)
+        # maximum temperature violation
+        number_zone = 1
+
+        T_upper = np.array([30.0 for j in range(24)])
+        T_upper[7:19] = 26.0
+        T_lower = np.array([12.0 for j in range(24)])
+        T_lower[7:19] = 22.0
+
+        overshoot = []
+        undershoot = []
+        violation = []
+        for k in range(number_zone):
+            overshoot.append(
+                np.array([float((TZone[i, k] - 273.15) - T_upper[hindex]), 0.0]).max())
+            undershoot.append(
+                np.array([float(T_lower[hindex] - (TZone[i, k]-273.15)), 0.0]).max())
+            violation.append(overshoot[k]+undershoot[k])
+        temp_violation.append(violation)
+    print(np.array(energy_cost).shape)
+    print(np.array(temp_violation).shape)
+    return np.concatenate((np.array(energy).reshape(-1,1), np.array(energy_cost).reshape(-1, 1), np.array(temp_violation)), axis=1)
+
+#### get metrics
+#================================================================================
+metrics_base = get_metrics(measurement_base_900['PTot'].values, measurement_base_900['TRoo'].values.reshape(-1,1), price_tou)
+metrics_mpc = get_metrics(measurement_mpc_900['PTot'].values, measurement_mpc_900['TRoo'].values.reshape(-1,1), price_tou)
+
+metrics_base = pd.DataFrame(metrics_base, columns=[['energy','ene_cost', 'temp_violation']])
+metrics_mpc = pd.DataFrame(metrics_mpc, columns=[['energy', 'ene_cost', 'temp_violation']])
+
+comparison = {'base': {'energy': list(metrics_base['energy'].sum()),
+                       'energy_cost': list(metrics_base['ene_cost'].sum()),
+                       'total_temp_violation': list(metrics_base['temp_violation'].sum()),
+                       'max_temp_violation': list(metrics_base['temp_violation'].max())},
+              'mpc': {'energy': list(metrics_mpc['energy'].sum()),
+                      'energy_cost': list(metrics_mpc['ene_cost'].sum()),
+                      'total_temp_violation': list(metrics_mpc['temp_violation'].sum()),
+                      'max_temp_violation': list(metrics_mpc['temp_violation'].max())}
+              }
+
+with open('mpc-vs-rbc.json', 'w') as outfile:
+    json.dump(comparison, outfile)

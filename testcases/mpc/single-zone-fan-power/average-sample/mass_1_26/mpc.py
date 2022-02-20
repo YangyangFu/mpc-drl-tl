@@ -38,7 +38,7 @@ class mpc_case():
 
         # some mpc settings
         self.n = 2 # number of control variable for each step
-        self.w = [1., 1., 0.05] # weights between energy cost and temperature violation and actions violations
+        self.w = [1000., 10, 1.] # weights between energy cost and temperature violation and actions violations
         self.u_lb = [0.]*self.n
         self.u_ub = [1.,0.1]
         # initialize optimiztion
@@ -122,7 +122,13 @@ class mpc_case():
         # get overshoot and undershoot for each step
         # current time step
         time = self.time
-
+        h_time = int(time % 86400/3600)
+        
+        if h_time == 11:
+            print("=======================\ntime:" + str(h_time))
+            print(time)
+            print(price_ph)
+            input("Press Enter to continue")
         g = []
         lbg = []
         ubg = []
