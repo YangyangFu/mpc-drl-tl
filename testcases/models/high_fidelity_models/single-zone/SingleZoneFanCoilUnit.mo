@@ -15,6 +15,22 @@ package SingleZoneFanCoilUnit
         annotation (Placement(transformation(extent={{-80,30},{-60,50}})));
       Modelica.Blocks.Interfaces.RealInput uFan "Fan speed signal"
         annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      Modelica.Blocks.Math.MultiSum multiSum(nu=3)
+        annotation (Placement(transformation(extent={{50,38},{62,50}})));
+      Modelica.Blocks.Interfaces.RealOutput TRoo "Room air temperature"
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+      Modelica.Blocks.Interfaces.RealOutput PTot
+        annotation (Placement(transformation(extent={{100,34},{120,54}})));
+      Modelica.Blocks.Sources.RealExpression reaTOut(y=zon.weaSta.reaWeaTDryBul.y)
+        "Read T out"
+        annotation (Placement(transformation(extent={{36,-50},{56,-30}})));
+      Modelica.Blocks.Interfaces.RealOutput TOut "Value of Real output"
+        annotation (Placement(transformation(extent={{100,-50},{120,-30}})));
+      Modelica.Blocks.Sources.RealExpression reaSupAirFlo(y=fcu.fan.m_flow_in)
+        "Read supply air flowrate"
+        annotation (Placement(transformation(extent={{36,-80},{56,-60}})));
+      Modelica.Blocks.Interfaces.RealOutput m_flow_in "Value of Real output"
+        annotation (Placement(transformation(extent={{100,-80},{120,-60}})));
     equation
       connect(fcu.supplyAir, zon.supplyAir) annotation (Line(points={{0,13.7778},
               {20,13.7778},{20,2},{34,2}},color={0,127,255}));
@@ -24,6 +40,20 @@ package SingleZoneFanCoilUnit
               {-40,9.11111},{-21.4286,9.11111}}, color={0,0,127}));
       connect(fcu.uFan, uFan) annotation (Line(points={{-21.4286,2.88889},{-120,
               2.88889},{-120,0}}, color={0,0,127}));
+      connect(zon.TRooAir, TRoo)
+        annotation (Line(points={{61,0},{110,0}}, color={0,0,127}));
+      connect(fcu.PCoo, multiSum.u[1]) annotation (Line(points={{0.714286,20},{
+              8,20},{8,46.8},{50,46.8}}, color={0,0,127}));
+      connect(fcu.PHea, multiSum.u[2]) annotation (Line(points={{0.714286,
+              18.4444},{10,18.4444},{10,44},{50,44}}, color={0,0,127}));
+      connect(fcu.PFan, multiSum.u[3]) annotation (Line(points={{0.714286,
+              16.8889},{12,16.8889},{12,41.2},{50,41.2}}, color={0,0,127}));
+      connect(multiSum.y, PTot)
+        annotation (Line(points={{63.02,44},{110,44}}, color={0,0,127}));
+      connect(reaTOut.y, TOut)
+        annotation (Line(points={{57,-40},{110,-40}}, color={0,0,127}));
+      connect(reaSupAirFlo.y, m_flow_in)
+        annotation (Line(points={{57,-70},{110,-70}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
             coordinateSystem(preserveAspectRatio=false)),
         experiment(
@@ -679,6 +709,22 @@ First implementation.
         annotation (Placement(transformation(extent={{-80,-10},{-60,10}})));
       BaseClasses.FanCoilUnit_T fcu "Fan coil unit"
         annotation (Placement(transformation(extent={{-20,-8},{0,20}})));
+      Modelica.Blocks.Interfaces.RealOutput TRoo "Room air temperature"
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+      Modelica.Blocks.Interfaces.RealOutput PTot
+        annotation (Placement(transformation(extent={{100,34},{120,54}})));
+      Modelica.Blocks.Interfaces.RealOutput TOut "Value of Real output"
+        annotation (Placement(transformation(extent={{100,-50},{120,-30}})));
+      Modelica.Blocks.Interfaces.RealOutput m_flow_in "Value of Real output"
+        annotation (Placement(transformation(extent={{100,-80},{120,-60}})));
+      Modelica.Blocks.Math.MultiSum multiSum(nu=3)
+        annotation (Placement(transformation(extent={{50,38},{62,50}})));
+      Modelica.Blocks.Sources.RealExpression reaTOut(y=zon.weaSta.reaWeaTDryBul.y)
+        "Read T out"
+        annotation (Placement(transformation(extent={{36,-68},{56,-48}})));
+      Modelica.Blocks.Sources.RealExpression reaSupAirFlo(y=fcu.fan.m_flow_in)
+        "Read supply air flowrate"
+        annotation (Placement(transformation(extent={{36,-98},{56,-78}})));
     equation
       connect(fcu.supplyAir, zon.supplyAir) annotation (Line(points={{0,13.7778},
               {20,13.7778},{20,2},{34,2}},color={0,127,255}));
@@ -690,6 +736,20 @@ First implementation.
               9.11111},{-21.4286,9.11111}}, color={0,0,127}));
       connect(con.yFan, fcu.uFan) annotation (Line(points={{-59,0},{-44,0},{-44,
               2.88889},{-21.4286,2.88889}}, color={0,0,127}));
+      connect(zon.TRooAir, TRoo)
+        annotation (Line(points={{61,0},{110,0}}, color={0,0,127}));
+      connect(multiSum.y, PTot)
+        annotation (Line(points={{63.02,44},{110,44}}, color={0,0,127}));
+      connect(reaTOut.y, TOut) annotation (Line(points={{57,-58},{84,-58},{84,
+              -40},{110,-40}}, color={0,0,127}));
+      connect(reaSupAirFlo.y, m_flow_in) annotation (Line(points={{57,-88},{84,
+              -88},{84,-70},{110,-70}}, color={0,0,127}));
+      connect(fcu.PCoo, multiSum.u[1]) annotation (Line(points={{0.714286,20},{
+              8,20},{8,46.8},{50,46.8}}, color={0,0,127}));
+      connect(fcu.PHea, multiSum.u[2]) annotation (Line(points={{0.714286,
+              18.4444},{10,18.4444},{10,44},{50,44}}, color={0,0,127}));
+      connect(fcu.PFan, multiSum.u[3]) annotation (Line(points={{0.714286,
+              16.8889},{12,16.8889},{12,41.2},{50,41.2}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
             coordinateSystem(preserveAspectRatio=false)),
         experiment(
