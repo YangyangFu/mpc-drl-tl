@@ -3477,8 +3477,8 @@ First implementation.
                      "Heating temperature setpoint for zone air"
         annotation (Placement(transformation(extent={{-100,30},{-80,50}})));
       ControlToTemperature cooTem(
-        THig=TSetCooOcc,
-        TLow=285.15,
+        THig=287.15,
+        TLow=287.15,
         reverseAction=true) "Convert to cooling temperature signal"
         annotation (Placement(transformation(extent={{40,80},{60,100}})));
       ControlToTemperature heaTem(
