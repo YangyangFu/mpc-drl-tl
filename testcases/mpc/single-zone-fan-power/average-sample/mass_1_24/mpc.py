@@ -38,7 +38,7 @@ class mpc_case():
 
         # some mpc settings
         self.n = 2 # number of control variable for each step
-        self.w = [1., 1., 0.05] # weights between energy cost and temperature violation and actions violations
+        self.w = [100., 1., 1.] # weights between energy cost and temperature violation and actions violations
         self.u_lb = [0.]*self.n
         self.u_ub = [1.,0.1]
         # initialize optimiztion
@@ -46,7 +46,8 @@ class mpc_case():
         #self.optimization_model=self.get_optimization_model() # pyomo object
         self.optimum={}
         self.x_opt_0 = self.u_lb
-        
+        # debug solver status: NOT IMPLEMENTED
+
         # save internal power and temp predictor casadi function for extra calls
         self._P = None
         self._Tz = None
@@ -145,7 +146,6 @@ class mpc_case():
 
         # set initial guess
         u0 = self.u_start
-        print("Initial Guess:", u0)
         # set lower upper bound for u
         lbx = self.u_lb*self.PH
         ubx = self.u_ub*self.PH

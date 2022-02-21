@@ -46,7 +46,7 @@ lo=4
 # zone
 Tz_data = prepare_zone_data(data,lz,lo)
 Tz_data['mz'] = data['mass_flow']
-Tz_data['Tsa'] = 13#data['T_sa'] - 273.15
+Tz_data['Tsa'] = data['T_sa'] - 273.15
 Tz_data.dropna(inplace=True)
 data=Tz_data
 #print(Tz_data['Tsa'])
