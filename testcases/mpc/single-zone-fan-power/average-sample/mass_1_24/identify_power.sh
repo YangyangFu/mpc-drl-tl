@@ -7,5 +7,5 @@ exec docker run \
 	  -v `pwd`:/mnt/shared \
 	  -i \
       -t \
-	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/identify_fan_power.py"  
+	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/identify_power.py"  
 exit $
