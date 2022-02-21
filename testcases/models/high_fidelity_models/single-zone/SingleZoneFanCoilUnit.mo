@@ -2252,8 +2252,9 @@ First implementation.
         annotation (Placement(transformation(extent={{36,-30},{66,0}})));
       Modelica.Blocks.Routing.Multiplex3 multiplex3_1
         annotation (Placement(transformation(extent={{-18,64},{-10,72}})));
-      Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(
-        filNam="Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos",
+      Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weaDat(filNam=
+            ModelicaServices.ExternalReferences.loadResource(
+            "modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"),
           computeWetBulbTemperature=true)
         annotation (Placement(transformation(extent={{98,-94},{86,-82}})));
       Modelica.Blocks.Sources.Constant uSha(k=0)
@@ -3589,7 +3590,8 @@ First implementation.
     end ControlToTemperature;
   end BaseClasses;
 annotation (uses(Modelica(version="3.2.3"),
-      Buildings(version="8.1.0")),
+      Buildings(version="8.1.0"),
+      ModelicaServices(version="3.2.3")),
   version="1",
   conversion(noneFromVersion=""));
 end SingleZoneFanCoilUnit;
