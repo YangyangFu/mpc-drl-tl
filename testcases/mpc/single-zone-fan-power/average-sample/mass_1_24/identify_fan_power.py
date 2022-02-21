@@ -12,7 +12,7 @@ from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 
-def total_power(alpha, mz):
+def total_power(alpha, mz, Tz):
     """Predicte power at next step
 
     :param alpha: coefficients from curve-fitting
@@ -39,28 +39,30 @@ def total_power(alpha, mz):
 
     alpha=np.array(alpha).reshape(-1)
     #beta=np.array(beta).reshape(-1)
-    P = alpha[0]+alpha[1]*mz+alpha[2]*mz**2+alpha[3]*mz**3 #+ beta[0]+ beta[1]*Toa+beta[2]*Toa**2
+    P = alpha[0]+alpha[1]*mz+alpha[2]*mz**2+alpha[3]*mz**3 +1008./3*mz*(Tz-14)#+ beta[0]+ beta[1]*Toa+beta[2]*Toa**2
 
     return P
 
 data = pd.read_csv('train_data.csv',index_col=[0])
-x = data['mass_flow'].values
+x = data[['mass_flow','T_roo']].values
 y = data['P_tot'].values
 
 ### prepare data for fitting
 # split data randomly
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=42)
-
+print(x_train.shape)
 # call curve fit
 # fit a power model
 def func_P(x,alpha1,alpha2,alpha3,alpha4):
 
     alpha = np.array([alpha1,alpha2,alpha3,alpha4])
-    y = total_power(alpha,x)
+    x1 = x[:,0]
+    x2 = x[:,1]-273.15
+    y = total_power(alpha,x1, x2)
 
     return y
-
-popt,pcov = curve_fit(func_P,x_train,y_train, bounds=(0,np.inf))
+# bounds if: bounds=([0,0,-np.inf, -np.inf],[np.inf]*4)
+popt,pcov = curve_fit(func_P,x_train,y_train, bounds=(0, np.inf))
 ypred_train = func_P(x_train,*popt)
 
 # test on testing data
@@ -86,20 +88,6 @@ plt.ylabel('Error (W)')
 plt.legend()
 
 plt.savefig('power.pdf')
-
-
-### check robustness
-x_fit = np.arange(0,0.4,0.01)
-print(x_fit)
-y_fit = [func_P(i,*popt) for i in x_fit]
-
-fig=plt.figure(figsize=[6,6])
-plt.scatter(x,y)
-plt.plot(x_fit,y_fit,'k-')
-plt.xlabel('mass flowrate [kg/s]')
-plt.ylabel('power [W]')
-plt.savefig('fan-power-fit.png')
-plt.savefig('fan-power-fit.pdf')
 
 ### export model parameter
 popt_zone = {'alpha':list(popt)}
