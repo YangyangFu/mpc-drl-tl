@@ -31,6 +31,11 @@ package SingleZoneFanCoilUnit
         annotation (Placement(transformation(extent={{36,-80},{56,-60}})));
       Modelica.Blocks.Interfaces.RealOutput m_flow_in "Value of Real output"
         annotation (Placement(transformation(extent={{100,-80},{120,-60}})));
+      Modelica.Blocks.Sources.RealExpression reaGHI(y=zon.weaSta.reaWeaHGloHor.y)
+        "Read GHI"
+        annotation (Placement(transformation(extent={{36,-106},{56,-86}})));
+      Modelica.Blocks.Interfaces.RealOutput GHI "Value of Real output"
+        annotation (Placement(transformation(extent={{100,-106},{120,-86}})));
     equation
       connect(fcu.supplyAir, zon.supplyAir) annotation (Line(points={{0,13.7778},
               {20,13.7778},{20,2},{34,2}},color={0,127,255}));
@@ -54,6 +59,8 @@ package SingleZoneFanCoilUnit
         annotation (Line(points={{57,-40},{110,-40}}, color={0,0,127}));
       connect(reaSupAirFlo.y, m_flow_in)
         annotation (Line(points={{57,-70},{110,-70}}, color={0,0,127}));
+      connect(reaGHI.y, GHI)
+        annotation (Line(points={{57,-96},{110,-96}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
             coordinateSystem(preserveAspectRatio=false)),
         experiment(
@@ -725,6 +732,11 @@ First implementation.
       Modelica.Blocks.Sources.RealExpression reaSupAirFlo(y=fcu.returnAir.m_flow)
         "Read supply air flowrate"
         annotation (Placement(transformation(extent={{36,-98},{56,-78}})));
+      Modelica.Blocks.Sources.RealExpression reaGHI(y=zon.weaSta.reaWeaHGloHor.y)
+        "Read GHI"
+        annotation (Placement(transformation(extent={{36,-108},{56,-88}})));
+      Modelica.Blocks.Interfaces.RealOutput GHI "Value of Real output"
+        annotation (Placement(transformation(extent={{100,-108},{120,-88}})));
     equation
       connect(fcu.supplyAir, zon.supplyAir) annotation (Line(points={{0,13.7778},
               {20,13.7778},{20,2},{34,2}},color={0,127,255}));
@@ -750,6 +762,8 @@ First implementation.
               18.4444},{10,18.4444},{10,44},{50,44}}, color={0,0,127}));
       connect(fcu.PFan, multiSum.u[3]) annotation (Line(points={{0.714286,
               16.8889},{12,16.8889},{12,41.2},{50,41.2}}, color={0,0,127}));
+      connect(reaGHI.y, GHI)
+        annotation (Line(points={{57,-98},{110,-98}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
             coordinateSystem(preserveAspectRatio=false)),
         experiment(
@@ -2661,8 +2675,8 @@ First implementation.
           Medium = Medium1) "Supply air"
         annotation (Placement(transformation(extent={{130,90},{150,110}}),
             iconTransformation(extent={{130,90},{150,110}})));
-      Buildings.Fluid.Movers.SpeedControlled_y     fan(redeclare package Medium
-          = Medium1, per(
+      Buildings.Fluid.Movers.SpeedControlled_y     fan(redeclare package Medium =
+            Medium1, per(
           pressure(V_flow={0,mAir_flow_nominal/1.2}, dp={dpAir_nominal,0}),
           use_powerCharacteristic=true,
           power(V_flow={0,mAir_flow_nominal/1.2}, P={0,dpAir_nominal/0.7/0.7*
@@ -2685,8 +2699,8 @@ First implementation.
           Medium =
             Medium1, m_flow_nominal=mAir_flow_nominal)
         annotation (Placement(transformation(extent={{110,-170},{90,-150}})));
-      Buildings.Fluid.Sensors.MassFlowRate senSupFlo(redeclare package Medium
-          = Medium1)
+      Buildings.Fluid.Sensors.MassFlowRate senSupFlo(redeclare package Medium =
+            Medium1)
         annotation (Placement(transformation(extent={{20,90},{40,110}})));
       Modelica.Blocks.Interfaces.RealOutput PFan "Fan electrical power consumption"
         annotation (Placement(transformation(extent={{140,130},{160,150}})));
@@ -3273,8 +3287,8 @@ First implementation.
 
       Modelica.Blocks.Interfaces.RealInput uFan "Fan speed signal"
         annotation (Placement(transformation(extent={{-180,-60},{-140,-20}})));
-      Buildings.Fluid.Sensors.MassFlowRate senSupFlo(redeclare package Medium
-          = Medium1) "Supply flow meter"
+      Buildings.Fluid.Sensors.MassFlowRate senSupFlo(redeclare package Medium =
+            Medium1) "Supply flow meter"
         annotation (Placement(transformation(extent={{20,90},{40,110}})));
       Modelica.Blocks.Interfaces.RealOutput PFan "Fan electrical power consumption"
         annotation (Placement(transformation(extent={{140,130},{160,150}})));
