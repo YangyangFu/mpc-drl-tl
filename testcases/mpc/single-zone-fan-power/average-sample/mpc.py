@@ -34,7 +34,7 @@ class mpc_case():
         # some building control settings
         self.number_zone = 1
         self.occ_start = 8 # occupancy starts
-        self.occ_end = 18 # occupancy ends
+        self.occ_end = 19 # occupancy ends
 
         # some mpc settings
         self.n = 2 # number of control variable for each step
