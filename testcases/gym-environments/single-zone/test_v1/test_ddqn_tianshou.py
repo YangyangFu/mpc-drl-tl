@@ -11,11 +11,9 @@ from tianshou.env import SubprocVectorEnv
 from tianshou.trainer import offpolicy_trainer
 from tianshou.data import Collector, VectorReplayBuffer
 import torch.nn as nn
-import gym_singlezone_jmodelica
 import gym
 
-
-def get_args(folder="experiment_results"):
+def get_args(config):
     time_step = 15*60.0
     num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
@@ -36,7 +34,7 @@ def get_args(folder="experiment_results"):
     parser.add_argument('--n-step', type=int, default=1)
     parser.add_argument('--target-update-freq', type=int, default=100)
 
-    parser.add_argument('--epoch', type=int, default=300)
+    parser.add_argument('--epoch', type=int, default=config['epoch'] if 'epoch' in config.keys() else 100)
 
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--step-per-collect', type=int, default=1)
@@ -55,7 +53,7 @@ def get_args(folder="experiment_results"):
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',
                         help='watch the play of pre-trained policy only')
-    parser.add_argument('--save-buffer-name', type=str, default=folder)
+    parser.add_argument('--save-buffer-name', type=str, default = config['folder'] if 'folder' in config.keys() else 'experiment_results')
 
     parser.add_argument('--test-only', type=bool, default=False)
 
@@ -64,6 +62,8 @@ def get_args(folder="experiment_results"):
 
 
 def make_building_env(args):
+    import gym_singlezone_jmodelica
+    
     weather_file_path = "./USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
     mass_flow_nor = [0.55]
     npre_step = 3
@@ -222,7 +222,7 @@ def offpolicy_trainer_1(
 
     return 1
 
-def test_dqn(args=get_args()):
+def test_dqn(args):
     tim_env = 0.0
     tim_ctl = 0.0
     tim_learn = 0.0
@@ -269,9 +269,6 @@ def test_dqn(args=get_args()):
 
     # collector
     train_collector = Collector(policy, train_envs, buffer, exploration_noise=False)
-
-
-
 
     buffer_test = VectorReplayBuffer(
         args.step_per_epoch+100, buffer_num=len(test_envs), ignore_obs_next=True)
@@ -349,21 +346,9 @@ def test_dqn(args=get_args()):
             #stop_fn=stop_fn, 
             save_fn=save_fn, logger=logger,
             update_per_step=args.update_per_step, test_in_train=False)
-        '''
-
-        result = offpolicy_trainer_1(
-            policy = policy, train_collector = train_collector, test_collector = test_collector, max_epoch = 1,
-            step_per_epoch = 100, step_per_collect = 1, episode_per_test = 1,
-            batch_size = 64, train_fn=train_fn, test_fn=test_fn,
-            #stop_fn=stop_fn, 
-            save_fn=save_fn, logger=logger,
-            update_per_step=args.update_per_step, test_in_train=False)
-        '''
         #pprint.pprint(result)
 
         watch()
-    
-
     
     if args.test_only:
         policy.load_state_dict(torch.load(args.resume_path, map_location=args.device))
@@ -387,10 +372,31 @@ def test_dqn(args=get_args()):
         
         train_collector.reset_env()
     '''
+# added hyperparameter tuning scripting using Ray.tune
+def trainable_function(config, reporter):
+    while True:
+        args.epoch=config['epoch']
+        test_dqn(args)
 
 if __name__ == '__main__':
+    import ray 
+    from ray import tune
+    import gym_singlezone_jmodelica
+
     folder='./dqn_results'
     if not os.path.exists(folder):
         os.mkdir(folder)
-    
-    test_dqn(get_args(folder=folder))
+
+    args = get_args({})
+
+    tune.register_trainable("drl", trainable_function)
+    ray.init()
+
+    tune.run_experiments({
+            'my_experiment':{
+                "run": "drl",
+                "config":{
+                    "epoch": tune.grid_search([2,4])
+                }
+            }
+    })

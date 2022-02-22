@@ -12,6 +12,7 @@ USER root
 ### ====================================================================================
 ## install env for OPC: optimizer, nonlinear system identifier
 # Downgrade setuptools for pytprch. This is a known bug which has been patched: https://github.com/pytorch/pytorch/pull/69904.
+# Ray: hyperparameter tuning
 RUN conda update conda && \
     conda config --add channels conda-forge && \
     conda install pip \
@@ -20,7 +21,8 @@ RUN conda update conda && \
          matplotlib \
          pvlib-python \
          joblib \
-         setuptools=59.1.1 && \
+         setuptools=59.1.1 \
+         ray-tune && \
     conda clean -ya
 
 ## install casadi using pip
