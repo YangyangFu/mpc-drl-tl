@@ -68,9 +68,9 @@ def get_args(folder):
 
 def make_building_env(args):
     weather_file_path = "./USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
-    mass_flow_nor = [0.75]
+    mass_flow_nor = [0.55]
     npre_step = 3
-    simulation_start_time = 212*24*3600.0
+    simulation_start_time = 201*24*3600.0
     simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
     log_level = 0
     alpha = 1
