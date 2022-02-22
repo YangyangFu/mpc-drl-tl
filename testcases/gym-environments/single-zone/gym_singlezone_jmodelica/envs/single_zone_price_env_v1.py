@@ -142,8 +142,8 @@ class SingleZoneEnv(object):
         # temperture upper and lower bound
         T_upper = [30.0 for i in range(24)] # upper bound for unoccuppied: cooling
         T_lower = [12.0 for i in range(24)] # lower bound for unoccuppied: heating 
-        T_upper[8:19] = [26.0]*12 # upper bound for occuppied: cooling 
-        T_lower[8:19] = [22.0]*12 # lower bound for occuppied: heating
+        T_upper[8:18] = [26.0]*12 # upper bound for occuppied: cooling 
+        T_lower[8:18] = [22.0]*12 # lower bound for occuppied: heating
         
         # control period:
         delCtrl = self.tau/3600.0 #may be better to set a variable in initial
