@@ -8,8 +8,8 @@ import tianshou as ts
 #    Testing JModelicaCSSingleZoneEnv-v1 installation
 ## ===================================================
 env = gym.make("JModelicaCSSingleZoneEnv-v1",
-                mass_flow_nor=0.75,
-                weather_file='USA_CA_Riverside.Muni.AP.722869_TMY3.epw',
+                mass_flow_nor=0.55,
+               weather_file='USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw',
                 npre_step=5,
                 simulation_start_time=3600*24.,
                 simulation_end_time=3600*24*2.,
