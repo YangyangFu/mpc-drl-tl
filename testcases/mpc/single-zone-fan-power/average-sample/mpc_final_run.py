@@ -79,15 +79,15 @@ for name in measurement_names:
 
 ## simulate baseline
 occ_start = 8
-occ_end = 19
+occ_end = 18
 tim = np.arange(ts,te,dt)
 T_upper = np.array([30.0 for i in tim])
 #T_upper[occ_start*4:(occ_end-1)*4] = 26.0
 T_lower = np.array([12.0 for i in tim])
 #T_lower[occ_start*4:(occ_end-1)*4] = 22.0
 for i in range(nday):
-  T_upper[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 26.0
-  T_lower[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 22.0
+  T_upper[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+occ_end*nsteps_h] = 26.0
+  T_lower[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+occ_end*nsteps_h] = 22.0
 
 price_tou = [0.02987, 0.02987, 0.02987, 0.02987, 
         0.02987, 0.02987, 0.04667, 0.04667, 
@@ -183,9 +183,9 @@ def get_metrics(Ptot, TZone, price_tou, nsteps_h=4):
         number_zone = 1
 
         T_upper = np.array([30.0 for j in range(24)])
-        T_upper[occ_start:occ_end-1] = 26.+0.1
+        T_upper[occ_start:occ_end] = 26.0
         T_lower = np.array([12.0 for j in range(24)])
-        T_lower[occ_start:occ_end-1] = 22.0
+        T_lower[occ_start:occ_end] = 22.0
 
         overshoot = []
         undershoot = []
