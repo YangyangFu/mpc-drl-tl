@@ -8,7 +8,7 @@ print(ts.__version__)
 
 env = gym.make("JModelicaCSSingleZoneEnv-price-v1",
                 mass_flow_nor=0.75,
-                weather_file='USA_CA_Riverside.Muni.AP.722869_TMY3.epw',
+                weather_file='USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw',
                 npre_step=4,
                 simulation_start_time=3600*24,
                 simulation_end_time=3600*24*2,

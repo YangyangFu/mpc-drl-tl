@@ -25,8 +25,9 @@ states = env.reset()
 n_outputs = env.observation_space.shape[0]
 print(states)
 print(n_outputs)
+print(dir(env))
 print(env.tau, env.simulation_start_time, env.simulation_end_time)
-print(env._get_action_space(),env.nActions)
+print(env.action_space,env.nActions)
 print(env.alpha)
 
 # test substeps

@@ -63,7 +63,7 @@ def get_args(folder):
 
 
 def make_building_env(args):
-    weather_file_path = "./USA_CA_Riverside.Muni.AP.722869_TMY3.epw"
+    weather_file_path = "./USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
     mass_flow_nor = [0.75]
     npre_step = 3
     simulation_start_time = 212*24*3600.0
