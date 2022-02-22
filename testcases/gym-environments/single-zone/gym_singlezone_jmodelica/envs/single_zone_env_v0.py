@@ -328,7 +328,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
             'filter_flag':filter_flag 
         }
 
-        super(JModelicaCSSingleZoneEnv,self).__init__("./SingleZoneVAV.fmu",
+        super(JModelicaCSSingleZoneEnv,self).__init__("./SingleZoneFCU.fmu",
                          config, log_level=log_level,
                          simulation_start_time=simulation_start_time)
        # location of fmu is set to current working directory

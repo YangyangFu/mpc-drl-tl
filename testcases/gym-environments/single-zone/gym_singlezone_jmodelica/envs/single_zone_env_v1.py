@@ -402,7 +402,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         self._cost = []
         self._max_temperature_violation = []
 
-        super(JModelicaCSSingleZoneEnv,self).__init__("./SingleZoneVAV.fmu",
+        super(JModelicaCSSingleZoneEnv,self).__init__("./SingleZoneFCU.fmu",
                          config, log_level=log_level,
                          simulation_start_time=simulation_start_time)
        # location of fmu is set to current working directory
