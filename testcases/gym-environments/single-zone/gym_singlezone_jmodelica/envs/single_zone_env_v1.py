@@ -13,7 +13,7 @@ import pandas as pd
 from gym import spaces
 from gym.utils import seeding
 from modelicagym.environment import FMI2CSEnv, FMI1CSEnv
-
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -250,8 +250,8 @@ class SingleZoneEnv(object):
         :return: a data frame at an interval of defined time_step
         """
         from pvlib.iotools import read_epw
-
-        dat = read_epw(self.weather_file)
+        file_path = os.path.dirname(os.path.realpath(__file__))
+        dat = read_epw(file_path+'/'+self.weather_file)
 
         tem_sol_h = dat[0][['temp_air','ghi']]
         index_h = np.arange(0,3600.*len(tem_sol_h),3600.)
@@ -401,8 +401,10 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         # initialize some metadata 
         self._cost = []
         self._max_temperature_violation = []
-
-        super(JModelicaCSSingleZoneEnv,self).__init__("./SingleZoneFCU.fmu",
+        # specify fmu path and model
+        fmu_path = os.path.dirname(os.path.realpath(__file__))
+        print(fmu_path)
+        super(JModelicaCSSingleZoneEnv,self).__init__(fmu_path+"/SingleZoneFCU.fmu",
                          config, log_level=log_level,
                          simulation_start_time=simulation_start_time)
        # location of fmu is set to current working directory
