@@ -169,8 +169,6 @@ def offpolicy_trainer_1(
         if save_fn:
             save_fn(policy)
 
-        
-
     return 1
 
 def test_dqn(args):
@@ -335,7 +333,6 @@ if __name__ == '__main__':
     parser.add_argument('--eps-train', type=float, default=1.)
     parser.add_argument('--eps-train-final', type=float, default=0.05)
 
-    parser.add_argument('--buffer-size', type=int, default=50000)
     parser.add_argument('--gamma', type=float, default=0.99)
 
     parser.add_argument('--n-step', type=int, default=1)
@@ -363,6 +360,7 @@ if __name__ == '__main__':
     parser.add_argument('--epoch', type=int, default=100)
     parser.add_argument('--batch-size', type=int, default=128)
     parser.add_argument('--n-hidden-layers', type=int, default=3)
+    parser.add_argument('--buffer-size', type=int, default=50000)
 
     args = parser.parse_args()
 
@@ -376,11 +374,12 @@ if __name__ == '__main__':
                 "run": "ddqn",
                 "stop": {"timesteps_total":args.step_per_epoch},
                 "config":{
-                    "epoch": tune.grid_search([300]),
-                    "weight_energy": tune.grid_search([1, 10., 100., 1000.]),
-                    "lr": tune.grid_search([3e-04, 2e-04, 1e-04, 1e-03]),
-                    "batch_size": tune.grid_search([16, 32, 64, 128, 268]),
-                    "n_hidden_layer": tune.grid_search([2, 3, 4])
+                    "epoch": tune.grid_search([200]),
+                    "weight_energy": tune.grid_search([0.1, 1, 10., 100., 1000., 10000.]),
+                    "lr": tune.grid_search([3e-04, 1e-04, 1e-03]),
+                    "batch_size": tune.grid_search([32, 64, 128]),
+                    "n_hidden_layer": tune.grid_search([3, 4]),
+                    "buffer_size":tune.grid_search([20000, 50000, 100000])
                     },
                 "local_dir":"/mnt/shared",
             }
