@@ -371,12 +371,12 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         self.rf = rf # this is an external function
         # customized hourly TOU energy price
         if not p_g:
-            self.p_g = [0.0640, 0.0640, 0.0640, 0.0640, 
-                0.0640, 0.0640, 0.0640, 0.0640, 
-                0.1391, 0.1391, 0.1391, 0.1391, 
-                0.3548, 0.3548, 0.3548, 0.3548, 
-                0.3548, 0.3548, 0.1391, 0.1391, 
-                0.1391, 0.1391, 0.1391, 0.0640]
+            self.p_g = [0.02987, 0.02987, 0.02987, 0.02987, 
+                        0.02987, 0.02987, 0.04667, 0.04667, 
+                        0.04667, 0.04667, 0.04667, 0.04667, 
+                        0.15877, 0.15877, 0.15877, 0.15877,
+                        0.15877, 0.15877, 0.15877, 0.04667, 
+                        0.04667, 0.04667, 0.02987, 0.02987]
         else:
             self.p_g = p_g           
         assert len(self.p_g)==24, "Daily hourly energy price should be provided!!!"
