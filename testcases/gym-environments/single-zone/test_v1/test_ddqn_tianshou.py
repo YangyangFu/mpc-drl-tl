@@ -307,9 +307,10 @@ def trainable_function(config, reporter):
     while True:
         args.epoch = config['epoch']
         args.weight_energy = config['weight_energy']
-        args.lr=  config['lr']
+        args.lr = config['lr']
         args.batch_size = config['batch_size']
         args.n_hidden_layer = config['n_hidden_layer']
+        args.buffer_size = config['buffer_size']
         test_dqn(args)
 
         # a fake traing score to stop current simulation based on searched parameters
