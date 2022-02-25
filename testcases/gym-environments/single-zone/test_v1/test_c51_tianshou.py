@@ -18,11 +18,9 @@ import gym_singlezone_jmodelica
 import gym
 
 
-max_rew = 0
-
 def get_args(folder="experiment_results"):
     time_step = 15*60.0
-    num_of_days = 7#31
+    num_of_days = 1#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
 
     parser = argparse.ArgumentParser()
@@ -41,7 +39,7 @@ def get_args(folder="experiment_results"):
     parser.add_argument('--v-max', type=float, default=0)#10.#600
     parser.add_argument('--n-step', type=int, default=1)
     parser.add_argument('--target-update-freq', type=int, default=300)
-    parser.add_argument('--epoch', type=int, default=200)#!!!!!!!!!!!!400
+    parser.add_argument('--epoch', type=int, default=1)#!!!!!!!!!!!!400
     parser.add_argument('--step-per-collect', type=int, default=1)
     parser.add_argument('--update-per-step', type=float, default=1)
     parser.add_argument('--batch-size', type=int, default=128)
@@ -92,10 +90,6 @@ def make_building_env(args):
         #res = penalty * 10.0
         #res = penalty * 300.0 + cost*1e4
         res = (penalty * 500.0 + cost*5e4) / 50000.0#!!!!!!!!!!!
-        global max_rew 
-        if max_rew > res:
-            max_rew = res
-        print("max rw: ", max_rew)
         
         return res
 
