@@ -203,24 +203,20 @@ def test_dqn(args):
     optim = torch.optim.Adam(net.parameters(), lr=args.lr)
     
     # define policy
-    policy = DQNPolicy(net, optim, args.gamma, args.n_step,
-                       target_update_freq=args.target_update_freq, reward_normalization = False, is_double=True)
-    # load a previous policy
-    #if args.resume_path:
-    #    policy.load_state_dict(torch.load(args.resume_path, map_location=args.device))
-    #    print("Loaded agent from: ", args.resume_path)
-    # replay buffer: `save_last_obs` and `stack_num` can be removed together
-    # when you have enough RAM
-    buffer = VectorReplayBuffer(
-        args.buffer_size, buffer_num=len(train_envs), ignore_obs_next=True)
-
+    policy = DQNPolicy(net, 
+                    optim, 
+                    args.gamma, 
+                    args.n_step,
+                    target_update_freq=args.target_update_freq, 
+                    reward_normalization = False, 
+                    is_double=True)
     # collector
-    train_collector = Collector(policy, train_envs, buffer, exploration_noise=False)
-
-    buffer_test = VectorReplayBuffer(
-        args.step_per_epoch+100, buffer_num=len(test_envs), ignore_obs_next=True)
-    
-    test_collector = Collector(policy, test_envs, buffer_test, exploration_noise=False)
+    buffer = VectorReplayBuffer(
+            args.buffer_size, 
+            buffer_num=len(train_envs), 
+            ignore_obs_next=True)
+    train_collector = Collector(policy, train_envs, buffer, exploration_noise=True)
+    test_collector = Collector(policy, test_envs, buffer, exploration_noise=True)
 
     # log
     log_path = os.path.join(args.logdir, args.task)
@@ -266,8 +262,10 @@ def test_dqn(args):
 
         print("Testing agent ...")
         buffer = VectorReplayBuffer(
-                args.step_per_epoch+1, buffer_num=len(test_envs),
-                ignore_obs_next=True, save_only_last_obs=False,
+                args.step_per_epoch+1, 
+                buffer_num=len(test_envs),
+                ignore_obs_next=True, 
+                save_only_last_obs=False,
                 stack_num=args.frames_stack)
         collector = Collector(policy, test_envs, buffer, exploration_noise=False)
         result = collector.collect(n_step=args.step_per_epoch)
@@ -287,12 +285,19 @@ def test_dqn(args):
         # trainer
         
         result = offpolicy_trainer_1(
-            policy = policy, train_collector = train_collector, test_collector = test_collector, max_epoch = args.epoch,
-            step_per_epoch = args.step_per_epoch, step_per_collect = args.step_per_collect, episode_per_test = args.test_num,
-            batch_size = args.batch_size, train_fn=train_fn, test_fn=test_fn,
+            policy = policy, 
+            train_collector = train_collector, 
+            test_collector = test_collector, 
+            max_epoch = args.epoch,
+            step_per_epoch = args.step_per_epoch, 
+            step_per_collect = args.step_per_collect, 
+            episode_per_test = args.test_num,
+            batch_size = args.batch_size, 
+            train_fn=train_fn, test_fn=test_fn,
             #stop_fn=stop_fn, 
             save_fn=save_fn, logger=logger,
-            update_per_step=args.update_per_step, test_in_train=False)
+            update_per_step=args.update_per_step, 
+            test_in_train=False)
         #pprint.pprint(result)
 
         watch()
