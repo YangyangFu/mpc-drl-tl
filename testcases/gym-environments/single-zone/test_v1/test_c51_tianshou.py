@@ -17,48 +17,10 @@ import torch.nn as nn
 import gym_singlezone_jmodelica
 import gym
 
-
-def get_args(folder="experiment_results"):
-    time_step = 15*60.0
-    num_of_days = 1#31
-    max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-v1")
-    parser.add_argument('--time-step', type=float, default=time_step)
-    parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
-    parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--eps-test', type=float, default=0.005)
-    parser.add_argument('--eps-train', type=float, default=1.)
-    parser.add_argument('--eps-train-final', type=float, default=0.05)
-    parser.add_argument('--buffer-size', type=int, default=50000)
-    parser.add_argument('--lr', type=float, default=0.0001)
-    parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--num-atoms', type=int, default=201)
-    parser.add_argument('--v-min', type=float, default=-600)#-10.
-    parser.add_argument('--v-max', type=float, default=0)#10.#600
-    parser.add_argument('--n-step', type=int, default=1)
-    parser.add_argument('--target-update-freq', type=int, default=300)
-    parser.add_argument('--epoch', type=int, default=1)#!!!!!!!!!!!!400
-    parser.add_argument('--step-per-collect', type=int, default=1)
-    parser.add_argument('--update-per-step', type=float, default=1)
-    parser.add_argument('--batch-size', type=int, default=128)
-    parser.add_argument('--training-num', type=int, default=1)
-    parser.add_argument('--test-num', type=int, default=1)
-    parser.add_argument('--logdir', type=str, default='log_c51')
-    parser.add_argument('--render', type=float, default=0.)
-    parser.add_argument(
-        '--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu'
-    )
-    parser.add_argument('--frames-stack', type=int, default=1)
-    parser.add_argument('--resume-path', type=str, default=None)
-    parser.add_argument('--save-buffer-name', type=str, default=folder)
-    parser.add_argument('--test-only', type=bool, default=False)
-    return parser.parse_args()
-
-
 def make_building_env(args):
-    weather_file_path = "./USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
+    import gym_singlezone_jmodelica
+
+    weather_file_path = "USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
     mass_flow_nor = [0.55]
     npre_step = 3
     simulation_start_time = 201*24*3600.0
@@ -66,44 +28,38 @@ def make_building_env(args):
     log_level = 7
     alpha = 1
     nActions = 51
+    weight_energy = args.weight_energy  # 5.e4
+    weight_temp = args.weight_temp  # 500.
 
     def rw_func(cost, penalty):
-        if ( not hasattr(rw_func,'x')  ):
+        if (not hasattr(rw_func, 'x')):
             rw_func.x = 0
             rw_func.y = 0
-            rw_func.z = 0
 
-        #print(cost, penalty)
-        #res = cost + penalty
         cost = cost[0]
         penalty = penalty[0]
 
-        '''
         if rw_func.x > cost:
             rw_func.x = cost
         if rw_func.y > penalty:
             rw_func.y = penalty
 
         print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
-        '''
+        res = penalty * weight_temp + cost*weight_energy
 
-        #res = penalty * 10.0
-        #res = penalty * 300.0 + cost*1e4
-        res = (penalty * 500.0 + cost*5e4) / 50000.0#!!!!!!!!!!!
-        
         return res
 
     env = gym.make(args.task,
-                   mass_flow_nor = mass_flow_nor,
-                   weather_file = weather_file_path,
-                   npre_step = npre_step,
-                   simulation_start_time = simulation_start_time,
-                   simulation_end_time = simulation_end_time,
-                   time_step = args.time_step,
-                   log_level = log_level,
-                   alpha = alpha,
-                   nActions = nActions,
-                   rf = rw_func)
+                   mass_flow_nor=mass_flow_nor,
+                   weather_file=weather_file_path,
+                   npre_step=npre_step,
+                   simulation_start_time=simulation_start_time,
+                   simulation_end_time=simulation_end_time,
+                   time_step=args.time_step,
+                   log_level=log_level,
+                   alpha=alpha,
+                   nActions=nActions,
+                   rf=rw_func)
     return env
 
 class C51(nn.Module):
@@ -116,12 +72,14 @@ class C51(nn.Module):
         self,
         state_shape,
         action_shape,
+        nlayers,
         num_atoms,
         device
     ):
         super().__init__()
         self.action_num = np.prod(action_shape)
         self.device = device
+        """
         self.net = nn.Sequential(*[
             nn.Linear(np.prod(state_shape), 256), nn.ReLU(inplace=True),
             nn.Linear(256, 256), nn.ReLU(inplace=True),
@@ -129,6 +87,14 @@ class C51(nn.Module):
             nn.Linear(256, 256), nn.ReLU(inplace=True),
             nn.Linear(256, self.action_num * num_atoms)
         ])
+        """
+        sequences = [nn.Linear(np.prod(state_shape), 256),
+                     nn.ReLU(inplace=True)]
+        for i in range(nlayers):
+            sequences.append(nn.Linear(256, 256))
+            sequences.append(nn.ReLU(inplace=True))
+        sequences.append(nn.Linear(256, self.action_num * num_atoms))
+        self.net = nn.Sequential(*sequences)
 
         self.output_dim = self.action_num * num_atoms
 
@@ -146,28 +112,28 @@ class C51(nn.Module):
         return x, state
 
 
-def test_c51(args=get_args()):
+def test_c51(args):
     env = make_building_env(args)
     args.state_shape = env.observation_space.shape or env.observation_space.n
     args.action_shape = env.action_space.shape or env.action_space.n
     # should be N_FRAMES x H x W
     print("Observations shape:", args.state_shape)
     print("Actions shape:", args.action_shape)
+    
     # make environments
-    train_envs = SubprocVectorEnv(
-        [lambda: make_building_env(args) for _ in range(args.training_num)]
-    )
-    test_envs = SubprocVectorEnv(
-        [lambda: make_building_env(args) for _ in range(args.test_num)]
-    )
+    train_envs = SubprocVectorEnv([lambda: make_building_env(args) for _ in range(args.training_num)])
+    test_envs = SubprocVectorEnv([lambda: make_building_env(args) for _ in range(args.test_num)])
+    
     # seed
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     train_envs.seed(args.seed)
     test_envs.seed(args.seed)
+    
     # define model
-    net = C51(args.state_shape, args.action_shape, args.num_atoms, args.device)
+    net = C51(args.state_shape, args.action_shape, args.n_hidden_layers, args.num_atoms, args.device)
     optim = torch.optim.Adam(net.parameters(), lr=args.lr)
+    
     # define policy
     policy = C51Policy(
         net,
@@ -179,12 +145,7 @@ def test_c51(args=get_args()):
         args.n_step,
         target_update_freq=args.target_update_freq,
     ).to(args.device)
-    # load a previous policy
-    if args.resume_path:
-        policy.load_state_dict(torch.load(args.resume_path, map_location=args.device))
-        print("Loaded agent from: ", args.resume_path)
-    # replay buffer: `save_last_obs` and `stack_num` can be removed together
-    # when you have enough RAM
+ 
     buffer = VectorReplayBuffer(
         args.buffer_size,
         buffer_num=len(train_envs),
@@ -195,7 +156,7 @@ def test_c51(args=get_args()):
     train_collector = Collector(policy, train_envs, buffer, exploration_noise=True)
     test_collector = Collector(policy, test_envs, exploration_noise=True)
     # log
-    log_path = os.path.join(args.logdir, args.task, 'c51')
+    log_path = os.path.join(args.logdir, args.task)
     writer = SummaryWriter(log_path)
     writer.add_text("args", str(args))
     logger = TensorboardLogger(writer)
@@ -229,20 +190,21 @@ def test_c51(args=get_args()):
 
         print("Testing agent ...")
         buffer = VectorReplayBuffer(
-                args.step_per_epoch+1, buffer_num=len(test_envs),
-                ignore_obs_next=True, save_only_last_obs=False,#!!!!!!!!!!!!
+                args.step_per_epoch+1, 
+                buffer_num=len(test_envs),
+                ignore_obs_next=True, 
+                save_only_last_obs=False,
                 stack_num=args.frames_stack)
         collector = Collector(policy, test_envs, buffer, exploration_noise=False)
         result = collector.collect(n_step=args.step_per_epoch)
         #buffer.save_hdf5(args.save_buffer_name)
         
-        np.save(args.save_buffer_name+'/his_act.npy', buffer._meta.__dict__['act'])
-        np.save(args.save_buffer_name+'/his_obs.npy', buffer._meta.__dict__['obs'])
-        np.save(args.save_buffer_name+'/his_rew.npy', buffer._meta.__dict__['rew'])
+        np.save(os.path.join(args.logdir, args.task,'his_act.npy'), buffer._meta.__dict__['act'])
+        np.save(os.path.join(args.logdir, args.task,'his_obs.npy'), buffer._meta.__dict__['obs'])
+        np.save(os.path.join(args.logdir, args.task,'his_rew.npy'), buffer._meta.__dict__['rew'])
         #print(buffer._meta.__dict__.keys())
         rew = result["rews"].mean()
         print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
-
 
     if not args.test_only:
 
@@ -269,15 +231,106 @@ def test_c51(args=get_args()):
         pprint.pprint(result)
         watch()
 
-
     if args.test_only:
         policy.load_state_dict(torch.load(args.resume_path, map_location=args.device))
         print("Loaded agent from: ", os.path.join(log_path, 'policy.pth'))
         watch()
 
-if __name__ == '__main__':
-    folder='./c51_results'
-    if not os.path.exists(folder):
-        os.mkdir(folder)
+# added hyperparameter tuning scripting using Ray.tune
+def trainable_function(config, reporter):
+    while True:
+        args.epoch = config['epoch']
+        args.weight_energy = config['weight_energy']
+        args.lr = config['lr']
+        args.batch_size = config['batch_size']
+        args.n_hidden_layer = config['n_hidden_layer']
+        args.buffer_size = config['buffer_size']
+        test_c51(args)
 
-    test_c51(get_args(folder=folder))
+        # a fake traing score to stop current simulation based on searched parameters
+        reporter(timesteps_total=args.step_per_epoch)
+
+
+if __name__ == '__main__':
+    import ray
+    from ray import tune
+
+    time_step = 15*60.0
+    num_of_days = 7  # 31
+    max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--task', type=str,
+                        default="JModelicaCSSingleZoneEnv-v1")
+    parser.add_argument('--time-step', type=float, default=time_step)
+    parser.add_argument('--step-per-epoch', type=int,
+                        default=max_number_of_steps)
+    parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument('--eps-test', type=float, default=0.005)
+    parser.add_argument('--eps-train', type=float, default=1.)
+    parser.add_argument('--eps-train-final', type=float, default=0.05)
+    parser.add_argument('--gamma', type=float, default=0.99)
+    parser.add_argument('--num-atoms', type=int, default=201)
+    parser.add_argument('--v-min', type=float, default=-600)  # -10.
+    parser.add_argument('--v-max', type=float, default=0)  # 10.#600
+    parser.add_argument('--n-step', type=int, default=1)
+    parser.add_argument('--target-update-freq', type=int, default=300)
+    parser.add_argument('--step-per-collect', type=int, default=1)
+    parser.add_argument('--update-per-step', type=float, default=1)
+    parser.add_argument('--training-num', type=int, default=1)
+    parser.add_argument('--test-num', type=int, default=1)
+    parser.add_argument('--logdir', type=str, default='log_c51')
+    parser.add_argument('--render', type=float, default=0.)
+    parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
+    parser.add_argument('--frames-stack', type=int, default=1)
+    parser.add_argument('--resume-path', type=str, default=None)
+    parser.add_argument('--test-only', type=bool, default=False)
+
+    # tunable parameters
+    parser.add_argument('--weight-energy', type=float, default=100.)
+    parser.add_argument('--weight-temp', type=float, default=1.)
+    parser.add_argument('--lr', type=float, default=0.0001)
+    parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--batch-size', type=int, default=128)
+    parser.add_argument('--n-hidden-layers', type=int, default=3)
+    parser.add_argument('--buffer-size', type=int, default=50000)
+
+    args = parser.parse_args()
+
+    # Define Ray tuning experiments
+    tune.register_trainable("c51", trainable_function)
+    ray.init()
+
+    # Run tuning
+    tune.run_experiments({
+        'c51_tuning': {
+            "run": "c51",
+            "stop": {"timesteps_total": args.step_per_epoch},
+            "config": {
+                "epoch": tune.grid_search([400]),
+                "weight_energy": tune.grid_search([10, 100.]),
+                "lr": tune.grid_search([3e-04]),
+                "batch_size": tune.grid_search([32, 64, 128]),
+                "n_hidden_layer": tune.grid_search([3]),
+                "buffer_size": tune.grid_search([50000])
+            },
+            "local_dir": "/mnt/shared",
+        }
+    })
+    """
+    tune.run_experiments({
+        'c51_tuning': {
+            "run": "c51",
+            "stop": {"timesteps_total": args.step_per_epoch},
+            "config": {
+                "epoch": tune.grid_search([400]),
+                "weight_energy": tune.grid_search([0.1, 1, 10, 100.]),
+                "lr": tune.grid_search([1e-04, 3e-04, 1e-03]),
+                "batch_size": tune.grid_search([32, 64, 128]),
+                "n_hidden_layer": tune.grid_search([3]),
+                "buffer_size": tune.grid_search([20000, 50000, 100000])
+            },
+            "local_dir": "/mnt/shared",
+        }
+    })
+    """
