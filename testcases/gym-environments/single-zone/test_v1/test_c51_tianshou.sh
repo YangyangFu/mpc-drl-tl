@@ -1,5 +1,5 @@
 # add this to docker run for GPU: --runtime=nvidia -e NVIDIA_DRIVER_CAPABILITIES=compute,utility -e NVIDIA_VISIBLE_DEVICES=3\
-docker run 
+docker run \
 	--user=root \
 	--shm-size=4.0gb \
 	--detach=false \
