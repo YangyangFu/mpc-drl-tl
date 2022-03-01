@@ -302,11 +302,12 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=128)
     parser.add_argument('--weight-energy', type=float, default=100.)
     parser.add_argument('--weight-temp', type=float, default=1.)
+    parser.add_argument('--n-hidden-layers', type=int, default=3)
 
     args = parser.parse_args()
 
     # Define Ray tuning experiments
-    tune.register_trainable("ddqn", trainable_function)
+    tune.register_trainable("iqn", trainable_function)
     ray.init()
 
     # Run tuning
@@ -315,7 +316,7 @@ if __name__ == '__main__':
             "run": "ddqn",
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
-                "epoch": tune.grid_search([500]),
+                "epoch": tune.grid_search([1]),
                 "weight_energy": tune.grid_search([10, 100]),
                 "lr": tune.grid_search([1e-03, 3e-03, 0.01]),
                 "batch_size": tune.grid_search([32, 64, 128]),
