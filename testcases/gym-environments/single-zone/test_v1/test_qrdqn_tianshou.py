@@ -17,45 +17,8 @@ import torch.nn as nn
 import gym_singlezone_jmodelica
 import gym
 
-
-def get_args(folder="experiment_results"):
-    time_step = 15*60.0
-    num_of_days = 7#31
-    max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-v1")
-    parser.add_argument('--time-step', type=float, default=time_step)
-    parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
-    parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--eps-test', type=float, default=0.005)
-    parser.add_argument('--eps-train', type=float, default=1.)
-    parser.add_argument('--eps-train-final', type=float, default=0.05)
-    parser.add_argument('--buffer-size', type=int, default=50000)
-    parser.add_argument('--lr', type=float, default=0.0001)
-    parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--num-quantiles', type=int, default=400)#!!!!!!200
-    parser.add_argument('--n-step', type=int, default=1)
-    parser.add_argument('--target-update-freq', type=int, default=300)
-    parser.add_argument('--epoch', type=int, default=500)#!!!!!!!!!!!!300
-    parser.add_argument('--step-per-collect', type=int, default=1)
-    parser.add_argument('--update-per-step', type=float, default=1)
-    parser.add_argument('--batch-size', type=int, default=128)
-    parser.add_argument('--training-num', type=int, default=1)
-    parser.add_argument('--test-num', type=int, default=1)
-    parser.add_argument('--logdir', type=str, default='log_qrdqn')
-    parser.add_argument('--render', type=float, default=0.)
-    parser.add_argument(
-        '--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu'
-    )
-    parser.add_argument('--frames-stack', type=int, default=1)
-    parser.add_argument('--resume-path', type=str, default=None)
-    parser.add_argument('--save-buffer-name', type=str, default=folder)
-    parser.add_argument('--test-only', type=bool, default=False)
-    return parser.parse_args()
-
 def make_building_env(args):
-    weather_file_path = "./USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
+    weather_file_path = "USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
     mass_flow_nor = [0.55]
     npre_step = 3
     simulation_start_time = 201*24*3600.0
@@ -63,6 +26,8 @@ def make_building_env(args):
     log_level = 7
     alpha = 1
     nActions = 51
+    weight_energy = args.weight_energy #5.e4
+    weight_temp = args.weight_temp #500.
 
     def rw_func(cost, penalty):
         if ( not hasattr(rw_func,'x')  ):
@@ -80,10 +45,10 @@ def make_building_env(args):
             rw_func.y = penalty
 
         print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
-        #res = penalty * 10.0
-        #res = penalty * 300.0 + cost*1e4
-        res = (penalty * 500.0 + cost*5e4) / 1000.0#!!!!!!!!!!!!!!!!!!!
-        
+
+        #res = (penalty * 500.0 + cost*5e4) / 1000.0#!!!!!!!!!!!!!!!!!!!
+        res = penalty * weight_temp + cost*weight_energy
+
         return res
 
     env = gym.make(args.task,
@@ -110,23 +75,22 @@ class QRDQN(nn.Module):
         self,
         state_shape,
         action_shape,
+        nlayers,
         num_quantiles,
         device,
     ):
         super().__init__()
         self.action_num = np.prod(action_shape)
         self.device = device
-        self.net = nn.Sequential(*[
-            nn.Linear(np.prod(state_shape), 256), nn.ReLU(inplace=True),
-            nn.Linear(256, 256), nn.ReLU(inplace=True),
-            nn.Linear(256, 256), nn.ReLU(inplace=True),
-            nn.Linear(256, 256), nn.ReLU(inplace=True),
-            nn.Linear(256, self.action_num * num_quantiles)
-        ])
-
         self.output_dim = self.action_num * num_quantiles
-
         self.num_quantiles = num_quantiles
+
+        sequences = [nn.Linear(np.prod(state_shape), 256), nn.ReLU(inplace=True)]
+        for i in range(nlayers):
+            sequences.append(nn.Linear(256, 256))
+            sequences.append(nn.ReLU(inplace=True))
+        sequences.append(nn.Linear(256, self.action_num * num_quantiles))
+        self.net = nn.Sequential(*sequences)
 
     def forward(self, obs, state=None, info={}):
         r"""Mapping: x -> Z(x, \*)."""
@@ -147,23 +111,17 @@ def test_qrdqn(args=get_args()):
     env = make_building_env(args)
     args.state_shape = env.observation_space.shape or env.observation_space.n
     args.action_shape = env.action_space.shape or env.action_space.n
-    # should be N_FRAMES x H x W
-    print("Observations shape:", args.state_shape)
-    print("Actions shape:", args.action_shape)
+
     # make environments
-    train_envs = SubprocVectorEnv(
-        [lambda: make_building_env(args) for _ in range(args.training_num)]
-    )
-    test_envs = SubprocVectorEnv(
-        [lambda: make_building_env(args) for _ in range(args.test_num)]
-    )
+    train_envs = SubprocVectorEnv([lambda: make_building_env(args) for _ in range(args.training_num)])
+    test_envs = SubprocVectorEnv([lambda: make_building_env(args) for _ in range(args.test_num)])
     # seed
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     train_envs.seed(args.seed)
     test_envs.seed(args.seed)
     # define model
-    net = QRDQN(args.state_shape, args.action_shape, args.num_quantiles, args.device)
+    net = QRDQN(args.state_shape, args.action_shape, args.n_hidden_layers, args.num_quantiles, args.device)
     optim = torch.optim.Adam(net.parameters(), lr=args.lr)
     # define policy
     policy = QRDQNPolicy(
@@ -233,13 +191,12 @@ def test_qrdqn(args=get_args()):
         result = collector.collect(n_step=args.step_per_epoch)
         #buffer.save_hdf5(args.save_buffer_name)
         
-        np.save(args.save_buffer_name+'/his_act.npy', buffer._meta.__dict__['act'])
-        np.save(args.save_buffer_name+'/his_obs.npy', buffer._meta.__dict__['obs'])
-        np.save(args.save_buffer_name+'/his_rew.npy', buffer._meta.__dict__['rew'])
+        np.save(os.path.join(args.logdir, args.task,'his_act.npy'), buffer._meta.__dict__['act'])
+        np.save(os.path.join(args.logdir, args.task,'his_obs.npy'), buffer._meta.__dict__['obs'])
+        np.save(os.path.join(args.logdir, args.task,'his_rew.npy'), buffer._meta.__dict__['rew'])
         #print(buffer._meta.__dict__.keys())
         rew = result["rews"].mean()
         print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
-
 
     if not args.test_only:
 
@@ -271,10 +228,104 @@ def test_qrdqn(args=get_args()):
         print("Loaded agent from: ", os.path.join(log_path, 'policy.pth'))
         watch()
 
+# added hyperparameter tuning scripting using Ray.tune
+
+
+def trainable_function(config, reporter):
+    while True:
+        args.epoch = config['epoch']
+        args.weight_energy = config['weight_energy']
+        args.lr = config['lr']
+        args.batch_size = config['batch_size']
+        args.n_hidden_layer = config['n_hidden_layer']
+        args.buffer_size = config['buffer_size']
+        test_qrdqn(args)
+
+        # a fake traing score to stop current simulation based on searched parameters
+        reporter(timesteps_total=args.step_per_epoch)
 
 if __name__ == '__main__':
-    folder='./qrdqn_results'
-    if not os.path.exists(folder):
-        os.mkdir(folder)
+    import ray 
+    from ray import tune
+    import gym_singlezone_jmodelica
 
-    test_qrdqn(get_args(folder=folder))
+    time_step = 15*60.0
+    num_of_days = 7#31
+    max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-v1")
+    parser.add_argument('--time-step', type=float, default=time_step)
+    parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
+    parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument('--eps-test', type=float, default=0.005)
+    parser.add_argument('--eps-train', type=float, default=1.)
+    parser.add_argument('--eps-train-final', type=float, default=0.05)
+
+    parser.add_argument('--gamma', type=float, default=0.99)
+    parser.add_argument('--num-quantiles', type=int, default=400)#!!!!!!200
+    parser.add_argument('--n-step', type=int, default=1)
+    parser.add_argument('--target-update-freq', type=int, default=300)
+
+    parser.add_argument('--step-per-collect', type=int, default=1)
+    parser.add_argument('--update-per-step', type=float, default=1)
+
+    parser.add_argument('--training-num', type=int, default=1)
+    parser.add_argument('--test-num', type=int, default=1)
+    parser.add_argument('--logdir', type=str, default='log_qrdqn')
+    parser.add_argument('--render', type=float, default=0.)
+    parser.add_argument(
+        '--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu'
+    )
+    parser.add_argument('--frames-stack', type=int, default=1)
+    parser.add_argument('--resume-path', type=str, default=None)
+    parser.add_argument('--test-only', type=bool, default=False)
+    
+    # tunable parameters
+    parser.add_argument('--weight-energy', type=float, default=100.)
+    parser.add_argument('--weight-temp', type=float, default=1.)
+    parser.add_argument('--lr', type=float, default=0.0001)
+    parser.add_argument('--epoch', type=int, default=500)
+    parser.add_argument('--batch-size', type=int, default=128)
+    parser.add_argument('--n-hidden-layers', type=int, default=3)
+    parser.add_argument('--buffer-size', type=int, default=50000)
+
+    args = parser.parse_args()
+
+    # Define Ray tuning experiments
+    tune.register_trainable("qrdqn", trainable_function)
+    ray.init()
+
+    # Run tuning
+    tune.run_experiments({
+            'qrdqn_tuning':{
+                "run": "ddqn",
+                "stop": {"timesteps_total":args.step_per_epoch},
+                "config":{
+                    "epoch": tune.grid_search([500]),
+                    "weight_energy": tune.grid_search([10, 100]),
+                    "lr": tune.grid_search([3e-05, 1e-04, 3e-04]),
+                    "batch_size": tune.grid_search([32, 64, 128]),
+                    "n_hidden_layer": tune.grid_search([3]),
+                    "buffer_size":tune.grid_search([50000])
+                    },
+                "local_dir":"/mnt/shared",
+            }
+    })
+"""
+    tune.run_experiments({
+            'qrdqn_tuning':{
+                "run": "ddqn",
+                "stop": {"timesteps_total":args.step_per_epoch},
+                "config":{
+                    "epoch": tune.grid_search([200]),
+                    "weight_energy": tune.grid_search([0.1, 1, 10., 100., 1000., 10000.]),
+                    "lr": tune.grid_search([3e-04, 1e-04, 1e-03]),
+                    "batch_size": tune.grid_search([32, 64, 128]),
+                    "n_hidden_layer": tune.grid_search([3, 4]),
+                    "buffer_size":tune.grid_search([20000, 50000, 100000])
+                    },
+                "local_dir":"/mnt/shared",
+            }
+    })
+"""    
