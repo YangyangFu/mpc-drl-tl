@@ -17,7 +17,7 @@ RUN conda update conda && \
     conda config --add channels conda-forge && \
     conda install pip \
          scikit-learn \
-         tianshou \
+         tianshou=0.4.5 \
          matplotlib \
          pvlib-python \
          joblib \

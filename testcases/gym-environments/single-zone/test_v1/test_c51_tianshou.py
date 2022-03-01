@@ -256,7 +256,7 @@ if __name__ == '__main__':
     from ray import tune
 
     time_step = 15*60.0
-    num_of_days = 7  # 31
+    num_of_days = 1  # 31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
 
     parser = argparse.ArgumentParser()
@@ -307,7 +307,7 @@ if __name__ == '__main__':
             "run": "c51",
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
-                "epoch": tune.grid_search([400]),
+                "epoch": tune.grid_search([1]),
                 "weight_energy": tune.grid_search([10, 100.]),
                 "lr": tune.grid_search([3e-04]),
                 "batch_size": tune.grid_search([32, 64, 128]),

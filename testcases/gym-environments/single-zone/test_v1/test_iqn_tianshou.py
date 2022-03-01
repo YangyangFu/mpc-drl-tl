@@ -4,8 +4,6 @@ import pprint
 
 import numpy as np
 import torch
-#from atari_network import DQN
-#from atari_wrapper import wrap_deepmind
 from torch.utils.tensorboard import SummaryWriter
 
 from tianshou.data import Collector, VectorReplayBuffer
@@ -15,7 +13,6 @@ from tianshou.trainer import offpolicy_trainer
 from tianshou.utils import TensorboardLogger
 from tianshou.utils.net.discrete import ImplicitQuantileNetwork
 import torch.nn as nn
-import gym_singlezone_jmodelica
 import gym
 
 def make_building_env(args):
@@ -255,13 +252,13 @@ def trainable_function(config, reporter):
 
         # a fake traing score to stop current simulation based on searched parameters
         reporter(timesteps_total=args.step_per_epoch)
+
 if __name__ == '__main__':
     import ray
     from ray import tune
-    import gym_singlezone_jmodelica
 
     time_step = 15*60.0
-    num_of_days = 7#31
+    num_of_days = 1#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
 
     parser = argparse.ArgumentParser()
@@ -298,14 +295,15 @@ if __name__ == '__main__':
     # tunnable parameters
     parser.add_argument('--buffer-size', type=int, default=50000)
     parser.add_argument('--lr', type=float, default=0.01)  # 0.0001
-    parser.add_argument('--epoch', type=int, default=300)
+    parser.add_argument('--epoch', type=int, default=1)
     parser.add_argument('--batch-size', type=int, default=128)
     parser.add_argument('--weight-energy', type=float, default=100.)
     parser.add_argument('--weight-temp', type=float, default=1.)
     parser.add_argument('--n-hidden-layers', type=int, default=3)
 
     args = parser.parse_args()
-
+    test_iqn(args)
+    """
     # Define Ray tuning experiments
     tune.register_trainable("iqn", trainable_function)
     ray.init()
@@ -313,7 +311,7 @@ if __name__ == '__main__':
     # Run tuning
     tune.run_experiments({
         'iqn_tuning': {
-            "run": "ddqn",
+            "run": "iqn",
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
                 "epoch": tune.grid_search([1]),
@@ -327,9 +325,10 @@ if __name__ == '__main__':
         }
     })
 """
+"""
     tune.run_experiments({
             'iqn_tuning':{
-                "run": "ddqn",
+                "run": "iqn",
                 "stop": {"timesteps_total":args.step_per_epoch},
                 "config":{
                     "epoch": tune.grid_search([200]),

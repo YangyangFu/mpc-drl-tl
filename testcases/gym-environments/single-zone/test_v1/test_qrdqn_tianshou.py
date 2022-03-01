@@ -14,10 +14,11 @@ from tianshou.policy import QRDQNPolicy
 from tianshou.trainer import offpolicy_trainer
 from tianshou.utils import TensorboardLogger
 import torch.nn as nn
-import gym_singlezone_jmodelica
 import gym
 
 def make_building_env(args):
+    import gym_singlezone_jmodelica
+    
     weather_file_path = "USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
     mass_flow_nor = [0.55]
     npre_step = 3
@@ -105,9 +106,7 @@ class QRDQN(nn.Module):
         x = logits.view(-1, self.action_num, self.num_quantiles)
         return x, state
 
-
-
-def test_qrdqn(args=get_args()):
+def test_qrdqn(args):
     env = make_building_env(args)
     args.state_shape = env.observation_space.shape or env.observation_space.n
     args.action_shape = env.action_space.shape or env.action_space.n
@@ -115,14 +114,17 @@ def test_qrdqn(args=get_args()):
     # make environments
     train_envs = SubprocVectorEnv([lambda: make_building_env(args) for _ in range(args.training_num)])
     test_envs = SubprocVectorEnv([lambda: make_building_env(args) for _ in range(args.test_num)])
+    
     # seed
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     train_envs.seed(args.seed)
     test_envs.seed(args.seed)
+    
     # define model
     net = QRDQN(args.state_shape, args.action_shape, args.n_hidden_layers, args.num_quantiles, args.device)
     optim = torch.optim.Adam(net.parameters(), lr=args.lr)
+    
     # define policy
     policy = QRDQNPolicy(
         net,
@@ -155,8 +157,6 @@ def test_qrdqn(args=get_args()):
 
     def save_fn(policy):
         torch.save(policy.state_dict(), os.path.join(log_path, 'policy.pth'))
-
-    
 
     def train_fn(epoch, env_step):
         # nature DQN setting, linear decay in the first 1M steps
@@ -247,10 +247,9 @@ def trainable_function(config, reporter):
 if __name__ == '__main__':
     import ray 
     from ray import tune
-    import gym_singlezone_jmodelica
 
     time_step = 15*60.0
-    num_of_days = 7#31
+    num_of_days = 1#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
 
     parser = argparse.ArgumentParser()
@@ -299,10 +298,10 @@ if __name__ == '__main__':
     # Run tuning
     tune.run_experiments({
             'qrdqn_tuning':{
-                "run": "ddqn",
+                "run": "qrdqn",
                 "stop": {"timesteps_total":args.step_per_epoch},
                 "config":{
-                    "epoch": tune.grid_search([500]),
+                    "epoch": tune.grid_search([1]),
                     "weight_energy": tune.grid_search([10, 100]),
                     "lr": tune.grid_search([3e-05, 1e-04, 3e-04]),
                     "batch_size": tune.grid_search([32, 64, 128]),
@@ -315,7 +314,7 @@ if __name__ == '__main__':
 """
     tune.run_experiments({
             'qrdqn_tuning':{
-                "run": "ddqn",
+                "run": "qrdqn",
                 "stop": {"timesteps_total":args.step_per_epoch},
                 "config":{
                     "epoch": tune.grid_search([200]),
