@@ -215,7 +215,7 @@ def test_dqn(args):
         args.buffer_size, buffer_num=len(train_envs), ignore_obs_next=True)
 
     # collector
-    train_collector = Collector(policy, train_envs, buffer, exploration_noise=False)
+    train_collector = Collector(policy, train_envs, buffer, exploration_noise=True)
 
     buffer_test = VectorReplayBuffer(
         args.step_per_epoch+100, buffer_num=len(test_envs), ignore_obs_next=True)
