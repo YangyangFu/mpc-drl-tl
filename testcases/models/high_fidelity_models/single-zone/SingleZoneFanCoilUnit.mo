@@ -6,7 +6,8 @@ package SingleZoneFanCoilUnit
     model FanControl
       "Testcase model with ideal airflow controlled by external fan control signal"
       extends Modelica.Icons.Example;
-      BaseClasses.Case900FF zon(mAir_flow_nominal=fcu.mAir_flow_nominal)
+      BaseClasses.Case900FF zon(mAir_flow_nominal=fcu.mAir_flow_nominal,
+                                roo(T_start=273.15+25))
         annotation (Placement(transformation(extent={{34,-10},{54,10}})));
 
       BaseClasses.FanCoilUnit_T fcu "Fan coil unit"
@@ -709,7 +710,8 @@ First implementation.
 
     model Baseline "Testcase model with ideal airflow"
       extends Modelica.Icons.Example;
-      BaseClasses.Case900FF zon(mAir_flow_nominal=fcu.mAir_flow_nominal)
+      BaseClasses.Case900FF zon(mAir_flow_nominal=fcu.mAir_flow_nominal,
+                                roo(T_start=273.15+25))
         annotation (Placement(transformation(extent={{34,-10},{54,10}})));
 
       BaseClasses.Thermostat_T con "Thermostat controller"
@@ -1412,7 +1414,8 @@ First implementation.
 
     model LoadShifting "Testcase model with ideal airflow"
       extends Modelica.Icons.Example;
-      BaseClasses.Case900FF zon(mAir_flow_nominal=fcu.mAir_flow_nominal)
+      BaseClasses.Case900FF zon(mAir_flow_nominal=fcu.mAir_flow_nominal,
+                                roo(T_start=273.15+25))
         annotation (Placement(transformation(extent={{34,-10},{54,10}})));
 
       BaseClasses.Thermostat_T con "Thermostat controller"
