@@ -401,9 +401,9 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         # initialize some metadata 
         self._cost = []
         self._max_temperature_violation = []
+        
         # specify fmu path and model
         fmu_path = os.path.dirname(os.path.realpath(__file__))
-        print(fmu_path)
         super(JModelicaCSSingleZoneEnv,self).__init__(fmu_path+"/SingleZoneFCU.fmu",
                          config, log_level=log_level,
                          simulation_start_time=simulation_start_time)
