@@ -274,7 +274,8 @@ class SingleZoneEnv(object):
         """
         from pvlib.iotools import read_epw
 
-        dat = read_epw(self.weather_file)
+        file_path = os.path.dirname(os.path.realpath(__file__))
+        dat = read_epw(file_path+'/'+self.weather_file)
 
         tem_sol_h = dat[0][['temp_air','ghi']]
         index_h = np.arange(0,3600.*len(tem_sol_h),3600.)
