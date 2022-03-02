@@ -107,7 +107,7 @@ class SingleZoneEnv(object):
         """
         # open gym requires an observation space during initialization
 
-        high = np.array([86400.,273.15+30, 273.15+40,1000., 1500., 1.0]+[273.15+40]*self.n_next_steps+[1000.]*self.n_next_steps+[1.]*self.n_next_steps)
+        high = np.array([86400.,273.15+35, 273.15+40,1000., 1500., 1.0]+[273.15+40]*self.n_next_steps+[1000.]*self.n_next_steps+[1.]*self.n_next_steps)
         low = np.array([0., 273.15+12, 273.15+0,0, 0, 0.0]+[273.15+0]*self.n_next_steps+[0.0]*self.n_next_steps+[0.]*self.n_next_steps)
         return spaces.Box(low, high)
 

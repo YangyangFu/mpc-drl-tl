@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from gym import spaces
 from modelicagym.environment import FMI2CSEnv, FMI1CSEnv
-
+import os
 
 logger = logging.getLogger(__name__)
 
