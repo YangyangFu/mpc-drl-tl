@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from gym import spaces
 from modelicagym.environment import FMI2CSEnv, FMI1CSEnv
-
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -451,7 +451,9 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         self._cost = []
         self._max_temperature_violation = []
 
-        super(JModelicaCSSingleZoneEnv,self).__init__("./SingleZoneFCU.fmu",
+        # specify fmu path and model
+        fmu_path = os.path.dirname(os.path.realpath(__file__))
+        super(JModelicaCSSingleZoneEnv, self).__init__(fmu_path+"/SingleZoneFCU.fmu",
                          config, log_level=log_level,
                          simulation_start_time=simulation_start_time)
        # location of fmu is set to current working directory
