@@ -10,7 +10,7 @@ import tianshou as ts
 env = gym.make("JModelicaCSSingleZoneEnv-v1",
                 mass_flow_nor=0.55,
                weather_file='USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw',
-                npre_step=5,
+                n_next_steps=5,
                 simulation_start_time=3600*24.,
                 simulation_end_time=3600*24*2.,
                 time_step=15*60.,
