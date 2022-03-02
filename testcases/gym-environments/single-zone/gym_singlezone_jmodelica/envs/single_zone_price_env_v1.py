@@ -95,8 +95,8 @@ class SingleZoneEnv(object):
         """
         # open gym requires an observation space during initialization
 
-        high = np.array([86400.,273.15+30, 273.15+40,1000., 1500., 1.0]+[273.15+40]*self.npre_step+[1000.]*self.npre_step+[1.]*self.npre_step)
-        low = np.array([0., 273.15+12, 273.15+0,0, 0, 0.0]+[273.15+0]*self.npre_step+[0.0]*self.npre_step+[0.]*self.npre_step)
+        high = np.array([86400.,273.15+30, 273.15+40,1000., 1500., 1.0]+[273.15+40]*self.n_next_steps+[1000.]*self.n_next_steps+[1.]*self.n_next_steps)
+        low = np.array([0., 273.15+12, 273.15+0,0, 0, 0.0]+[273.15+0]*self.n_next_steps+[0.0]*self.n_next_steps+[0.]*self.n_next_steps)
         return spaces.Box(low, high)
 
     # OpenAI Gym API implementation
@@ -213,11 +213,11 @@ class SingleZoneEnv(object):
         state_list += energy_price
 
         # ============================================
-        # get oa predictors for next npre_step
-        predictor_list = self.predictor(self.npre_step)
-        # get price for next npre_step
+        # get oa predictors for next n_next_steps
+        predictor_list = self.predictor(self.n_next_steps)
+        # get price for next n_next_steps
         energy_price_npre = []
-        for i in range(self.npre_step):
+        for i in range(self.n_next_steps):
             time += self.tau 
             t = int(time)
             t = int((t%86400)/3600) # hour index 0~23
@@ -341,7 +341,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
     Attributes:
         mass_flow_nor (float): List, norminal mass flow rate of VAV terminals.
         weather_file (str): Energyplus epw weather file name 
-        npre_step (int): number of future prediction steps
+        n_next_steps (int): number of future prediction steps
         time_step (float): time difference between simulation steps.
 
     """
@@ -349,7 +349,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
     def __init__(self,
                  mass_flow_nor,
                  weather_file,
-                 npre_step,
+                 n_next_steps,
                  simulation_start_time,
                  simulation_end_time,
                  time_step,
@@ -368,7 +368,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         # system parameters
         self.mass_flow_nor = mass_flow_nor 
         self.weather_file = weather_file 
-        self.npre_step = npre_step 
+        self.n_next_steps = n_next_steps 
 
         # virtual environment simulation period
         self.simulation_end_time = simulation_end_time
