@@ -119,9 +119,9 @@ class SingleZoneEnv(object):
         """
         # tianshou scales actions into [-1,1] when using continuous space
         # needs remap to [0,1] for reality
-        action = np.array(action)
-        min_action = np.array(self.min_action)
-        max_action = np.array(self.max_action)
+        action = np.array(action).reshape(-1,)
+        min_action = np.array(self.min_action).reshape(-1,)
+        max_action = np.array(self.max_action).reshape(-1,)
 
         action = [(action[i]-min_action[i])/(max_action[i]-min_action[i])*(1.-0.)+0. for i in range(len(action))]
         return super(SingleZoneEnv,self).step(action)
