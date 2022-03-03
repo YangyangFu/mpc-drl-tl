@@ -45,7 +45,7 @@ class SingleZoneEnv(object):
     Actions:
         Type: Box(1)
         Num    Action           Min         Max
-        0      Fan speed        0           1
+        0      Fan speed        -1           1
     Reward:
          Sum of energy costs and zone temperature violations
 
@@ -117,10 +117,13 @@ class SingleZoneEnv(object):
         :param action: alias of an action [0-10] to be performed. 
         :return: next (resulting) state
         """
-        # 0 - max flow: 
-        #mass_flow_nor = self.mass_flow_nor # norminal flowrate: kg/s 
+        # tianshou scales actions into [-1,1] when using continuous space
+        # needs remap to [0,1] for reality
         action = np.array(action)
-        action = [action]
+        min_action = np.array(self.min_action)
+        max_action = np.array(self.max_action)
+
+        action = [(action[i]-min_action[i])/(max_action[i]-min_action[i])*(1.-0.)+0. for i in range(len(action))]
         return super(SingleZoneEnv,self).step(action)
     
     def _reward_policy(self):
@@ -349,7 +352,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
                  fmu_result_ncp=100.,
                  filter_flag=True,
                  alpha=0.01,
-                 min_action=0.,
+                 min_action=-1.,
                  max_action=1.,
                  rf=None,
                  p_g=None,
