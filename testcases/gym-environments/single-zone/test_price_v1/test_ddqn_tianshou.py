@@ -329,7 +329,7 @@ if __name__ == '__main__':
     import gym_singlezone_jmodelica
 
     time_step = 15*60.0
-    num_of_days = 1#31
+    num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
 
     parser = argparse.ArgumentParser()
