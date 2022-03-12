@@ -381,11 +381,11 @@ if __name__ == '__main__':
                 "stop": {"timesteps_total":args.step_per_epoch},
                 "config":{
                     "epoch": tune.grid_search([500]),
-                    "weight_energy": tune.grid_search([10, 100]),
-                    "lr": tune.grid_search([3e-04]),
-                    "batch_size": tune.grid_search([32, 64, 128]),
+                    "weight_energy": tune.grid_search([10]),
+                    "lr": tune.grid_search([1e-04, 1e-03]),
+                    "batch_size": tune.grid_search([32]),
                     "n_hidden_layer": tune.grid_search([3]),
-                    "buffer_size":tune.grid_search([50000])
+                    "buffer_size":tune.grid_search([4096, 20000])
                     },
                 "local_dir":"/mnt/shared",
             }
