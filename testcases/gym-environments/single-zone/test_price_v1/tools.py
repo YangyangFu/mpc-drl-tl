@@ -9,38 +9,31 @@ from collections import defaultdict
 import numpy as np
 import tqdm
 from tensorboard.backend.event_processing import event_accumulator
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
-
-def find_all_files(root_dir, pattern):
+def find_all_files(root_dir, algor, pattern, task='JModelicaCSSingleZoneEnv-price-v1'):
     """Find all files under root_dir according to relative pattern."""
+    sub_dirs=[]
+    for it in os.scandir(root_dir):
+        if it.is_dir():
+            sub_dirs.append(it.path)
+
     file_list = []
-    for dirname, _, files in os.walk(root_dir):
-        for f in files:
-            absolute_path = os.path.join(dirname, f)
-            if re.match(pattern, absolute_path):
-                file_list.append(absolute_path)
-    return file_list
+    
+    for sub_dir in sub_dirs:
+        data_path = os.path.join(sub_dir, 'log_'+algor, task)
+        for dirname, _, files in os.walk(data_path):
+            for f in files:
+                absolute_path = os.path.join(dirname, f)
+                if re.match(pattern, absolute_path):
+                    file_list.append(absolute_path)
 
+        return file_list
 
-def group_files(file_list, pattern):
-    res = defaultdict(list)
-    for f in file_list:
-        match = re.search(pattern, f)
-        key = match.group() if match else ''
-        res[key].append(f)
-    return res
-
-
-def csv2numpy(csv_file):
-    csv_dict = defaultdict(list)
-    reader = csv.DictReader(open(csv_file))
-    for row in reader:
-        for k, v in row.items():
-            csv_dict[k].append(eval(v))
-    return {k: np.array(v) for k, v in csv_dict.items()}
-
-
-def convert_tfevents_to_csv(root_dir, refresh=False):
+def convert_tfevents_to_csv(root_dir, algor, task, refresh=False):
     """Recursively convert test/rew from all tfevent file under root_dir to csv.
 
     This function assumes that there is at most one tfevents file in each directory
@@ -48,7 +41,7 @@ def convert_tfevents_to_csv(root_dir, refresh=False):
 
     :param bool refresh: re-create csv file under any condition.
     """
-    tfevent_files = find_all_files(root_dir, re.compile(r"^.*tfevents.*$"))
+    tfevent_files = find_all_files(root_dir, algor, re.compile(r"^.*tfevents.*$"), task)
     print(f"Converting {len(tfevent_files)} tfevents files under {root_dir} ...")
     result = {}
     with tqdm.tqdm(tfevent_files) as t:
@@ -66,7 +59,7 @@ def convert_tfevents_to_csv(root_dir, refresh=False):
             ea.Reload()
             initial_time = ea._first_event_timestamp
             content = [["env_step", "rew", "time"]]
-            for test_rew in ea.scalars.Items("test/rew"):
+            for test_rew in ea.scalars.Items("test/reward"):
                 content.append(
                     [
                         round(test_rew.step, 4),
@@ -78,30 +71,85 @@ def convert_tfevents_to_csv(root_dir, refresh=False):
             result[output_file] = content
     return result
 
+def plot_reward(csv_files):
+    # assume this is only one .csv file
+    keys = [key for key in csv_files.keys()]
 
-def merge_csv(csv_files, root_dir, remove_zero=False):
-    """Merge result in csv_files into a single csv file."""
-    assert len(csv_files) > 0
-    if remove_zero:
-        for v in csv_files.values():
-            if v[1][0] == 0:
-                v.pop(1)
-    sorted_keys = sorted(csv_files.keys())
-    sorted_values = [csv_files[k][1:] for k in sorted_keys]
-    content = [
-        ["env_step", "rew", "rew:shaded"] +
-        list(map(lambda f: "rew:" + os.path.relpath(f, root_dir), sorted_keys))
-    ]
-    for rows in zip(*sorted_values):
-        array = np.array(rows)
-        assert len(set(array[:, 0])) == 1, (set(array[:, 0]), array[:, 0])
-        line = [rows[0][0], round(array[:, 1].mean(), 4), round(array[:, 1].std(), 4)]
-        line += array[:, 1].tolist()
-        content.append(line)
-    output_path = os.path.join(root_dir, f"test_rew_{len(csv_files)}seeds.csv")
-    print(f"Output merged csv file to {output_path} with {len(content[1:])} lines.")
-    csv.writer(open(output_path, "w")).writerows(content)
+    key = keys[0] # hardcode by assuming only one cvs 
+    dir_name = os.path.dirname(os.path.dirname(os.path.dirname(key)))
+    print(dir_name)
+    data = pd.read_csv(key)
+    
+    plt.figure(figsize=(8,6))
+    plt.plot(data['env_step'], data['rew'])
+    plt.grid()
+    plt.xlabel("step")
+    plt.ylabel("reward")
+    plt.savefig(os.path.join(dir_name,"rewards.pdf"))
+    plt.savefig(os.path.join(dir_name,"rewards.png"))
+    plt.close()
 
+
+def plot_final_epoch(root_dir, algor, task):
+
+    sub_dirs = []
+    for it in os.scandir(root_dir):
+        if it.is_dir():
+            sub_dirs.append(it.path)
+
+    for sub_dir in sub_dirs:
+        data_path = os.path.join(sub_dir, 'log_'+algor, task)
+        acts = np.load(os.path.join(data_path, 'his_act.npy'), allow_pickle=True)
+        obss = np.load(os.path.join(data_path, 'his_obs.npy'), allow_pickle=True)
+        obs_mean = np.load(os.path.join(data_path, 'obs_mean.npy'), allow_pickle=True)
+        obs_var = np.load(os.path.join(data_path, 'obs_var.npy'), allow_pickle=True)
+
+        TRoo_obs = [T*np.sqrt(obs_var[1])+obs_mean[1] - 273.15  for T in obss[:, 1]]
+        TOut_obs = [T*np.sqrt(obs_var[2])+obs_mean[2] - 273.15 for T in obss[:, 2]]
+
+        # temperture
+        t = range(len(TRoo_obs))
+        ndays = int(len(TRoo_obs)//96.)
+        print("we have " + str(ndays) + " days of data)")
+        T_up = 26.0*np.ones([len(TRoo_obs)])
+        T_low = 22.0*np.ones([len(TRoo_obs)])
+
+        T_up = [30.0 for i in range(len(TRoo_obs))]
+        T_low = [12.0 for i in range(len(TRoo_obs))]
+        for i in range(ndays):
+            for j in range((19-8)*4):
+                T_up[i*24*4 + (j) + 4*7] = 26.0
+                T_low[i*24*4 + (j) + 4*7] = 22.0
+
+        # power 
+        power_obs = [p*np.sqrt(obs_var[4])+obs_mean[4] - 273.15 for p in obss[:,4]]
+
+        plt.figure(figsize=(12, 9))
+        plt.subplot(311)
+        plt.plot(t, [acts[i]/50. for i in range(len(t))])
+        plt.ylabel("Speed")
+        #plt.xlabel("Time Step")
+        plt.grid()
+
+        plt.subplot(312)
+        plt.plot(t, TOut_obs, 'b', label="Outdoor")
+        plt.plot(t, T_up, 'r', t, T_low, 'r')
+        plt.plot(t, TRoo_obs, 'k', label="Indoor")
+        #plt.ylim([10, 40])
+        plt.grid()
+        plt.legend()
+        plt.ylabel("Temperaure [C]")
+        #plt.xlabel("Time Step")
+
+        plt.subplot(313)
+        plt.plot(t, [power_obs[i] for i in range(len(t))])
+        plt.ylabel("Power [W]")
+        plt.xlabel("Time Step")
+        plt.grid()
+
+        plt.savefig(os.path.join(sub_dir, "final_epoch.pdf"))
+        plt.savefig(os.path.join(sub_dir, "final_epoch.png"))
+        plt.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -116,7 +164,10 @@ if __name__ == "__main__":
         help="Remove the data point of env_step == 0."
     )
     parser.add_argument('--root-dir', type=str)
+    parser.add_argument('--algor', type=str)
+    parser.add_argument('--task', type=str)
     args = parser.parse_args()
 
-    csv_files = convert_tfevents_to_csv(args.root_dir, args.refresh)
-    merge_csv(csv_files, args.root_dir, args.remove_zero)
+    csv_files = convert_tfevents_to_csv(args.root_dir, args.algor, args.task, args.refresh)
+    plot_reward(csv_files)
+    plot_final_epoch(args.root_dir, args.algor, args.task)

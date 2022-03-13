@@ -6,8 +6,7 @@ import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 
 from tianshou.policy import DQNPolicy
-from tianshou.utils import BasicLogger
-from tianshou.utils.statistics import RunningMeanStd
+from tianshou.utils import TensorboardLogger
 from tianshou.env import SubprocVectorEnv
 from tianshou.trainer import offpolicy_trainer
 from tianshou.data import Collector, VectorReplayBuffer
@@ -82,103 +81,9 @@ class Net(nn.Module):
         logits = self.model(obs.view(batch, -1))
         return logits, state
 
-        
-import time
-import tqdm
-import warnings
-from collections import defaultdict
-from typing import Dict, Union, Callable, Optional
-
-from tianshou.data import Collector
-from tianshou.policy import BasePolicy
-from tianshou.trainer import test_episode, gather_info
-from tianshou.utils import tqdm_config, MovAvg, BaseLogger, LazyLogger
-def offpolicy_trainer_1(
-    policy: BasePolicy,
-    train_collector: Collector,
-    test_collector: Collector,
-    max_epoch: int,
-    step_per_epoch: int,
-    step_per_collect: int,
-    episode_per_test: int,
-    batch_size: int,
-    update_per_step: Union[int, float] = 1,
-    train_fn: Optional[Callable[[int, int], None]] = None,
-    test_fn: Optional[Callable[[int, Optional[int]], None]] = None,
-    stop_fn: Optional[Callable[[float], bool]] = None,
-    save_fn: Optional[Callable[[BasePolicy], None]] = None,
-    save_checkpoint_fn: Optional[Callable[[int, int, int], None]] = None,
-    resume_from_log: bool = False,
-    reward_metric: Optional[Callable[[np.ndarray], np.ndarray]] = None,
-    logger: BaseLogger = LazyLogger(),
-    verbose: bool = True,
-    test_in_train: bool = True,
-) -> Dict[str, Union[float, str]]:
-
-    if save_fn:
-        warnings.warn("Please consider using save_checkpoint_fn instead of save_fn.")
-
-    start_epoch, env_step, gradient_step = 0, 0, 0
-    if resume_from_log:
-        start_epoch, env_step, gradient_step = logger.restore_data()
-    last_rew, last_len = 0.0, 0
-    stat: Dict[str, MovAvg] = defaultdict(MovAvg)
-    start_time = time.time()
-    train_collector.reset_stat()
-    test_collector.reset_stat()
-    test_in_train = test_in_train and train_collector.policy == policy
-
-    for epoch in range(1 + start_epoch, 1 + max_epoch):
-        # train
-        policy.train()
-        train_collector.reset_env()
-        with tqdm.tqdm(
-            total=step_per_epoch, desc=f"Epoch #{epoch}", **tqdm_config
-        ) as t:
-            while t.n < t.total:
-                if train_fn:
-                    train_fn(epoch, env_step)
-                result = train_collector.collect(n_step=step_per_collect)
-                #print(result)
-                if result["n/ep"] > 0 and reward_metric:
-                    result["rews"] = reward_metric(result["rews"])
-                env_step += int(result["n/st"])
-                t.update(result["n/st"])
-                logger.log_train_data(result, env_step)
-                last_rew = result['rew'] if 'rew' in result else last_rew
-                #print("last_rew:    ", train_collector.buffer)
-                last_len = result['len'] if 'len' in result else last_len
-                data = {
-                    "env_step": str(env_step),
-                    "rew": f"{last_rew:.2f}",
-                    "len": str(int(last_len)),
-                    "n/ep": str(int(result["n/ep"])),
-                    "n/st": str(int(result["n/st"])),
-                }
-
-                for i in range(round(update_per_step * result["n/st"])):
-                    gradient_step += 1
-                    losses = policy.update(batch_size, train_collector.buffer)
-                    for k in losses.keys():
-                        stat[k].add(losses[k])
-                        losses[k] = stat[k].get()
-                        data[k] = f"{losses[k]:.3f}"
-                    logger.log_update_data(losses, gradient_step)
-                    t.set_postfix(**data)
-            if t.n <= t.total:
-                t.update()
-        
-        
-        if save_fn:
-            save_fn(policy)
-
-    return 1
 
 def test_dqn(args):
-    tim_env = 0.0
-    tim_ctl = 0.0
-    tim_learn = 0.0
-    
+
     env = make_building_env(args)
 
     args.state_shape = env.observation_space.shape or env.observation_space.n
@@ -187,18 +92,16 @@ def test_dqn(args):
     print("Observations shape:", args.state_shape)
     print("Actions shape:", args.action_shape)
 
-
-    # make environments
+    # make environments: normalize the obs space
     train_envs = SubprocVectorEnv([lambda: make_building_env(args)
-                                   for _ in range(args.training_num)], norm_obs=True, obs_rms=RunningMeanStd)
+                                   for _ in range(args.training_num)], norm_obs=True)
     test_envs = SubprocVectorEnv([lambda: make_building_env(args)
-                                  for _ in range(args.test_num)],norm_obs=True, obs_rms=RunningMeanStd)
+                                  for _ in range(args.test_num)],norm_obs=True, obs_rms=train_envs.obs_rms, update_obs_rms=False)
     # seed
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     train_envs.seed(args.seed)
     test_envs.seed(args.seed)
-
 
     # define model
     print(args.state_shape)
@@ -213,31 +116,28 @@ def test_dqn(args):
                     target_update_freq=args.target_update_freq, 
                     reward_normalization = False, 
                     is_double=True)
+    # load a previous policy
+    if args.resume_path:
+        policy.load_state_dict(torch.load(args.resume_path, map_location=args.device))
+        print("Loaded agent from: ", os.path.join(log_path, 'policy.pth'))
+
     # collector
     buffer = VectorReplayBuffer(
             args.buffer_size, 
             buffer_num=len(train_envs), 
             ignore_obs_next=True)
     train_collector = Collector(policy, train_envs, buffer, exploration_noise=True)
-    test_collector = Collector(policy, test_envs, buffer, exploration_noise=True)
+    test_collector = Collector(policy, test_envs)
 
     # log
     log_path = os.path.join(args.logdir, args.task)
     writer = SummaryWriter(log_path)
     writer.add_text("args", str(args))
-    logger = BasicLogger(writer)
-
+    logger = TensorboardLogger(writer)
+    
     def save_fn(policy):
         torch.save(policy.state_dict(), os.path.join(log_path, 'policy.pth'))
-
-    '''
-    def stop_fn(mean_rewards):
-        if env.spec.reward_threshold:
-            return mean_rewards >= env.spec.reward_threshold
-        else:
-            return False
-    '''
-
+    
     def train_fn(epoch, env_step):
         # nature DQN setting, linear decay in the first 1M steps
         max_eps_steps = int(args.epoch * args.step_per_epoch * 0.9)
@@ -251,64 +151,67 @@ def test_dqn(args):
         print('train/eps', env_step, eps)
         print("=========================")
         #logger.write('train/eps', env_step, eps)
-
+    
     def test_fn(epoch, env_step):
         policy.set_eps(args.eps_test)
 
-    
-    # watch agent's performance
-    def watch():
-        print("Setup test envs ...")
-        policy.eval()
-        policy.set_eps(args.eps_test)
-        test_envs.seed(args.seed)
-
-        print("Testing agent ...")
-        buffer = VectorReplayBuffer(
-                args.step_per_epoch+1, 
-                buffer_num=len(test_envs),
-                ignore_obs_next=True, 
-                save_only_last_obs=False,
-                stack_num=args.frames_stack)
-        collector = Collector(policy, test_envs, buffer, exploration_noise=False)
-        result = collector.collect(n_step=args.step_per_epoch)
-        #buffer.save_hdf5(args.save_buffer_name)
-        
-        np.save(os.path.join(args.logdir, args.task,'his_act.npy'), buffer._meta.__dict__['act'])
-        np.save(os.path.join(args.logdir, args.task,'his_obs.npy'), buffer._meta.__dict__['obs'])
-        np.save(os.path.join(args.logdir, args.task,'his_rew.npy'), buffer._meta.__dict__['rew'])
-        #print(buffer._meta.__dict__.keys())
-        rew = result["rews"].mean()
-        print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
-    
-
     if not args.test_only:
-        # test train_collector and start filling replay buffer
-        train_collector.collect(n_step=args.batch_size * args.training_num)
+        # start filling replay buffer by collecting data at the beginning
+        train_collector.collect(n_step=args.batch_size * args.training_num, random=False)
         # trainer
         
-        result = offpolicy_trainer_1(
+        result = offpolicy_trainer(
             policy = policy, 
             train_collector = train_collector, 
-            test_collector = test_collector, 
+            test_collector = test_collector, # if none, no testing will be performed
             max_epoch = args.epoch,
             step_per_epoch = args.step_per_epoch, 
             step_per_collect = args.step_per_collect, 
             episode_per_test = args.test_num,
             batch_size = args.batch_size, 
-            train_fn=train_fn, test_fn=test_fn,
+            train_fn = train_fn, 
+            test_fn = test_fn,
             #stop_fn=stop_fn, 
-            save_fn=save_fn, logger=logger,
-            update_per_step=args.update_per_step, 
-            test_in_train=False)
-        #pprint.pprint(result)
+            save_fn = save_fn, 
+            logger = logger,
+            update_per_step = args.update_per_step, 
+            test_in_train = False)
+        pprint.pprint(result)
 
-        watch()
-    
-    if args.test_only:
-        policy.load_state_dict(torch.load(args.resume_path, map_location=args.device))
-        print("Loaded agent from: ", os.path.join(log_path, 'policy.pth'))
-        watch()
+    # Lets watch its performance for the final run
+    def watch():
+        print("Setup test envs ...")
+        policy.eval()
+        policy.set_eps(args.eps_test)
+        
+        buffer = VectorReplayBuffer(
+            args.step_per_epoch,
+            buffer_num=len(test_envs),
+            ignore_obs_next=True,
+            save_only_last_obs=False,
+            stack_num=args.frames_stack)
+        collector = Collector(policy, test_envs, buffer)
+        result = collector.collect(n_step=args.step_per_epoch)
+
+        # get obs mean and var
+        obs_mean = test_envs.obs_rms.mean
+        obs_var = test_envs.obs_rms.var
+        print(obs_mean)
+        print(obs_var)
+        # the observations and action may be normalized depending on training setting
+        np.save(os.path.join(args.logdir, args.task, 'his_act.npy'),
+                buffer._meta.__dict__['act'])
+        np.save(os.path.join(args.logdir, args.task, 'his_obs.npy'),
+                buffer._meta.__dict__['obs'])
+        np.save(os.path.join(args.logdir, args.task, 'his_rew.npy'),
+                buffer._meta.__dict__['rew'])
+        np.save(os.path.join(args.logdir, args.task, 'obs_mean.npy'),
+                obs_mean)
+        np.save(os.path.join(args.logdir, args.task, 'obs_var.npy'),
+                obs_var)
+        rew = result["rews"].mean()
+        print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
+    watch()
 
 # added hyperparameter tuning scripting using Ray.tune
 def trainable_function(config, reporter):
@@ -330,7 +233,7 @@ if __name__ == '__main__':
     import gym_singlezone_jmodelica
 
     time_step = 15*60.0
-    num_of_days = 7#31
+    num_of_days = 1#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
 
     parser = argparse.ArgumentParser()
@@ -345,14 +248,14 @@ if __name__ == '__main__':
     parser.add_argument('--gamma', type=float, default=0.99)
 
     parser.add_argument('--n-step', type=int, default=1)
-    parser.add_argument('--target-update-freq', type=int, default=100)
+    parser.add_argument('--target-update-freq', type=int, default=96)
 
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--step-per-collect', type=int, default=1)
     parser.add_argument('--update-per-step', type=float, default=1)
 
     parser.add_argument('--training-num', type=int, default=1)
-    parser.add_argument('--test-num', type=int, default=1)
+    parser.add_argument('--test-num', type=int, default=1) 
     parser.add_argument('--logdir', type=str, default='log_ddqn')
     
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
@@ -366,7 +269,7 @@ if __name__ == '__main__':
     parser.add_argument('--weight-energy', type=float, default= 100.)   
     parser.add_argument('--weight-temp', type=float, default= 1.)   
     parser.add_argument('--lr', type=float, default=0.0003) #0.0003!!!!!!!!!!!!!!!!!!!!!
-    parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--epoch', type=int, default=2)
     parser.add_argument('--batch-size', type=int, default=128)
     parser.add_argument('--n-hidden-layers', type=int, default=3)
     parser.add_argument('--buffer-size', type=int, default=50000)
@@ -376,23 +279,39 @@ if __name__ == '__main__':
     # Define Ray tuning experiments
     tune.register_trainable("ddqn", trainable_function)
     ray.init()
-
+    tune.run_experiments({
+        'ddqn_tuning': {
+            "run": "ddqn",
+            "stop": {"timesteps_total": args.step_per_epoch},
+            "config": {
+                "epoch": tune.grid_search([2]),
+                "weight_energy": tune.grid_search([10.]),
+                "lr": tune.grid_search([3e-04]),
+                "batch_size": tune.grid_search([32]),
+                "n_hidden_layer": tune.grid_search([3]),
+                "buffer_size": tune.grid_search([1024])
+            },
+            "local_dir": "/mnt/shared",
+        }
+    })
+    """
     # Run tuning
     tune.run_experiments({
-            'ddqn_tuning':{
-                "run": "ddqn",
-                "stop": {"timesteps_total":args.step_per_epoch},
-                "config":{
-                    "epoch": tune.grid_search([500]),
-                    "weight_energy": tune.grid_search([10]),
-                    "lr": tune.grid_search([3e-05, 1e-04,3e-04]),
-                    "batch_size": tune.grid_search([32,256]),
-                    "n_hidden_layer": tune.grid_search([3]),
-                    "buffer_size":tune.grid_search([1024, 2048, 4096])
-                    },
-                "local_dir":"/mnt/shared",
-            }
+        'ddqn_tuning': {
+            "run": "ddqn",
+            "stop": {"timesteps_total": args.step_per_epoch},
+            "config": {
+                "epoch": tune.grid_search([500]),
+                "weight_energy": tune.grid_search([10]),
+                "lr": tune.grid_search([3e-05, 1e-04, 3e-04]),
+                "batch_size": tune.grid_search([32, 256]),
+                "n_hidden_layer": tune.grid_search([3]),
+                "buffer_size": tune.grid_search([1024, 2048, 4096])
+            },
+            "local_dir": "/mnt/shared",
+        }
     })
+    """
 """
     tune.run_experiments({
             'ddqn_tuning':{
