@@ -12,7 +12,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.distributions import Independent, Normal
 
 from tianshou.policy import PPOPolicy
-from tianshou.utils import BasicLogger
+from tianshou.utils import TensorboardLogger
 from tianshou.env import SubprocVectorEnv
 from tianshou.utils.net.common import Net
 from tianshou.trainer import onpolicy_trainer
@@ -73,15 +73,25 @@ def test_ppo(args):
     print("Action range:", np.min(env.action_space.low),
           np.max(env.action_space.high))
 
-    train_envs = SubprocVectorEnv([lambda: make_building_env(args) for _ in range(args.training_num)])
-    #test_envs = make_building_env(args)
-    test_envs = SubprocVectorEnv([lambda: make_building_env(args) for _ in range(args.test_num)])
+
+    # make environments
+    train_envs = SubprocVectorEnv(
+        [lambda: make_building_env(args) for _ in range(args.training_num)],
+        norm_obs=True)
+    test_envs = SubprocVectorEnv(
+        [lambda: make_building_env(args) for _ in range(args.test_num)],
+        norm_obs=True,
+        obs_rms=train_envs.obs_rms,
+        update_obs_rms=False)
+
 
     # seed
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     train_envs.seed(args.seed)
     test_envs.seed(args.seed)
+
+
     # model
     net_a = Net(
                 args.state_shape, 
@@ -165,13 +175,12 @@ def test_ppo(args):
         buffer = ReplayBuffer(args.buffer_size)
     train_collector = Collector(policy, train_envs, buffer, exploration_noise=True)
     test_collector = Collector(policy, test_envs)
+
     # log
-    t0 = datetime.datetime.now().strftime("%m%d_%H%M%S")
-    log_file = f'seed_{args.seed}_{t0}-{args.task.replace("-", "_")}_ppo'
-    log_path = os.path.join(args.logdir, args.task, 'ppo', log_file)
+    log_path = os.path.join(args.logdir, args.task)
     writer = SummaryWriter(log_path)
     writer.add_text("args", str(args))
-    logger = BasicLogger(writer, update_interval=100, train_interval=100)
+    logger = TensorboardLogger(writer)
 
     def save_fn(policy):
         torch.save(policy.state_dict(), os.path.join(log_path, 'policy.pth'))
@@ -179,27 +188,46 @@ def test_ppo(args):
     if not args.watch:
         # trainer
         result = onpolicy_trainer(
-            policy, train_collector, test_collector, args.epoch, args.step_per_epoch,
-            args.repeat_per_collect, args.test_num, args.batch_size,
-            step_per_collect=args.step_per_collect, save_fn=save_fn, logger=logger,
+            policy, 
+            train_collector, 
+            test_collector, 
+            args.epoch, 
+            args.step_per_epoch,
+            args.repeat_per_collect, 
+            args.test_num, 
+            args.batch_size,
+            step_per_collect=args.step_per_collect, 
+            save_fn=save_fn, 
+            logger=logger,
             test_in_train=False)
         pprint.pprint(result)
 
+    # Lets watch its performance for the final run
     def watch():
         print("Setup test envs ...")
         policy.eval()
-        test_envs.seed(args.seed)
+        policy.set_eps(args.eps_test)
 
-        print("Testing agent ...")
-        buffer = VectorReplayBuffer(args.step_per_epoch+1, len(test_envs))
-
-        collector = Collector(policy, test_envs, buffer, exploration_noise=False)
+        buffer = VectorReplayBuffer(
+            args.step_per_epoch,
+            buffer_num=len(test_envs),
+            ignore_obs_next=True,
+            save_only_last_obs=False,
+            stack_num=args.frames_stack)
+        collector = Collector(policy, test_envs, buffer)
         result = collector.collect(n_step=args.step_per_epoch)
-        
+
+        # get obs mean and var
+        obs_mean = test_envs.obs_rms.mean
+        obs_var = test_envs.obs_rms.var
+        print(obs_mean)
+        print(obs_var)
+        # the observations and action may be normalized depending on training setting
         np.save(os.path.join(args.logdir, args.task, 'his_act.npy'),buffer._meta.__dict__['act'])
         np.save(os.path.join(args.logdir, args.task, 'his_obs.npy'),buffer._meta.__dict__['obs'])
         np.save(os.path.join(args.logdir, args.task, 'his_rew.npy'),buffer._meta.__dict__['rew'])
-        #print(buffer._meta.__dict__.keys())
+        np.save(os.path.join(args.logdir, args.task, 'obs_mean.npy'),obs_mean)
+        np.save(os.path.join(args.logdir, args.task, 'obs_var.npy'),obs_var)
         rew = result["rews"].mean()
         print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
 
@@ -259,9 +287,8 @@ if __name__ == '__main__':
         '--device', type=str,
         default='cuda' if torch.cuda.is_available() else 'cpu')
     parser.add_argument('--resume-path', type=str, default=None)
-    parser.add_argument('--watch', default=False, action='store_true',
-                        help='watch the play of pre-trained policy only')
-    
+    parser.add_argument('--test-only', type=bool, default=False)
+
     # tunable parameters
     parser.add_argument('--weight-energy', type=float, default= 100.)   
     parser.add_argument('--weight-temp', type=float, default= 1.)   

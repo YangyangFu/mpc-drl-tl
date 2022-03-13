@@ -266,8 +266,6 @@ if __name__ == '__main__':
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
     parser.add_argument('--frames-stack', type=int, default=1)
     parser.add_argument('--resume-path', type=str, default=None)
-    parser.add_argument('--watch', default=False, action='store_true',
-                        help='watch the play of pre-trained policy only')
     parser.add_argument('--test-only', type=bool, default=False)
 
     # tunable parameters
