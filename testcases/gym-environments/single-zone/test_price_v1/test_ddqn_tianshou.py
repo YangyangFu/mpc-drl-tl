@@ -93,10 +93,15 @@ def test_dqn(args):
     print("Actions shape:", args.action_shape)
 
     # make environments: normalize the obs space
-    train_envs = SubprocVectorEnv([lambda: make_building_env(args)
-                                   for _ in range(args.training_num)], norm_obs=True)
-    test_envs = SubprocVectorEnv([lambda: make_building_env(args)
-                                  for _ in range(args.test_num)],norm_obs=True, obs_rms=train_envs.obs_rms, update_obs_rms=False)
+    train_envs = SubprocVectorEnv(
+            [lambda: make_building_env(args) for _ in range(args.training_num)], 
+            norm_obs=True)
+    test_envs = SubprocVectorEnv(
+            [lambda: make_building_env(args) for _ in range(args.test_num)],
+            norm_obs=True, 
+            obs_rms=train_envs.obs_rms, 
+            update_obs_rms=False)
+    
     # seed
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)

@@ -1,0 +1,2 @@
+timesteps_total,time_this_iter_s,done,episodes_total,training_iteration,trial_id,experiment_id,date,timestamp,time_total_s,pid,hostname,node_ip,time_since_restore,timesteps_since_restore,iterations_since_restore
+96,253.5230851173401,True,,1,d4a08_00007,efa49e2236f34b449995612b2282cac4,2022-03-13_04-55-16,1647147316,253.5230851173401,380,4529ccbee357,172.17.0.2,253.5230851173401,0,1

@@ -22,7 +22,7 @@ def make_building_env(args):
 
     weather_file_path = "USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
     mass_flow_nor = [0.55]
-    n_next_steps = 3
+    n_next_steps = 4
     simulation_start_time = 201*24*3600.0
     simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
     log_level = 7
@@ -79,15 +79,6 @@ class C51(nn.Module):
         super().__init__()
         self.action_num = np.prod(action_shape)
         self.device = device
-        """
-        self.net = nn.Sequential(*[
-            nn.Linear(np.prod(state_shape), 256), nn.ReLU(inplace=True),
-            nn.Linear(256, 256), nn.ReLU(inplace=True),
-            nn.Linear(256, 256), nn.ReLU(inplace=True),
-            nn.Linear(256, 256), nn.ReLU(inplace=True),
-            nn.Linear(256, self.action_num * num_atoms)
-        ])
-        """
         sequences = [nn.Linear(np.prod(state_shape), 256),
                      nn.ReLU(inplace=True)]
         for i in range(nlayers):
@@ -121,9 +112,14 @@ def test_c51(args):
     print("Actions shape:", args.action_shape)
     
     # make environments
-    train_envs = SubprocVectorEnv([lambda: make_building_env(args) for _ in range(args.training_num)])
-    test_envs = SubprocVectorEnv([lambda: make_building_env(args) for _ in range(args.test_num)])
-    
+    train_envs = SubprocVectorEnv(
+            [lambda: make_building_env(args) for _ in range(args.training_num)], 
+            norm_obs=True)
+    test_envs = SubprocVectorEnv(
+            [lambda: make_building_env(args) for _ in range(args.test_num)], 
+            norm_obs=True, 
+            obs_rms=train_envs.obs_rms, 
+            update_obs_rms=False)
     # seed
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -146,15 +142,21 @@ def test_c51(args):
         target_update_freq=args.target_update_freq,
     ).to(args.device)
  
+    # load a previous policy
+    if args.resume_path:
+        policy.load_state_dict(torch.load(args.resume_path, map_location=args.device))
+        print("Loaded agent from: ", os.path.join(log_path, 'policy.pth'))
+    
+    # collector
     buffer = VectorReplayBuffer(
         args.buffer_size,
         buffer_num=len(train_envs),
         ignore_obs_next=True,
         stack_num=args.frames_stack
     )
-    # collector
     train_collector = Collector(policy, train_envs, buffer, exploration_noise=True)
-    test_collector = Collector(policy, test_envs, exploration_noise=True)
+    test_collector = Collector(policy, test_envs, exploration_noise=False)
+
     # log
     log_path = os.path.join(args.logdir, args.task)
     writer = SummaryWriter(log_path)
@@ -175,36 +177,9 @@ def test_c51(args):
         else:
             eps = args.eps_train_final
         policy.set_eps(eps)
-        #print('train/eps', env_step, eps)
-        #logger.write('train/eps', env_step, eps)
 
     def test_fn(epoch, env_step):
         policy.set_eps(args.eps_test)
-
-    # watch agent's performance
-    def watch():
-        print("Setup test envs ...")
-        policy.eval()
-        policy.set_eps(args.eps_test)
-        test_envs.seed(args.seed)
-
-        print("Testing agent ...")
-        buffer = VectorReplayBuffer(
-                args.step_per_epoch+1, 
-                buffer_num=len(test_envs),
-                ignore_obs_next=True, 
-                save_only_last_obs=False,
-                stack_num=args.frames_stack)
-        collector = Collector(policy, test_envs, buffer, exploration_noise=False)
-        result = collector.collect(n_step=args.step_per_epoch)
-        #buffer.save_hdf5(args.save_buffer_name)
-        
-        np.save(os.path.join(args.logdir, args.task,'his_act.npy'), buffer._meta.__dict__['act'])
-        np.save(os.path.join(args.logdir, args.task,'his_obs.npy'), buffer._meta.__dict__['obs'])
-        np.save(os.path.join(args.logdir, args.task,'his_rew.npy'), buffer._meta.__dict__['rew'])
-        #print(buffer._meta.__dict__.keys())
-        rew = result["rews"].mean()
-        print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
 
     if not args.test_only:
 
@@ -229,12 +204,40 @@ def test_c51(args):
         )
 
         pprint.pprint(result)
-        watch()
 
-    if args.test_only:
-        policy.load_state_dict(torch.load(args.resume_path, map_location=args.device))
-        print("Loaded agent from: ", os.path.join(log_path, 'policy.pth'))
-        watch()
+    # Lets watch its performance for the final run
+    def watch():
+        print("Setup test envs ...")
+        policy.eval()
+        policy.set_eps(args.eps_test)
+
+        buffer = VectorReplayBuffer(
+            args.step_per_epoch,
+            buffer_num=len(test_envs),
+            ignore_obs_next=True,
+            save_only_last_obs=False,
+            stack_num=args.frames_stack)
+        collector = Collector(policy, test_envs, buffer)
+        result = collector.collect(n_step=args.step_per_epoch)
+
+        # get obs mean and var
+        obs_mean = test_envs.obs_rms.mean
+        obs_var = test_envs.obs_rms.var
+        print(obs_mean)
+        print(obs_var)
+        # the observations and action may be normalized depending on training setting
+        np.save(os.path.join(args.logdir, args.task, 'his_act.npy'),
+                buffer._meta.__dict__['act'])
+        np.save(os.path.join(args.logdir, args.task, 'his_obs.npy'),
+                buffer._meta.__dict__['obs'])
+        np.save(os.path.join(args.logdir, args.task, 'his_rew.npy'),
+                buffer._meta.__dict__['rew'])
+        np.save(os.path.join(args.logdir, args.task, 'obs_mean.npy'), obs_mean)
+        np.save(os.path.join(args.logdir, args.task, 'obs_var.npy'), obs_var)
+        rew = result["rews"].mean()
+        print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
+
+    watch()
 
 # added hyperparameter tuning scripting using Ray.tune
 def trainable_function(config, reporter):
@@ -308,7 +311,7 @@ if __name__ == '__main__':
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
                 "epoch": tune.grid_search([1]),
-                "weight_energy": tune.grid_search([10, 100.]),
+                "weight_energy": tune.grid_search([10]),
                 "lr": tune.grid_search([3e-04]),
                 "batch_size": tune.grid_search([32, 64, 128]),
                 "n_hidden_layer": tune.grid_search([3]),
