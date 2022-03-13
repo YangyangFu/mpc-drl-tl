@@ -14,7 +14,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-def find_all_files(root_dir, algor, pattern, task='JModelicaCSSingleZoneEnv-price-v1'):
+def find_all_files(root_dir, algor, pattern, task='JModelicaCSSingleZoneEnv-price-v2'):
     """Find all files under root_dir according to relative pattern."""
     sub_dirs=[]
     for it in os.scandir(root_dir):
@@ -42,6 +42,7 @@ def convert_tfevents_to_csv(root_dir, algor, task, refresh=False):
     :param bool refresh: re-create csv file under any condition.
     """
     tfevent_files = find_all_files(root_dir, algor, re.compile(r"^.*tfevents.*$"), task)
+    print(tfevent_files)
     print(f"Converting {len(tfevent_files)} tfevents files under {root_dir} ...")
     result = {}
     with tqdm.tqdm(tfevent_files) as t:
@@ -74,19 +75,19 @@ def convert_tfevents_to_csv(root_dir, algor, task, refresh=False):
 def plot_reward(csv_files):
     # assume this is only one .csv file
     keys = [key for key in csv_files.keys()]
-
-    for key in keys:
+    print(keys)
+    for  key in keys:
         dir_name = os.path.dirname(os.path.dirname(os.path.dirname(key)))
         print(dir_name)
         data = pd.read_csv(key)
-
-        plt.figure(figsize=(8, 6))
+        
+        plt.figure(figsize=(8,6))
         plt.plot(data['env_step'], data['rew'])
         plt.grid()
         plt.xlabel("step")
         plt.ylabel("reward")
-        plt.savefig(os.path.join(dir_name, "rewards.pdf"))
-        plt.savefig(os.path.join(dir_name, "rewards.png"))
+        plt.savefig(os.path.join(dir_name,"rewards.pdf"))
+        plt.savefig(os.path.join(dir_name,"rewards.png"))
         plt.close()
 
 def plot_final_epoch(root_dir, algor, task):
@@ -125,7 +126,7 @@ def plot_final_epoch(root_dir, algor, task):
 
         plt.figure(figsize=(12, 9))
         plt.subplot(311)
-        plt.plot(t, [acts[i]/50. for i in range(len(t))])
+        plt.plot(t, [(acts[i]+1)/2. for i in range(len(t))])
         plt.ylabel("Speed")
         #plt.xlabel("Time Step")
         plt.grid()

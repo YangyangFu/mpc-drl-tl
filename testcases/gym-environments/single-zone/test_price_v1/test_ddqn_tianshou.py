@@ -233,7 +233,7 @@ if __name__ == '__main__':
     import gym_singlezone_jmodelica
 
     time_step = 15*60.0
-    num_of_days = 1#31
+    num_of_days = 7#31
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
 
     parser = argparse.ArgumentParser()
@@ -279,22 +279,7 @@ if __name__ == '__main__':
     # Define Ray tuning experiments
     tune.register_trainable("ddqn", trainable_function)
     ray.init()
-    tune.run_experiments({
-        'ddqn_tuning': {
-            "run": "ddqn",
-            "stop": {"timesteps_total": args.step_per_epoch},
-            "config": {
-                "epoch": tune.grid_search([2]),
-                "weight_energy": tune.grid_search([10.]),
-                "lr": tune.grid_search([3e-04]),
-                "batch_size": tune.grid_search([32]),
-                "n_hidden_layer": tune.grid_search([3]),
-                "buffer_size": tune.grid_search([1024])
-            },
-            "local_dir": "/mnt/shared",
-        }
-    })
-    """
+
     # Run tuning
     tune.run_experiments({
         'ddqn_tuning': {
@@ -311,21 +296,3 @@ if __name__ == '__main__':
             "local_dir": "/mnt/shared",
         }
     })
-    """
-"""
-    tune.run_experiments({
-            'ddqn_tuning':{
-                "run": "ddqn",
-                "stop": {"timesteps_total":args.step_per_epoch},
-                "config":{
-                    "epoch": tune.grid_search([200]),
-                    "weight_energy": tune.grid_search([0.1, 1, 10., 100., 1000., 10000.]),
-                    "lr": tune.grid_search([3e-04, 1e-04, 1e-03]),
-                    "batch_size": tune.grid_search([32, 64, 128]),
-                    "n_hidden_layer": tune.grid_search([3, 4]),
-                    "buffer_size":tune.grid_search([20000, 50000, 100000])
-                    },
-                "local_dir":"/mnt/shared",
-            }
-    })
-"""

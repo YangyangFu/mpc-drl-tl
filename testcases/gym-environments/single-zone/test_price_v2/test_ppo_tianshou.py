@@ -12,7 +12,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.distributions import Independent, Normal
 
 from tianshou.policy import PPOPolicy
-from tianshou.utils import BasicLogger
+from tianshou.utils import TensorboardLogger
 from tianshou.env import SubprocVectorEnv
 from tianshou.utils.net.common import Net
 from tianshou.trainer import onpolicy_trainer
@@ -25,6 +25,7 @@ def make_building_env(args):
     weather_file_path = "USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
     mass_flow_nor = [0.55]
     n_next_steps = 4
+    n_prev_steps = 4
     simulation_start_time = 201*24*3600.0
     simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
     log_level = 0
@@ -60,7 +61,8 @@ def make_building_env(args):
                    time_step = args.time_step,
                    log_level = log_level,
                    alpha = alpha,
-                   rf = rw_func)
+                   rf = rw_func,
+                   n_prev_steps=n_prev_steps)
     return env
 
 def test_ppo(args):
@@ -73,9 +75,14 @@ def test_ppo(args):
     print("Action range:", np.min(env.action_space.low),
           np.max(env.action_space.high))
 
-    train_envs = SubprocVectorEnv([lambda: make_building_env(args) for _ in range(args.training_num)])
-    #test_envs = make_building_env(args)
-    test_envs = SubprocVectorEnv([lambda: make_building_env(args) for _ in range(args.test_num)])
+    train_envs = SubprocVectorEnv(
+            [lambda: make_building_env(args) for _ in range(args.training_num)],
+            norm_obs=True)
+    test_envs = SubprocVectorEnv(
+            [lambda: make_building_env(args) for _ in range(args.test_num)], 
+            norm_obs=True, 
+            obs_rms=train_envs.obs_rms, 
+            update_obs_rms=False)
 
     # seed
     np.random.seed(args.seed)
@@ -166,22 +173,28 @@ def test_ppo(args):
     train_collector = Collector(policy, train_envs, buffer, exploration_noise=True)
     test_collector = Collector(policy, test_envs)
     # log
-    t0 = datetime.datetime.now().strftime("%m%d_%H%M%S")
-    log_file = f'seed_{args.seed}_{t0}-{args.task.replace("-", "_")}_ppo'
-    log_path = os.path.join(args.logdir, args.task, 'ppo', log_file)
+    log_path = os.path.join(args.logdir, args.task)
     writer = SummaryWriter(log_path)
     writer.add_text("args", str(args))
-    logger = BasicLogger(writer, update_interval=100, train_interval=100)
+    logger = TensorboardLogger(writer)
 
     def save_fn(policy):
         torch.save(policy.state_dict(), os.path.join(log_path, 'policy.pth'))
 
-    if not args.watch:
+    if not args.test_only:
         # trainer
         result = onpolicy_trainer(
-            policy, train_collector, test_collector, args.epoch, args.step_per_epoch,
-            args.repeat_per_collect, args.test_num, args.batch_size,
-            step_per_collect=args.step_per_collect, save_fn=save_fn, logger=logger,
+            policy, 
+            train_collector, 
+            test_collector, 
+            args.epoch, 
+            args.step_per_epoch,
+            args.repeat_per_collect, 
+            args.test_num, 
+            args.batch_size,
+            step_per_collect=args.step_per_collect, 
+            save_fn=save_fn, 
+            logger=logger,
             test_in_train=False)
         pprint.pprint(result)
 
@@ -191,15 +204,22 @@ def test_ppo(args):
         test_envs.seed(args.seed)
 
         print("Testing agent ...")
-        buffer = VectorReplayBuffer(args.step_per_epoch+1, len(test_envs))
+        buffer = VectorReplayBuffer(args.step_per_epoch, len(test_envs))
 
         collector = Collector(policy, test_envs, buffer, exploration_noise=False)
         result = collector.collect(n_step=args.step_per_epoch)
-        
+
+        # get obs mean and var
+        obs_mean = test_envs.obs_rms.mean
+        obs_var = test_envs.obs_rms.var
+        print(obs_mean)
+        print(obs_var)
+        # save data
         np.save(os.path.join(args.logdir, args.task, 'his_act.npy'),buffer._meta.__dict__['act'])
         np.save(os.path.join(args.logdir, args.task, 'his_obs.npy'),buffer._meta.__dict__['obs'])
         np.save(os.path.join(args.logdir, args.task, 'his_rew.npy'),buffer._meta.__dict__['rew'])
-        #print(buffer._meta.__dict__.keys())
+        np.save(os.path.join(args.logdir, args.task, 'obs_mean.npy'),obs_mean)
+        np.save(os.path.join(args.logdir, args.task, 'obs_var.npy'),obs_var)
         rew = result["rews"].mean()
         print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
 
@@ -261,7 +281,8 @@ if __name__ == '__main__':
     parser.add_argument('--resume-path', type=str, default=None)
     parser.add_argument('--watch', default=False, action='store_true',
                         help='watch the play of pre-trained policy only')
-    
+    parser.add_argument('--test-only', type=bool, default=False)
+
     # tunable parameters
     parser.add_argument('--weight-energy', type=float, default= 100.)   
     parser.add_argument('--weight-temp', type=float, default= 1.)   
@@ -285,11 +306,11 @@ if __name__ == '__main__':
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
                 "epoch": tune.grid_search([1000]),
-                "weight_energy": tune.grid_search([10]),
-                "lr": tune.grid_search([3e-04]),
-                "batch_size": tune.grid_search([64, 128]),
+                "weight_energy": tune.grid_search([10.]),
+                "lr": tune.grid_search([3e-05, 1e-04, 3e-04]),
+                "batch_size": tune.grid_search([32, 64, 128]),
                 "n_hidden_layer": tune.grid_search([3, 4]),
-                "buffer_size": tune.grid_search([4096])
+                "buffer_size": tune.grid_search([2048, 4096])
             },
             "local_dir": "/mnt/shared",
         }
