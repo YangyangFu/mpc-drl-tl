@@ -59,7 +59,7 @@ def convert_tfevents_to_csv(root_dir, algor, task, refresh=False):
             ea.Reload()
             initial_time = ea._first_event_timestamp
             content = [["env_step", "rew", "time"]]
-            for test_rew in ea.scalars.Items("test/reward"):
+            for test_rew in ea.scalars.Items("train/reward"):
                 content.append(
                     [
                         round(test_rew.step, 4),
@@ -100,8 +100,9 @@ def plot_final_epoch(root_dir, algor, task):
         data_path = os.path.join(sub_dir, 'log_'+algor, task)
         acts = np.load(os.path.join(data_path, 'his_act.npy'), allow_pickle=True)
         obss = np.load(os.path.join(data_path, 'his_obs.npy'), allow_pickle=True)
-        obs_mean = np.load(os.path.join(data_path, 'obs_mean.npy'), allow_pickle=True)
-        obs_var = np.load(os.path.join(data_path, 'obs_var.npy'), allow_pickle=True)
+        # get mean and variance for normalized observations
+        obs_mean = np.load(os.path.join(data_path, 'obs_mean.npy'), allow_pickle=True) if os.path.exists(os.path.join(data_path, 'obs_mean.npy')) else [0.]*len(obss[0,:])
+        obs_var = np.load(os.path.join(data_path, 'obs_var.npy'), allow_pickle=True) if os.path.exists(os.path.join(data_path, 'obs_var.npy')) else [1.]*len(obss[0,:])
 
         TRoo_obs = [T*np.sqrt(obs_var[1])+obs_mean[1] - 273.15  for T in obss[:, 1]]
         TOut_obs = [T*np.sqrt(obs_var[2])+obs_mean[2] - 273.15 for T in obss[:, 2]]
@@ -121,7 +122,7 @@ def plot_final_epoch(root_dir, algor, task):
                 T_low[i*24*4 + (j) + 4*7] = 22.0
 
         # power 
-        power_obs = [p*np.sqrt(obs_var[4])+obs_mean[4] - 273.15 for p in obss[:,4]]
+        power_obs = [p*np.sqrt(obs_var[4])+obs_mean[4] for p in obss[:,4]]
 
         plt.figure(figsize=(12, 9))
         plt.subplot(311)
