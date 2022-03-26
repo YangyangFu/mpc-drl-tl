@@ -79,3 +79,15 @@ build
 # ignore out file
 *.out
 *log*
+
+# drl training results
+*events.out.tfevents.*
+*params.json
+*params.pkl
+*progress.csv
+*result.json
+*basic-variant-state*
+*experiment_state*
+
+# save rewards
+!*test_rew.csv

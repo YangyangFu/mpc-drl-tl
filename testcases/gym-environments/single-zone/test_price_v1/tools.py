@@ -123,15 +123,23 @@ def plot_final_epoch(root_dir, algor, task):
 
         # power 
         power_obs = [p*np.sqrt(obs_var[4])+obs_mean[4] for p in obss[:,4]]
+        # price
+        energy_price = [p*np.sqrt(obs_var[5])+obs_mean[5] for p in obss[:,5]]
 
-        plt.figure(figsize=(12, 9))
-        plt.subplot(311)
+        plt.figure(figsize=(12, 12))
+        plt.subplot(411)
+        plt.plot(t, [energy_price[i] for i in range(len(t))])
+        plt.ylabel("Price [$/kWh]")
+        #plt.xlabel("Time Step")
+        plt.grid()
+
+        plt.subplot(412)
         plt.plot(t, [acts[i]/50. for i in range(len(t))])
         plt.ylabel("Speed")
         #plt.xlabel("Time Step")
         plt.grid()
 
-        plt.subplot(312)
+        plt.subplot(413)
         plt.plot(t, TOut_obs, 'b', label="Outdoor")
         plt.plot(t, T_up, 'r', t, T_low, 'r')
         plt.plot(t, TRoo_obs, 'k', label="Indoor")
@@ -141,7 +149,7 @@ def plot_final_epoch(root_dir, algor, task):
         plt.ylabel("Temperaure [C]")
         #plt.xlabel("Time Step")
 
-        plt.subplot(313)
+        plt.subplot(414)
         plt.plot(t, [power_obs[i] for i in range(len(t))])
         plt.ylabel("Power [W]")
         plt.xlabel("Time Step")

@@ -14,7 +14,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-def find_all_files(root_dir, algor, pattern, task='JModelicaCSSingleZoneEnv-v1'):
+def find_all_files(root_dir, algor, pattern, task='JModelicaCSSingleZoneEnv-price-v1'):
     """Find all files under root_dir according to relative pattern."""
     sub_dirs=[]
     for it in os.scandir(root_dir):
@@ -59,7 +59,7 @@ def convert_tfevents_to_csv(root_dir, algor, task, refresh=False):
             ea.Reload()
             initial_time = ea._first_event_timestamp
             content = [["env_step", "rew", "time"]]
-            for test_rew in ea.scalars.Items("test/reward"):
+            for test_rew in ea.scalars.Items("train/reward"):
                 content.append(
                     [
                         round(test_rew.step, 4),
@@ -100,8 +100,9 @@ def plot_final_epoch(root_dir, algor, task):
         data_path = os.path.join(sub_dir, 'log_'+algor, task)
         acts = np.load(os.path.join(data_path, 'his_act.npy'), allow_pickle=True)
         obss = np.load(os.path.join(data_path, 'his_obs.npy'), allow_pickle=True)
-        obs_mean = np.load(os.path.join(data_path, 'obs_mean.npy'), allow_pickle=True)
-        obs_var = np.load(os.path.join(data_path, 'obs_var.npy'), allow_pickle=True)
+        # get mean and variance for normalized observations
+        obs_mean = np.load(os.path.join(data_path, 'obs_mean.npy'), allow_pickle=True) if os.path.exists(os.path.join(data_path, 'obs_mean.npy')) else [0.]*len(obss[0,:])
+        obs_var = np.load(os.path.join(data_path, 'obs_var.npy'), allow_pickle=True) if os.path.exists(os.path.join(data_path, 'obs_var.npy')) else [1.]*len(obss[0,:])
 
         TRoo_obs = [T*np.sqrt(obs_var[1])+obs_mean[1] - 273.15  for T in obss[:, 1]]
         TOut_obs = [T*np.sqrt(obs_var[2])+obs_mean[2] - 273.15 for T in obss[:, 2]]
@@ -121,16 +122,24 @@ def plot_final_epoch(root_dir, algor, task):
                 T_low[i*24*4 + (j) + 4*7] = 22.0
 
         # power 
-        power_obs = [p*np.sqrt(obs_var[4])+obs_mean[4] - 273.15 for p in obss[:,4]]
+        power_obs = [p*np.sqrt(obs_var[4])+obs_mean[4] for p in obss[:,4]]
+        # price
+        energy_price = [p*np.sqrt(obs_var[5])+obs_mean[5] for p in obss[:,5]]
 
-        plt.figure(figsize=(12, 9))
-        plt.subplot(311)
+        plt.figure(figsize=(12, 12))
+        plt.subplot(411)
+        plt.plot(t, [energy_price[i] for i in range(len(t))])
+        plt.ylabel("Price [$/kWh]")
+        #plt.xlabel("Time Step")
+        plt.grid()
+
+        plt.subplot(412)
         plt.plot(t, [acts[i]/50. for i in range(len(t))])
         plt.ylabel("Speed")
         #plt.xlabel("Time Step")
         plt.grid()
 
-        plt.subplot(312)
+        plt.subplot(413)
         plt.plot(t, TOut_obs, 'b', label="Outdoor")
         plt.plot(t, T_up, 'r', t, T_low, 'r')
         plt.plot(t, TRoo_obs, 'k', label="Indoor")
@@ -140,7 +149,7 @@ def plot_final_epoch(root_dir, algor, task):
         plt.ylabel("Temperaure [C]")
         #plt.xlabel("Time Step")
 
-        plt.subplot(313)
+        plt.subplot(414)
         plt.plot(t, [power_obs[i] for i in range(len(t))])
         plt.ylabel("Power [W]")
         plt.xlabel("Time Step")

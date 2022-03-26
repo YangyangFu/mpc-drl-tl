@@ -235,7 +235,6 @@ def trainable_function(config, reporter):
 if __name__ == '__main__':
     import ray 
     from ray import tune
-    import gym_singlezone_jmodelica
 
     time_step = 15*60.0
     num_of_days = 7#31
@@ -289,12 +288,12 @@ if __name__ == '__main__':
             "run": "ddqn",
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
-                "epoch": tune.grid_search([500]),
+                "epoch": tune.grid_search([200]),
                 "weight_energy": tune.grid_search([10]),
-                "lr": tune.grid_search([3e-05, 1e-04, 3e-04]),
-                "batch_size": tune.grid_search([32, 256]),
-                "n_hidden_layer": tune.grid_search([3]),
-                "buffer_size": tune.grid_search([1024, 2048, 4096])
+                "lr": tune.grid_search([1e-04]),
+                "batch_size": tune.grid_search([32]),
+                "n_hidden_layer": tune.grid_search([3, 4]),
+                "buffer_size": tune.grid_search([4096, 8192])
             },
             "local_dir": "/mnt/shared",
         }
