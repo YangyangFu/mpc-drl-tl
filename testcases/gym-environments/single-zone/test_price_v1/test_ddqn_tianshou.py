@@ -145,8 +145,8 @@ def test_dqn(args):
     
     def train_fn(epoch, env_step):
         # nature DQN setting, linear decay in the first 1M steps
-        max_eps_steps = int(args.epoch * args.step_per_epoch * 0.9)
-
+        #max_eps_steps = int(args.epoch * args.step_per_epoch * 0.9) # this will not help speedup learning with large epoch
+        max_eps_steps =200*96*7 # linear decay in the first about 100000 steps. 
         #print("observe eps:  max_eps_steps, total_epoch_pass ", max_eps_steps, total_epoch_pass)
         if env_step <= max_eps_steps:
             eps = args.eps_train - env_step * (args.eps_train - args.eps_train_final) / max_eps_steps
@@ -288,12 +288,12 @@ if __name__ == '__main__':
             "run": "ddqn",
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
-                "epoch": tune.grid_search([200]),
+                "epoch": tune.grid_search([500]),
                 "weight_energy": tune.grid_search([10]),
                 "lr": tune.grid_search([1e-04]),
-                "batch_size": tune.grid_search([32]),
-                "n_hidden_layer": tune.grid_search([3, 4]),
-                "buffer_size": tune.grid_search([4096, 8192])
+                "batch_size": tune.grid_search([256]),
+                "n_hidden_layer": tune.grid_search([3]),
+                "buffer_size": tune.grid_search([4096*2, 4096*3, 4096*4, 4096*5])
             },
             "local_dir": "/mnt/shared",
         }
