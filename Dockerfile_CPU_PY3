@@ -30,7 +30,8 @@ WORKDIR $HOME
 RUN pip install casadi
 ## install fmu-gym
 WORKDIR $HOME
-RUN pip install git+git://github.com/YangyangFu/modelicagym.git@master 
+RUN git config --global url."https://github.com/".insteadOf git://github.com/ && \
+    pip install git+git://github.com/YangyangFu/modelicagym.git@master 
 
 ### =======================================================================================
 ### intall customized gym environment into docker: install a building control environment
