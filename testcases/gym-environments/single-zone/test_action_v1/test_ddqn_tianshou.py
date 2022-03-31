@@ -27,22 +27,23 @@ def make_building_env(args):
     nActions = 51
     weight_energy = args.weight_energy #5.e4
     weight_temp = args.weight_temp #500.
+    weight_action = args.weight_action
 
-    def rw_func(cost, penalty):
+    def rw_func(cost, penalty, delta_action):
         if ( not hasattr(rw_func,'x')  ):
             rw_func.x = 0
             rw_func.y = 0
 
         cost = cost[0]
         penalty = penalty[0]
-
+        delta_action = delta_action[0]
         if rw_func.x > cost:
             rw_func.x = cost
         if rw_func.y > penalty:
             rw_func.y = penalty
 
         print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
-        res = penalty * weight_temp + cost*weight_energy
+        res = penalty * weight_temp + cost*weight_energy + delta_action*weight_action
         
         return res
 
@@ -241,7 +242,7 @@ if __name__ == '__main__':
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-price-v1")
+    parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-action-v1")
     parser.add_argument('--time-step', type=float, default=time_step)
     parser.add_argument('--seed', type=int, default=0)
 
@@ -270,6 +271,7 @@ if __name__ == '__main__':
     # tunable parameters
     parser.add_argument('--weight-energy', type=float, default= 100.)   
     parser.add_argument('--weight-temp', type=float, default= 1.)   
+    parser.add_argument('--weight-action', type=float, default=0.1)
     parser.add_argument('--lr', type=float, default=0.0003) #0.0003!!!!!!!!!!!!!!!!!!!!!
     parser.add_argument('--epoch', type=int, default=2)
     parser.add_argument('--batch-size', type=int, default=128)

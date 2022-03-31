@@ -185,7 +185,7 @@ class SingleZoneEnv(object):
 
         # define reward
         if self.rf:
-            rewards=self.rf(cost, penalty)
+            rewards=self.rf(cost, penalty, delta_action)
         else:
             rewards = np.sum(np.array([cost, penalty, delta_action]))
 
