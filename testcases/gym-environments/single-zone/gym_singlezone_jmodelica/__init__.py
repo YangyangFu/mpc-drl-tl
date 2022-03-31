@@ -38,3 +38,9 @@ register(
     entry_point='gym_singlezone_jmodelica.envs.single_zone_action_env_v1:JModelicaCSSingleZoneEnv',
     kwargs=config
 )
+
+register(
+    id='JModelicaCSSingleZoneEnv-action-v2',
+    entry_point='gym_singlezone_jmodelica.envs.single_zone_action_env_v2:JModelicaCSSingleZoneEnv',
+    kwargs=config
+)
