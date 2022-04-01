@@ -175,8 +175,8 @@ class SingleZoneEnv(object):
         for k in range(num_zone):
             cost.append(- ZPower[k]/1000. * delCtrl * self.p_g[t_pre])
         
-        # calculate action changes
-        delta_action = [abs((self.action_curr[0] - self.action_prev[0])/float(self.nActions - 1))]
+        # calculate action changes: negative as reward
+        delta_action = [-abs((self.action_curr - self.action_prev)/(self.nActions - 1.))]
         
         # save cost/penalty for customized use - negative
         self._cost = cost
@@ -268,7 +268,7 @@ class SingleZoneEnv(object):
             self.history['PTot'] = [0.]*self.n_prev_steps
 
         # reset previous action to calculate rewards in terms of action changes during steps
-        self.action_prev = [0]
+        self.action_prev = 0
         self._delta_action = []
 
         return super(SingleZoneEnv, self).reset()

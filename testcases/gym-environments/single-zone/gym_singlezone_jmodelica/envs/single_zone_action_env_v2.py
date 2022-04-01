@@ -192,7 +192,7 @@ class SingleZoneEnv(object):
             cost.append(- ZPower[k]/1000. * delCtrl * self.p_g[t_pre])
 
         # calculate action changes
-        delta_action = [abs((self.action_curr[0] - self.action_prev[0])/(self.max_action - self.min_action))]
+        delta_action = [-abs((self.action_curr[0] - self.action_prev[0])/(self.max_action - self.min_action))]
                 
         # save cost/penalty for customized use - negative
         self._cost = cost
