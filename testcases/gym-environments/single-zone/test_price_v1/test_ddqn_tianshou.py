@@ -227,6 +227,7 @@ def trainable_function(config, reporter):
         args.batch_size = config['batch_size']
         args.n_hidden_layer = config['n_hidden_layer']
         args.buffer_size = config['buffer_size']
+        args.seed = config['seed']
         test_dqn(args)
 
         # a fake traing score to stop current simulation based on searched parameters
@@ -243,7 +244,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--task', type=str, default="JModelicaCSSingleZoneEnv-price-v1")
     parser.add_argument('--time-step', type=float, default=time_step)
-    parser.add_argument('--seed', type=int, default=0)
 
     parser.add_argument('--eps-test', type=float, default=0.005)
     parser.add_argument('--eps-train', type=float, default=1.)
@@ -275,7 +275,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=128)
     parser.add_argument('--n-hidden-layers', type=int, default=3)
     parser.add_argument('--buffer-size', type=int, default=50000)
-
+    parser.add_argument('--seed', type=int, default=0)
     args = parser.parse_args()
 
     # Define Ray tuning experiments
@@ -293,7 +293,8 @@ if __name__ == '__main__':
                 "lr": tune.grid_search([1e-04]),
                 "batch_size": tune.grid_search([256]),
                 "n_hidden_layer": tune.grid_search([3]),
-                "buffer_size": tune.grid_search([4096*2, 4096*3, 4096*4, 4096*5])
+                "buffer_size": tune.grid_search([4096*3]),
+                "seed": tune.grid_search([0,1, 2, 3,4,5,6,7,8,9]),
             },
             "local_dir": "/mnt/shared",
         }

@@ -89,6 +89,12 @@ def plot_reward(csv_files):
         plt.savefig(os.path.join(dir_name, "rewards.png"))
         plt.close()
 
+        # move test_rew.csv to dirname
+        des_path = os.path.join(dir_name, 'test_rew.csv')
+        if os.path.exists(des_path):
+            os.remove(des_path)
+        os.rename(key, des_path)
+
 def plot_final_epoch(root_dir, algor, task):
 
     sub_dirs = []
