@@ -223,7 +223,7 @@ def test_dqn(args):
 def trainable_function(config, reporter):
     while True:
         args.epoch = config['epoch']
-        args.weight_energy = config['weight_energy']
+        args.weight_action = config['weight_action']
         args.lr = config['lr']
         args.batch_size = config['batch_size']
         args.n_hidden_layer = config['n_hidden_layer']
@@ -269,7 +269,7 @@ if __name__ == '__main__':
     parser.add_argument('--test-only', type=bool, default=False)
 
     # tunable parameters
-    parser.add_argument('--weight-energy', type=float, default= 100.)   
+    parser.add_argument('--weight-energy', type=float, default= 10.)   
     parser.add_argument('--weight-temp', type=float, default= 1.)   
     parser.add_argument('--weight-action', type=float, default=0.1)
     parser.add_argument('--lr', type=float, default=0.0003) #0.0003!!!!!!!!!!!!!!!!!!!!!
@@ -291,11 +291,11 @@ if __name__ == '__main__':
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
                 "epoch": tune.grid_search([300]),
-                "weight_energy": tune.grid_search([10]),
+                "weight_action": tune.grid_search([0.1, 1.]),
                 "lr": tune.grid_search([1e-04]),
                 "batch_size": tune.grid_search([256]),
                 "n_hidden_layer": tune.grid_search([3]),
-                "buffer_size": tune.grid_search([4096*3])
+                "buffer_size": tune.grid_search([4096*2, 4096*3])
             },
             "local_dir": "/mnt/shared",
         }
