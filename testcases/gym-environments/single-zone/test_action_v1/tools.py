@@ -13,6 +13,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import json
 
 def find_all_files(root_dir, algor, pattern, task='JModelicaCSSingleZoneEnv-price-v1'):
     """Find all files under root_dir according to relative pattern."""
@@ -164,6 +165,21 @@ def plot_final_epoch(root_dir, algor, task):
         plt.savefig(os.path.join(sub_dir, "final_epoch.pdf"))
         plt.savefig(os.path.join(sub_dir, "final_epoch.png"))
         plt.close()
+
+        # save perfornance
+        energy = sum(power_obs)/4./1000. # kWh
+        cost = sum([power_obs[i]*energy_price[i] for i in range(len(power_obs))])/4./1000. # $
+        dT_overshoot = [max(TRoo_obs[i]-T_up[i], 0.) for i in range(len(TRoo_obs))]
+        dT_undershoot = [max(T_low[i]-TRoo_obs[i], 0.) for i in range(len(TRoo_obs))]
+        dTh = (sum(dT_overshoot) + sum(dT_undershoot))/4.
+        dT_max = max(max(dT_overshoot), max(dT_undershoot))
+
+        metric = {'energy': energy,
+                    'energy_cost': cost,
+                    'total_temp_violation': dTh,
+                    'max_temp_violation': dT_max}
+        with open(os.path.join(sub_dir,'drl_metric.json'), 'w') as outfile:
+            json.dump(metric, outfile)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
