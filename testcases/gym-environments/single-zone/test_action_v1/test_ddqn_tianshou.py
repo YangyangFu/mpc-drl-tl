@@ -228,6 +228,7 @@ def trainable_function(config, reporter):
         args.batch_size = config['batch_size']
         args.n_hidden_layer = config['n_hidden_layer']
         args.buffer_size = config['buffer_size']
+        args.seed = config['seed']
         test_dqn(args)
 
         # a fake traing score to stop current simulation based on searched parameters
@@ -269,7 +270,7 @@ if __name__ == '__main__':
     parser.add_argument('--test-only', type=bool, default=False)
 
     # tunable parameters
-    parser.add_argument('--weight-energy', type=float, default= 10.)   
+    parser.add_argument('--weight-energy', type=float, default= 100.)   
     parser.add_argument('--weight-temp', type=float, default= 1.)   
     parser.add_argument('--weight-action', type=float, default=0.1)
     parser.add_argument('--lr', type=float, default=0.0003) #0.0003!!!!!!!!!!!!!!!!!!!!!
@@ -291,11 +292,12 @@ if __name__ == '__main__':
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
                 "epoch": tune.grid_search([500]),
-                "weight_action": tune.grid_search([0.1, 1., 10]),
+                "weight_action": tune.grid_search([10]),
                 "lr": tune.grid_search([1e-04]),
                 "batch_size": tune.grid_search([256]),
                 "n_hidden_layer": tune.grid_search([3]),
-                "buffer_size": tune.grid_search([4096*3])
+                "buffer_size": tune.grid_search([4096*3]),
+                "seed":tune.grid_search([0,1,2,3,4,5])
             },
             "local_dir": "/mnt/shared",
         }
