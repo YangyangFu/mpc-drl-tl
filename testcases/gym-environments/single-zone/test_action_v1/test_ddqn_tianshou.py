@@ -43,7 +43,7 @@ def make_building_env(args):
             rw_func.y = penalty
 
         print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
-        res = penalty * weight_temp + cost*weight_energy + delta_action*weight_action
+        res = -penalty*penalty * weight_temp + cost*weight_energy - delta_action*delta_action*weight_action
         
         return res
 
@@ -292,12 +292,12 @@ if __name__ == '__main__':
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
                 "epoch": tune.grid_search([500]),
-                "weight_action": tune.grid_search([10]),
+                "weight_action": tune.grid_search([1, 5, 10, 15, 20]),
                 "lr": tune.grid_search([1e-04]),
                 "batch_size": tune.grid_search([256]),
                 "n_hidden_layer": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([4096*3]),
-                "seed":tune.grid_search([0,1,2,3,4,5])
+                "seed":tune.grid_search([0])
             },
             "local_dir": "/mnt/shared",
         }
