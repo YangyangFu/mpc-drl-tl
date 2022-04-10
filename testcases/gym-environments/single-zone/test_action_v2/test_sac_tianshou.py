@@ -19,6 +19,18 @@ from tianshou.utils import TensorboardLogger
 from tianshou.utils.net.common import Net
 from tianshou.utils.net.continuous import ActorProb, Critic
 
+class Wrapper(gym.Wrapper):
+    """Env wrapper for reward scale when using sac"""
+
+    def __init__(self, env, reward_scale=10):
+        super().__init__(env)
+        self.reward_scale = reward_scale
+    
+    def step(self, action):
+        obs, rew, done, info = self.env.step(action)
+        # scale a reward
+        return obs, self.reward_scale*rew, done, info
+
 def make_building_env(args):
     import gym_singlezone_jmodelica
     
@@ -67,7 +79,7 @@ def make_building_env(args):
     return env
 
 def test_sac(args):
-    env = make_building_env(args)
+    env = Wrapper(make_building_env(args), reward_scale=args.reward_scale)
     args.state_shape = env.observation_space.shape or env.observation_space.n
     args.action_shape = env.action_space.shape or env.action_space.n
     args.max_action = env.action_space.high[0]
@@ -77,10 +89,10 @@ def test_sac(args):
           np.max(env.action_space.high))
 
     train_envs = SubprocVectorEnv(
-            [lambda: make_building_env(args) for _ in range(args.training_num)],
+            [lambda: Wrapper(make_building_env(args)) for _ in range(args.training_num)],
             norm_obs=True)
     test_envs = SubprocVectorEnv(
-            [lambda: make_building_env(args) for _ in range(args.test_num)], 
+            [lambda: Wrapper(make_building_env(args), reward_scale=1) for _ in range(args.test_num)], 
             norm_obs=True, 
             obs_rms=train_envs.obs_rms, 
             update_obs_rms=False)
@@ -245,13 +257,13 @@ if __name__ == '__main__':
     parser.add_argument('--update-per-step', type=int, default=1)
     parser.add_argument('--n-step', type=int, default=1)
     parser.add_argument("--start-timesteps", type=int, default=10000)
-    # ppo special
+    # sac special
     parser.add_argument('--tau', type=float, default=0.005)
     parser.add_argument('--alpha', type=float, default=0.2)
-    parser.add_argument('--auto-alpha', default=False, action='store_true')
+    parser.add_argument('--auto-alpha', default=True, action='store_true')
     parser.add_argument('--alpha-lr', type=float, default=3e-4)
-
-
+    parser.add_argument('--reward-scale', type=float, default=10)
+        
     parser.add_argument('--logdir', type=str, default='log_sac')
     parser.add_argument('--render', type=float, default=0.)
     parser.add_argument(
@@ -286,10 +298,11 @@ if __name__ == '__main__':
             "config": {
                 "epoch": tune.grid_search([500]),
                 "weight_energy": tune.grid_search([100.]),
-                "lr": tune.grid_search([3e-04, 1e-04, 3e-05]),
+                "lr": tune.grid_search([1e-04]),
                 "batch_size": tune.grid_search([64]),
                 "n_hidden_layer": tune.grid_search([3]),
-                "buffer_size": tune.grid_search([100000])
+                "buffer_size": tune.grid_search([100000]),
+                "reward_scale": tune.grid_search([1,3,10,30,100])
             },
             "local_dir": "/mnt/shared",
         }
