@@ -70,4 +70,4 @@ print("t=0 after reset, Historical measurement is: ", env.history)
 print("t=0 after reset, States are: ", states)
 print("t=0 after reset, Action change is "+str(env.get_action_changes()))
 
-print("\nJModelicaCSSingleZoneEnv-action-v1 is successfully installed!!")
+print("\nJModelicaCSSingleZoneEnv-action-v2 is successfully installed!!")

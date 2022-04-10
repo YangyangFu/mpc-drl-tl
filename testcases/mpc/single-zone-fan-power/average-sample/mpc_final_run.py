@@ -211,11 +211,11 @@ metrics_mpc = pd.DataFrame(metrics_mpc, columns=[['energy', 'ene_cost', 'temp_vi
 
 comparison = {'base': {'energy': list(metrics_base['energy'].sum()),
                        'energy_cost': list(metrics_base['ene_cost'].sum()),
-                       'total_temp_violation': list(metrics_base['temp_violation'].sum()),
+                       'total_temp_violation': list(metrics_base['temp_violation'].sum()/nsteps_h),
                        'max_temp_violation': list(metrics_base['temp_violation'].max())},
               'mpc': {'energy': list(metrics_mpc['energy'].sum()),
                       'energy_cost': list(metrics_mpc['ene_cost'].sum()),
-                      'total_temp_violation': list(metrics_mpc['temp_violation'].sum()),
+                      'total_temp_violation': list(metrics_mpc['temp_violation'].sum()/nsteps_h),
                       'max_temp_violation': list(metrics_mpc['temp_violation'].max())}
               }
 

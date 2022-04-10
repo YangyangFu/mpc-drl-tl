@@ -62,4 +62,4 @@ states = env.reset()
 print("t=0 after reset, Historical measurement is: ", env.history)
 print("t=0 after reset, States are: ", states)
 
-print("\nJModelicaCSSingleZoneEnv-price-v1 is successfully installed!!")
+print("\nJModelicaCSSingleZoneEnv-price-v2 is successfully installed!!")
