@@ -299,7 +299,7 @@ if __name__ == '__main__':
             "config": {
                 "epoch": tune.grid_search([5]),
                 "weight_energy": tune.grid_search([100.]),
-                "lr": tune.grid_search([3e-03, 1e-04]),
+                "lr": tune.grid_search([10, 1e-04]),
                 "batch_size": tune.grid_search([64]),
                 "n_hidden_layer": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([100000]),
