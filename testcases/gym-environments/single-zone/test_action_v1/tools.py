@@ -60,7 +60,7 @@ def convert_tfevents_to_csv(root_dir, algor, task, refresh=False):
             ea.Reload()
             initial_time = ea._first_event_timestamp
             content = [["env_step", "rew", "time"]]
-            for test_rew in ea.scalars.Items("train/reward"):
+            for test_rew in ea.scalars.Items("test/reward"):
                 content.append(
                     [
                         round(test_rew.step, 4),

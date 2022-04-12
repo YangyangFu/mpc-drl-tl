@@ -192,7 +192,7 @@ def test_sac(args):
             save_fn=save_fn,
             logger=logger,
             update_per_step=args.update_per_step,
-            test_in_train=False)
+            test_in_train=True)
         pprint.pprint(result)
 
     def watch():
@@ -231,6 +231,7 @@ def trainable_function(config, reporter):
         args.batch_size = config['batch_size']
         args.n_hidden_layer = config['n_hidden_layer']
         args.buffer_size = config['buffer_size']
+        args.reward_scale = config['reward_scale']
         test_sac(args)
 
         # a fake traing score to stop current simulation based on searched parameters
@@ -260,7 +261,7 @@ if __name__ == '__main__':
     # sac special
     parser.add_argument('--tau', type=float, default=0.005)
     parser.add_argument('--alpha', type=float, default=0.2)
-    parser.add_argument('--auto-alpha', default=True, action='store_true')
+    parser.add_argument('--auto-alpha', default=False, action='store_true')
     parser.add_argument('--alpha-lr', type=float, default=3e-4)
     parser.add_argument('--reward-scale', type=float, default=10)
         
@@ -296,13 +297,13 @@ if __name__ == '__main__':
             "run": "sac",
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
-                "epoch": tune.grid_search([500]),
+                "epoch": tune.grid_search([5]),
                 "weight_energy": tune.grid_search([100.]),
-                "lr": tune.grid_search([1e-04]),
+                "lr": tune.grid_search([3e-03, 1e-04]),
                 "batch_size": tune.grid_search([64]),
                 "n_hidden_layer": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([100000]),
-                "reward_scale": tune.grid_search([1,3,10,30,100])
+                "reward_scale": tune.grid_search([0.1, 0.3, 1, 3, 30])
             },
             "local_dir": "/mnt/shared",
         }
