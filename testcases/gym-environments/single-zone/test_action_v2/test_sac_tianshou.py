@@ -89,7 +89,7 @@ def test_sac(args):
           np.max(env.action_space.high))
 
     train_envs = SubprocVectorEnv(
-            [lambda: Wrapper(make_building_env(args)) for _ in range(args.training_num)],
+            [lambda: Wrapper(make_building_env(args),reward_scale=args.reward_scale) for _ in range(args.training_num)],
             norm_obs=True)
     test_envs = SubprocVectorEnv(
             [lambda: Wrapper(make_building_env(args), reward_scale=1) for _ in range(args.test_num)], 
@@ -192,7 +192,7 @@ def test_sac(args):
             save_fn=save_fn,
             logger=logger,
             update_per_step=args.update_per_step,
-            test_in_train=True)
+            test_in_train=False)
         pprint.pprint(result)
 
     def watch():
@@ -303,7 +303,7 @@ if __name__ == '__main__':
                 "batch_size": tune.grid_search([64]),
                 "n_hidden_layer": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([100000]),
-                "reward_scale": tune.grid_search([0.1, 0.3, 1, 3, 30])
+                "reward_scale": tune.grid_search([1, 30])
             },
             "local_dir": "/mnt/shared",
         }
