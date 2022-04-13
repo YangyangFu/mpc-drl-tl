@@ -229,7 +229,7 @@ def trainable_function(config, reporter):
         args.weight_energy = config['weight_energy']
         args.lr = config['lr']
         args.batch_size = config['batch_size']
-        args.n_hidden_layer = config['n_hidden_layer']
+        args.n_hidden_layers = config['n_hidden_layers']
         args.buffer_size = config['buffer_size']
         args.reward_scale = config['reward_scale']
         args.hidden_sizes = [256]*args.n_hidden_layers  # baselines [32, 32]
@@ -302,7 +302,7 @@ if __name__ == '__main__':
                 "weight_energy": tune.grid_search([100.]),
                 "lr": tune.grid_search([1e-04, 1e-03, 3e-03]),
                 "batch_size": tune.grid_search([64]),
-                "n_hidden_layer": tune.grid_search([3]),
+                "n_hidden_layers": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([100000]),
                 "reward_scale": tune.grid_search([0.1, 3, 1, 10, 30])
             },
