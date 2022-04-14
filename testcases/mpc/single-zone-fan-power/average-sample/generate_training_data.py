@@ -18,14 +18,15 @@ import pandas as pd
 
 # simulate setup - 181-212 for july; 212-243 for August
 time_stop = 31*24*3600.  
-ts = 212*24*3600.
+ts = 181*24*3600.
 te = ts + time_stop
 
 ## load fmu - cs
-fmu_name = "SingleZoneDamperControl.fmu"
+fmu_name = "SingleZoneFCU.fmu"
 fmu = load_fmu(fmu_name)
 options = fmu.simulate_options()
 options['ncp'] = 10000
+fmu.set_log_level(7)
 
 # excite signal: - generator for exciting signals
 def uniform(a,b):
@@ -64,9 +65,9 @@ res = fmu.simulate(start_time=ts,
 # what data do we need??
 tim = res['time']
 spe = res['uFan']
-flo = res['hvac.fanSup.m_flow_in']
+flo = res['m_flow_in']
 Toa = res['TOut']
-Tsa = res['hvac.TSup']
+Tsa = res['fcu.TSup']
 TRoo = res['TRoo']
 PTot = res['PTot']
 

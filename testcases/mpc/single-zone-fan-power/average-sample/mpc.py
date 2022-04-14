@@ -9,186 +9,7 @@ import numpy as np
 import casadi as ca
 import model
 import joblib
-
-class ObjectiveCallback(ca.Callback):
-    def __init__(self,name, PH, dt, w, power_model, predictor, opts={}):
-        ca.Callback.__init__(self)
-        self.PH = PH
-        self.dt = dt
-        self.w = w # weights for energy cost and temperature violation term [w1, w2]
-        self.power_model = power_model
-        self.predictor = predictor
-        self.construct(name,opts)
-
-    # Number of inputs and outputs   
-    def get_n_in(self): return 1
-    def get_n_out(self): return 1
-
-    # Array of inputs and outputs
-    def get_sparsity_in(self,i):
-        return ca.Sparsity.dense(2*self.PH,1)
-    def get_sparsity_out(self,i):
-        return ca.Sparsity.dense(1,1)
-
-    # Initialize the object
-    def init(self):
-        print('initializing object')
-
-    def power_polynomial(self,mz):
-        params = self.power_model
-        f_P = model.FanPower(n=len(params['alpha']))
-        f_P.params = params
-        PFan = f_P.predict(mz)
-
-        return PFan
-
-    def eval(self,arg):
-        """evaluate objective
-
-        """
-        # get control inputs: U = {u(t+1), u(t+2), ... u(t+PH)}
-        #                      u = [mz, \epsilon]
-        U = arg[0]
-
-        # loop over the prediction horizon
-        i = 0
-        P_pred_ph = []
-        eps_ph = []
-
-        while i < self.PH:
-            # get u for current step 
-            u = U[i*2:2*i+2]
-            mz = u[0]*0.75 # control inputs
-            eps = u[1] # temperature slack
-
-            ### ====================================================================
-            ###            Power Predictor
-            ### =====================================================================
-            # predict total power at current step
-            P_pred = self.power_polynomial(mz) 
-            # Save step-wise power prediction 
-            P_pred_ph.append(P_pred) # save all step-wise power for cost calculation
-
-            ### =====================================
-            #             Temperature violation
-            ### ======================================
-            eps_ph.append(eps)
-
-            ### ===========================================================
-            ###      Update for next step
-            ### ==========================================================
-            # update clock
-            i += 1
-
-        # energy cost: calculate total cost based on predicted energy prices
-        price_ph = self.predictor['price']
-        energy_cost = np.sum(np.array(price_ph)*np.array(P_pred_ph))*self.dt/3600./1000. 
-
-        # zone temperature bounds penalty
-        penalty = np.sum(np.array(eps_ph)**2)
-
-        # objective for a minimization problem
-        f = self.w[0]*energy_cost + self.w[1]*penalty
-
-        return [f]
-
-
-class ZoneTemperatureCallback(ca.Callback):
-    def __init__(self,name, PH, zone_model, states, predictor, opts={}):
-        ca.Callback.__init__(self)
-        self.PH = PH
-        self.zone_model = zone_model # params={'alpha':{}}
-        self.states = states
-        self.predictor = predictor
-        self.instantiate_zone_arx_model()
-        self.construct(name,opts)
-
-    # Number of inputs and outputs   
-    def get_n_in(self): return 1
-    def get_n_out(self): return 1
-
-    # Array of inputs and outputs
-    def get_sparsity_in(self,i):
-        return ca.Sparsity.dense(2*self.PH,1)
-    def get_sparsity_out(self,i):
-        return ca.Sparsity.dense(self.PH,1)
-
-    # Initialize the object
-    def init(self):
-        print('initializing object')
-
-    def instantiate_zone_arx_model(self):
-        """Instantiate a zone arx model
-        """
-        self.Lz = len(self.zone_model['alpha'])
-        self.Lo = len(self.zone_model['beta'])
-        self.f_Tz = model.Zone(Lz=self.Lz, Lo=self.Lo)
-        self.f_Tz.params = self.zone_model
-
-    def zone_arx(self,Tz_his_meas, To_his_meas, mz):
-        
-        Tsa = 13
-        return self.f_Tz.model(Tz_his_meas, To_his_meas, mz, Tsa)
-
-    def eval(self,arg):
-        """evaluate temperature
-
-        """
-        # get control inputs: U = {u(t+1), u(t+2), ... u(t+PH)}
-        #                      u = [mz, \epsilon]
-        U = arg[0]
-
-        # loop over the prediction horizon
-        i = 0
-        Tz_pred_ph = []
-
-        # get states at current step t
-        Tz_his_meas = self.states['Tz_his_meas'] # [Tz(t-l), ..., Tz(t-1), Tz(t)] 
-        To_his_meas = self.states['To_his_meas'] # [Tz(t-l), ..., Tz(t-1), Tz(t)] 
-        Tz_his_pred = self.states['Tz_his_pred'] # [Tz(t-l), ..., Tz(t-1), Tz(t)] 
-
-        # get autocorrection term 
-        e = self.f_Tz.autocorrection(Tz_his_meas, Tz_his_pred)
-
-        while i < self.PH:
-            # get u for current step 
-            u = U[i*2:2*i+2]
-            mz = u[0]*0.75 # control inputs
-
-            ### ====================================================================
-            ###           Zone temperature prediction
-            ### =====================================================================
-            # predict total power at current step
-            Tz_pred = self.zone_arx(Tz_his_meas, To_his_meas, mz) + e
-
-            ### ===========================================================
-            ###      Update for next step
-            ### ==========================================================
-            # update states for zone recursive regression model
-            # update future measurement
-            # future zone temperature measurements
-            Tz_his_meas = LIFO(Tz_his_meas,Tz_pred)
-
-            # future oa temperature measurement
-            To_pred = self.predictor['Toa'][i]
-            To_his_meas = LIFO(To_his_meas,To_pred)
-
-            # save step-wise temperature
-            Tz_pred_ph.append(Tz_pred) # save all step-wise power for cost calculation
-
-            # update clock
-            i += 1
-
-        # return predicted zone temperature over prediction horizon
-
-        return [Tz_pred_ph]
-
-
-def LIFO(array,x):
-    # lAST IN FIRST OUT:
-    a = np.append(array,x)
-
-    return list(a[1:])
+from copy import copy 
 
 class mpc_case():
     def __init__(self,PH,CH,time,dt,zone_model, power_model,measurement,states,predictor):
@@ -212,46 +33,85 @@ class mpc_case():
 
         # some building control settings
         self.number_zone = 1
-        self.occ_start = 6 # occupancy starts
-        self.occ_end = 19 # occupancy ends
+        self.occ_start = 8 # occupancy starts
+        self.occ_end = 18 # occupancy ends
 
         # some mpc settings
         self.n = 2 # number of control variable for each step
-        self.w = [1, 0.01] # weights between energy cost and temperature violation
+        self.w = [100., 1., 10.] # weights between energy cost and temperature violation and actions violations
         self.u_lb = [0.]*self.n
-        self.u_ub = [1.,0.01]
+        self.u_ub = [1.,0.1]
         # initialize optimiztion
-        self.u_start = self.u_lb*self.PH
+        self.u_start = [self.u_lb[i%self.n]+0.01*float(np.random.rand(1)) for i in range(self.n*self.PH)]
         #self.optimization_model=self.get_optimization_model() # pyomo object
-        self.optimum= {}
+        self.optimum={}
+        self.x_opt_0 = self.u_lb
+        # debug solver status: NOT IMPLEMENTED
+
+        # save internal power and temp predictor casadi function for extra calls
+        self._P = None
+        self._Tz = None
+        self._autoerror= 0
 
     def optimize(self):
         """MPC optimization problem in casadi interface
         """
+        # unwrap system states and predictors
+        # get states at current step t
+        Tz_his_meas = self.states['Tz_his_meas'] # [Tz(t-l), ..., Tz(t-1), Tz(t)] 
+        To_his_meas = self.states['To_his_meas'] # [Tz(t-l), ..., Tz(t-1), Tz(t)] 
+        Tz_his_pred = self.states['Tz_his_pred'] # [Tz(t-l), ..., Tz(t-1), Tz(t)] 
+        # get price predictor
+        price_ph = self.predictor['price']
+        To_pred_ph = self.predictor['Toa']
 
-        # instantiate objective function
-        f = ObjectiveCallback('f', 
-                            PH = self.PH,
-                            dt = self.dt,
-                            w = self.w,
-                            power_model = self.power_model,
-                            predictor = self.predictor,
-                            opts={"enable_fd":True})   
-             
-        # instantiate nonlinear constraints zone temperature
-        Tz = ZoneTemperatureCallback('Tz',
-                                    PH = self.PH, 
-                                    zone_model = self.zone_model, 
-                                    states = self.states, 
-                                    predictor =self.predictor, 
-                                    opts={"enable_fd":True})
         # define casadi variables
         u = ca.MX.sym("U",self.n*self.PH)
 
         # define objective function
-        obj = f(u)
-        # define constraint function
-        Tz_pred = Tz(u) # predicted T of size PH
+        n_Tz_his = len(Tz_his_meas)
+        autoerror = 0
+        for i in range(n_Tz_his):
+            autoerror += (Tz_his_meas[i]-Tz_his_pred[i])/n_Tz_his
+        
+        fval = []
+        Tz_pred_ph = []
+        P_pred_ph = []
+        Tz_his_meas_k = [Tz_meas for Tz_meas in Tz_his_meas]
+        To_his_meas_k = [To_meas for To_meas in To_his_meas]
+        mFan_nominal = 0.55 #kg/s
+        u_prev = self.x_opt_0
+
+        for k in range(self.PH):
+            # predict future zone temperature
+            Tz_pred_ph.append(self.predict_zone_temp(
+                Tz_his_meas_k, To_his_meas_k, u[self.n*k]*mFan_nominal, 14, autoerror))
+            # predict power
+            P_pred_ph.append(self.predict_power(u[self.n*k]*mFan_nominal,Tz_his_meas_k[-1])) 
+
+            # update historical temperature over the PH
+            Tz_his_meas_k.append(Tz_pred_ph[k])
+            Tz_his_meas_k = Tz_his_meas_k[1:]
+            To_his_meas_k.append(To_pred_ph[k])
+            To_his_meas_k = To_his_meas_k[1:]
+
+            # control actions
+            normalizer = [1/(self.u_ub[i]-self.u_lb[i]) for i in range(self.n)]
+            u_k = u[k*self.n:(k+1)*self.n] 
+            #du_k=[u_k[i]-u_prev[i] for i in range(self.n)]
+            du_k = u_k - u_prev
+            u_prev = u_k # update previous actions in PH
+            du_k_normalized = [normalizer[i]*du_k[i] for i in range(self.n-1)]#ca.dot(normalizer[:-1], du_k[:-1])
+            du_k_nom2 = ca.sumsqr(ca.vertcat(*du_k_normalized))
+
+            # get objective function
+            fo = self.w[0]*P_pred_ph[k]*price_ph[k]*self.dt/3600./1000 + self.w[1]*u[self.n*k+1]**2 + self.w[2]*du_k_nom2
+            fval.append(fo)
+
+        fval_sum = ca.sum1(ca.vertcat(*fval))
+
+        obj=ca.Function('fval',[u],[fval_sum]) # this is the ultimate objective function
+        f = obj(u) # get the objective value
 
         ### define nonlinear temperature constraints
         # zone temperature bounds - need check with the high-fidelty model
@@ -274,18 +134,18 @@ class mpc_case():
             
             # inequality constraints
             eps = u[self.n*k+1]
-            g += [Tz_pred[k]+eps, Tz_pred[k]-eps]
+            g += [Tz_pred_ph[k]+eps, Tz_pred_ph[k]-eps]
             # get upper and lower T bound
             lbg += [T_lower[t], 0.]
             ubg += [ca.inf, T_upper[t]]
 
         # formulate an optimziation problem using nlp solver
-        prob = {'f':obj, 'x': u, 'g': ca.vertcat(*g)}
-        nlp_optimize = ca.nlpsol('solver', 'ipopt', prob)
+        prob = {'f':f, 'x': u, 'g': ca.vertcat(*g)}
+        opts = {}
+        nlp_optimize = ca.nlpsol('solver', 'ipopt', prob, opts)
 
         # set initial guess
         u0 = self.u_start
-
         # set lower upper bound for u
         lbx = self.u_lb*self.PH
         ubx = self.u_ub*self.PH
@@ -298,13 +158,12 @@ class mpc_case():
         f_opt = solution['f']
         self.optimum['objective'] = f_opt
         self.optimum['variable'] = u_opt
-
+        # save optimum results for next step
+        self.x_opt_0 = u_opt
         print(solution)
         
         # save the function for external calls
-        self.f = f
-        self.Tz = Tz
-
+        self._autoerror = autoerror
         return self.optimum
         
     def set_time(self, time):
@@ -350,7 +209,7 @@ class mpc_case():
 
     def get_u_start(self,optimum_prev):
         fut = optimum_prev[self.n:]
-        start = np.append(fut, [0.5,0.])
+        start = np.append(fut, [0.4,0.])
         return start
 
     def set_u_start(self,prev):
@@ -358,3 +217,44 @@ class mpc_case():
         """
         start = self.get_u_start(prev)
         self.u_start = start
+
+    def set_u_prev(self, u_prev):
+        """
+        set control actions from previous step
+
+        :param u_prev: previous control action vector
+        :type u_prev: list
+        """
+        self.x_opt_0 = u_prev
+
+    def predict_power(self, mz, Tz):
+        """
+        Power model
+
+        :param params: _description_
+        :type params: _type_
+        """
+        params = self.power_model['alpha']
+        n = len(params)
+        P=0
+        for i in range(n):
+            P += params[i]*mz**i 
+        
+        P += 1008./3*mz*(Tz-14)
+
+        return P
+
+    def predict_zone_temp(self, Tz_his_meas, To_his_meas, mz, Tsa, autoerror):
+        alpha = self.zone_model['alpha']  # list
+        beta = self.zone_model['beta'] # list
+        gamma = self.zone_model['gamma'] # list
+        
+        n_alpha = len(alpha)
+        n_beta = len(beta)
+
+        Tz_pred = ca.sum1(ca.vertcat(*[alpha[i]*Tz_his_meas[i] for i in range(n_alpha)])) \
+            + ca.sum1(ca.vertcat(*[beta[i]*To_his_meas[i] for i in range(n_beta)])) \
+            + ca.MX(gamma*mz*(Tsa-Tz_his_meas[0])) \
+            + ca.MX(autoerror)
+
+        return Tz_pred

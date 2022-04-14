@@ -13,7 +13,7 @@ import pandas as pd
 from gym import spaces
 from gym.utils import seeding
 from modelicagym.environment import FMI2CSEnv, FMI1CSEnv
-
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -101,8 +101,8 @@ class SingleZoneEnv(object):
         """
         # open gym requires an observation space during initialization
 
-        high = np.array([86400., 273.15+30, 273.15+40,1200., 1000.]+[273.15+40]*self.npre_step+[1200.]*self.npre_step)
-        low = np.array([0., 273.15+12, 273.15+0,0, 0]+[273.15+0]*self.npre_step+[0.0]*self.npre_step)
+        high = np.array([86400., 273.15+35, 273.15+40,1000., 1500.]+[273.15+40]*self.n_next_steps+[1000.]*self.n_next_steps)
+        low = np.array([0., 273.15+12, 273.15+0,0, 0]+[273.15+0]*self.n_next_steps+[0.0]*self.n_next_steps)
         return spaces.Box(low, high)
 
     # OpenAI Gym API implementation
@@ -148,8 +148,8 @@ class SingleZoneEnv(object):
         # temperture upper and lower bound
         T_upper = [30.0 for i in range(24)] # upper bound for unoccuppied: cooling
         T_lower = [12.0 for i in range(24)] # lower bound for unoccuppied: heating 
-        T_upper[7:19] = [26.0]*12 # upper bound for occuppied: cooling 
-        T_lower[7:19] = [22.0]*12 # lower bound for occuppied: heating
+        T_upper[8:18] = [26.0]*11 # upper bound for occuppied: cooling 
+        T_lower[8:18] = [22.0]*11 # lower bound for occuppied: heating
         
         # control period:
         delCtrl = self.tau/3600.0 #may be better to set a variable in initial
@@ -215,7 +215,7 @@ class SingleZoneEnv(object):
         model_outputs = self.model_output_names
         state_list = [result.final(k) for k in model_outputs]
 
-        predictor_list = self.predictor(self.npre_step)
+        predictor_list = self.predictor(self.n_next_steps)
 
         state_list[0] = int(state_list[0]) % 86400
         return tuple(state_list+predictor_list) 
@@ -250,8 +250,8 @@ class SingleZoneEnv(object):
         :return: a data frame at an interval of defined time_step
         """
         from pvlib.iotools import read_epw
-
-        dat = read_epw(self.weather_file)
+        file_path = os.path.dirname(os.path.realpath(__file__))
+        dat = read_epw(file_path+'/'+self.weather_file)
 
         tem_sol_h = dat[0][['temp_air','ghi']]
         index_h = np.arange(0,3600.*len(tem_sol_h),3600.)
@@ -329,7 +329,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
     Attributes:
         mass_flow_nor (float): List, norminal mass flow rate of VAV terminals.
         weather_file (str): Energyplus epw weather file name 
-        npre_step (int): number of future prediction steps
+        n_next_steps (int): number of future prediction steps
         time_step (float): time difference between simulation steps.
 
     """
@@ -337,7 +337,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
     def __init__(self,
                  mass_flow_nor,
                  weather_file,
-                 npre_step,
+                 n_next_steps,
                  simulation_start_time,
                  simulation_end_time,
                  time_step,
@@ -356,7 +356,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         # system parameters
         self.mass_flow_nor = mass_flow_nor 
         self.weather_file = weather_file 
-        self.npre_step = npre_step 
+        self.n_next_steps = n_next_steps 
 
         # virtual environment simulation period
         self.simulation_end_time = simulation_end_time
@@ -371,12 +371,12 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         self.rf = rf # this is an external function
         # customized hourly TOU energy price
         if not p_g:
-            self.p_g = [0.0640, 0.0640, 0.0640, 0.0640, 
-                0.0640, 0.0640, 0.0640, 0.0640, 
-                0.1391, 0.1391, 0.1391, 0.1391, 
-                0.3548, 0.3548, 0.3548, 0.3548, 
-                0.3548, 0.3548, 0.1391, 0.1391, 
-                0.1391, 0.1391, 0.1391, 0.0640]
+            self.p_g = [0.02987, 0.02987, 0.02987, 0.02987, 
+                        0.02987, 0.02987, 0.04667, 0.04667, 
+                        0.04667, 0.04667, 0.04667, 0.04667, 
+                        0.15877, 0.15877, 0.15877, 0.15877,
+                        0.15877, 0.15877, 0.15877, 0.04667, 
+                        0.04667, 0.04667, 0.02987, 0.02987]
         else:
             self.p_g = p_g           
         assert len(self.p_g)==24, "Daily hourly energy price should be provided!!!"
@@ -401,8 +401,10 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         # initialize some metadata 
         self._cost = []
         self._max_temperature_violation = []
-
-        super(JModelicaCSSingleZoneEnv,self).__init__("./SingleZoneVAV.fmu",
+        
+        # specify fmu path and model
+        fmu_path = os.path.dirname(os.path.realpath(__file__))
+        super(JModelicaCSSingleZoneEnv,self).__init__(fmu_path+"/SingleZoneFCU.fmu",
                          config, log_level=log_level,
                          simulation_start_time=simulation_start_time)
        # location of fmu is set to current working directory

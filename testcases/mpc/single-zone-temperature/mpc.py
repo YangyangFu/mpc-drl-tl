@@ -10,7 +10,7 @@ from FuncDesigner import *
 from openopt import NSP
 from openopt import NLP
 from openopt import GLP 
-from sklearn.externals import joblib
+import joblib
 
 class mpc_case():
     def __init__(self,PH,CH,time,dt,parameters_zone, parameters_power,measurement,states,predictor,occ_start,occ_end):
@@ -46,7 +46,6 @@ class mpc_case():
 
     def obj(self,u_ph):
         # MPC model predictor settings
-        l = 4
 
         # zone temperature bounds - need check with the high-fidelty model
         T_upper = np.array([30.0 for i in range(24)])
@@ -128,9 +127,12 @@ class mpc_case():
 
         ener_cost = float(np.sum(np.array(price_ph)*np.array(P_pred_ph)))*self.dt/3600./1000. 
 
-  
+        # save some results for debugging purposes
+        self.P_pred_ph=P_pred_ph
+        self.Tz_pred_ph=Tz_pred_ph
+
         # objective for a minimization problem
-        f = ener_cost + penalty
+        f = ener_cost #+ penalty
         #f = ener_cost
         #f=penalty
         # constraints - unconstrained
@@ -176,14 +178,14 @@ class mpc_case():
 
         disp = True
         if disp:
-            print ' '
-            print 'Solver: OpenOpt solver ' + solver
-            print ' '
-            print 'Number of iterations: ' + str(nbr_iters)
-            print 'Number of function evaluations: ' + str(nbr_fevals)
-            print ' '
-            print 'Execution time: ' + str(solve_time)
-            print ' '
+            print (' ')
+            print ('Solver: OpenOpt solver ' + solver)
+            print (' ')
+            print ('Number of iterations: ' + str(nbr_iters))
+            print ('Number of function evaluations: ' + str(nbr_fevals))
+            print (' ')
+            print ('Execution time: ' + str(solve_time))
+            print (' ')
 
         return self.optimum
 
@@ -233,7 +235,7 @@ class mpc_case():
 
         # see https://github.com/troyshu/openopt/blob/d15e81999ef09d3c9c8cb2fbb83388e9d3f97a98/openopt/oo.py#L390.
         return NLP(objective, start, df=df,  c=c,  dc=dc, h=h,  dh=dh,  A=A,  b=b,  Aeq=Aeq,  beq=beq,  
-        lb=lb, ub=ub, gtol=gtol, contol=contol, maxIter = 10000, maxFunEvals = 1e4, name = 'NLP for: '+str(self.time))
+        lb=lb, ub=ub, gtol=gtol, contol=contol, maxIter = 5000, maxFunEvals = 5e3, name = 'NLP for: '+str(self.time))
 
     def get_optimization_model(self):
         #return self.openopt_model_glp()

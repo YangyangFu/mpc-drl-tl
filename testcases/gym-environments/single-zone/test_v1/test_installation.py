@@ -8,9 +8,9 @@ import tianshou as ts
 #    Testing JModelicaCSSingleZoneEnv-v1 installation
 ## ===================================================
 env = gym.make("JModelicaCSSingleZoneEnv-v1",
-                mass_flow_nor=0.75,
-                weather_file='USA_CA_Riverside.Muni.AP.722869_TMY3.epw',
-                npre_step=5,
+                mass_flow_nor=0.55,
+               weather_file='USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw',
+                n_next_steps=5,
                 simulation_start_time=3600*24.,
                 simulation_end_time=3600*24*2.,
                 time_step=15*60.,
@@ -25,8 +25,9 @@ states = env.reset()
 n_outputs = env.observation_space.shape[0]
 print(states)
 print(n_outputs)
+print(dir(env))
 print(env.tau, env.simulation_start_time, env.simulation_end_time)
-print(env._get_action_space(),env.nActions)
+print(env.action_space,env.nActions)
 print(env.alpha)
 
 # test substeps

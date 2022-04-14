@@ -12,7 +12,7 @@ from pyfmi import load_fmu
 
 # simulation setup
 ts = 212*24*3600.#+13*24*3600
-nday = 7
+nday = 1
 period = nday*24*3600.
 te = ts + period
 dt = 15*60.
@@ -44,7 +44,8 @@ with open('u_opt.json') as f:
 
 t_opt = opt['t_opt']
 u_opt = opt['u_opt']
-
+P_pred = opt['power_predicted']
+Tz_pred = opt['Tz_predicted']
 ### 1- Load virtual building model
 mpc = load_fmu('SingleZoneTemperature.fmu')
 
@@ -98,12 +99,12 @@ for i in range(nday):
   T_upper[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 26.0
   T_lower[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 22.
 
-price_tou = [0.0640, 0.0640, 0.0640, 0.0640, 
-        0.0640, 0.0640, 0.0640, 0.0640, 
-        0.1391, 0.1391, 0.1391, 0.1391, 
-        0.3548, 0.3548, 0.3548, 0.3548, 
-        0.3548, 0.3548, 0.1391, 0.1391, 
-        0.1391, 0.1391, 0.1391, 0.0640]*nday
+price_tou = [0.02987, 0.02987, 0.02987, 0.02987, 
+        0.02987, 0.02987, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.15877, 0.15877, 
+        0.15877, 0.15877, 0.15877, 0.04667, 
+        0.04667, 0.04667, 0.02987, 0.02987]*nday
 
 def interpolate_dataframe(df,new_index):
     """Interpolate a dataframe along its index based on a new index
@@ -119,12 +120,14 @@ measurement_mpc = pd.DataFrame(measurement_mpc,index=measurement_mpc['time'])
 measurement_mpc = interpolate_dataframe(measurement_mpc,tim)
 print (measurement_mpc)
 
-xticks=np.arange(ts,te,12*3600)
-xticks_label = np.arange(0,24*nday,12)
+xticks=np.arange(ts,te+1,12*3600)
+xticks_label = np.arange(0,24*nday+1,12)
 
 plt.figure(figsize=(16,12))
 plt.subplot(411)
-plt.step(np.arange(ts, te, 3600.),price_tou, where='pre')
+price_plot = price_tou[:]
+price_plot.append(price_plot[0])
+plt.step(np.arange(ts, te+1, 3600.), price_plot, where='post')
 plt.grid(True)
 plt.xticks(xticks,[])
 plt.ylabel('Price ($/kW)')
@@ -140,6 +143,7 @@ plt.ylabel('Cooling Setpoint')
 plt.subplot(413)
 plt.plot(measurement_base['time'], measurement_base['TRoo']-273.15,'b--',label='Baseline')
 plt.plot(measurement_mpc['time'], np.array(measurement_mpc['TRoo'])-273.15,'r-',label='MPC')
+plt.plot(t_opt, np.array(Tz_pred)-273.15,'k-',label='Prediction')
 plt.plot(tim,T_upper, 'g-.', lw=1,label='Bounds')
 plt.plot(tim,T_lower, 'g-.', lw=1)
 plt.grid(True)
@@ -150,8 +154,10 @@ plt.ylabel('Room Temperature [C]')
 plt.subplot(414)
 plt.plot(measurement_base['time'], measurement_base['PCoo.y'],'b--',label='Baseline')
 plt.plot(measurement_mpc['time'], measurement_mpc['PCoo.y'],'r-',label='MPC')
+plt.plot(t_opt,P_pred,'k-',label='Prediction')
 plt.grid(True)
 plt.xticks(xticks,xticks_label)
+plt.legend()
 plt.ylabel('Total [W]')
 plt.savefig('mpc-vs-rbc.pdf')
 plt.savefig('mpc-vs-rbc.png')

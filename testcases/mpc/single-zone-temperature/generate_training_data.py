@@ -15,16 +15,16 @@ import pandas as pd
 
 
 # simulate setup - 181-212 for july; 212-243 for August
-time_stop = 30*24*3600.  
-ts = 212*24*3600.
+time_stop = 31*24*3600.  
+ts = 181*24*3600.
 te = ts + time_stop
 
 ## load fmu - cs
 fmu_name = "SingleZoneTemperature.fmu"
 fmu = load_fmu(fmu_name)
 options = fmu.simulate_options()
-options['ncp'] = 10000.
-
+options['ncp'] = 10000
+print(fmu.get('zon.roo.mSenFac'))
 # excite signal: - generator for exciting signals
 def uniform_real(a,b):
     return (b-a)*random.random_sample()+a
@@ -81,7 +81,7 @@ def excite(time, signals, min_dur, max_dur):
                 else:
                     sig_t = uniform_int(min_sig, max_sig+1)
                     sig_dur = uniform_int(min_dur, max_dur+1)
-                print key+': '+str(sig_dur)
+                print(key+': '+str(sig_dur))
                 # check excite flag and update excited signal
                 excited_signals.loc[t,key] = sig_t
 
@@ -114,7 +114,7 @@ sig_values = sig_df["TSetCoo"].values
 # input
 input_names = fmu.get_model_variables(causality=2).keys()
 input_trac = np.transpose(np.vstack((time_arr.flatten(),sig_values.flatten()))).astype('float64')
-input_object = (input_names,input_trac)
+input_object = ('TSetCoo',input_trac)
 
 # simulate fmu
 res = fmu.simulate(start_time=ts,

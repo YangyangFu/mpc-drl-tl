@@ -63,13 +63,12 @@ def get_states(states,measurement,Tz_pred):
     return states
 
 def get_price(time,dt,PH):
-    price_tou = [0.0640, 0.0640, 0.0640, 0.0640, 
-        0.0640, 0.0640, 0.0640, 0.0640, 
-        0.1391, 0.1391, 0.1391, 0.1391, 
-        0.3548*10, 0.3548*10, 0.3548*10, 0.3548*10, 
-        0.3548*10, 0.3548*10, 0.1391, 0.1391, 
-        0.1391, 0.1391, 0.1391, 0.0640]
-    #- assume hourly TOU pricing
+    price_tou = [0.02987, 0.02987, 0.02987, 0.02987, 
+        0.02987, 0.02987, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.04667, 0.04667, 
+        0.15877, 0.15877, 0.15877, 0.15877,
+        0.15877, 0.15877, 0.15877, 0.04667, 
+        0.04667, 0.04667, 0.02987, 0.02987]
     t_ph = np.arange(time,time+dt*PH,dt)
     price_ph = [price_tou[int(t % 86400 /3600)] for t in t_ph]
 
@@ -99,20 +98,20 @@ def get_Toa(time,dt,PH,Toa_year):
     return list(Toa.values.flatten())
 
 ### 0- Simulation setup
-start = 212*24*3600. #+ 13*24*3600
+start = 201*24*3600. # 181 - 7/1 
 end = start + 7*24*3600.
 
 ### 1- Load virtual building model
-hvac = load_fmu('SingleZoneDamperControl.fmu')
+hvac = load_fmu('SingleZoneFCU.fmu')
 
 ## fmu settings
 options = hvac.simulate_options()
-options['ncp'] = 500
+options['ncp'] = 100
 options['initialize'] = True
 
 # Warm up FMU simulation settings
 ts = start
-te_warm = ts + 4*3600
+te_warm = ts + 1*3600
 
 ### 2- Initialize MPC case 
 dt = 15*60.
@@ -125,7 +124,8 @@ with open('power.json') as f:
   parameters_power = json.load(f)
 
 # initialize measurement
-measurement_names=['TRoo','TOut','PTot','uFan','hvac.fanSup.m_flow_in']
+measurement_names=['TRoo','TOut','PTot','uFan','m_flow_in']
+hvac.set("zon.roo.T_start",273.15+25)
 res = hvac.simulate(start_time = ts,
                     final_time = ts,
                     options=options)
@@ -133,7 +133,7 @@ options['initialize'] = False
 measurement_ini = get_measurement(res,measurement_names)
 
 # read one-year weather file
-weather_file = 'USA_CA_Riverside.Muni.AP.722869_TMY3.epw'
+weather_file = 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw'
 Toa_year = read_temperature(weather_file,dt)
 
 ### ===========================
@@ -152,12 +152,13 @@ states_ini = {'Tz_his_meas':[Tz_ini]*lag_Tz,
 ### predictors
 predictor = {}
 # energy prices 
-predictor['price'] = get_price(ts+dt,dt,PH)
+predictor['price'] = get_price(ts,dt,PH)
 # outdoor air temperature
-predictor['Toa'] = get_Toa(ts+dt,dt,PH,Toa_year)
+predictor['Toa'] = get_Toa(ts,dt,PH,Toa_year)
 
 ### ==================================
 ### 3- MPC Control Loop
+mFan_nominal=0.55 # kg/s
 uFan_ini = 0.
 # initialize fan speed for warmup setup
 uFan = uFan_ini
@@ -176,6 +177,8 @@ case = mpc_case(PH=PH,
 # initialize all results
 u_opt=[]
 t_opt=[]
+P_pred_opt = []
+Tz_pred_opt = []
 warmup = True
 
 while ts<end:
@@ -192,6 +195,8 @@ while ts<end:
         case.set_measurement(measurement)
         case.set_states(states)   
         case.set_predictor(predictor)
+        case.set_u_prev(u_opt_ch)
+
         # call optimizer
         optimum = case.optimize()
 
@@ -209,7 +214,11 @@ while ts<end:
         case.set_u_start(u_opt_ph)
 
         # update predictions after MPC predictor is called otherwise use measurement 
-        Tz_pred = float(case.Tz(u_opt_ph)[0])
+        print(u_opt_ph, case._autoerror)
+        Tz_pred = float(case.predict_zone_temp(
+            case.states['Tz_his_meas'], case.states['To_his_meas'], u_opt_ch[0]*mFan_nominal, 14, case._autoerror))
+        # update power prediction after MPC call
+        P_pred = float(case.predict_power(u_opt_ch[0]*mFan_nominal, Tz_pred))
 
     ### advance building simulation by one step
     #u_traj = np.transpose(np.vstack(([ts,te],[uFan,uFan])))
@@ -230,6 +239,8 @@ while ts<end:
     # if not warmup then measurement else from mpc
     if warmup:
         Tz_pred = measurement['TRoo'].values[0] - 273.15
+        P_pred = measurement['PTot'].values[0]
+        u_opt_ch = [uFan, 0.1]
 
     states = get_states(states,measurement, Tz_pred)
     print ("\nstate 4")
@@ -239,8 +250,8 @@ while ts<end:
     # update parameter_zones and parameters_power - NOT IMPLEMENTED
     
     # update predictor
-    predictor['price'] = get_price(ts+dt,dt,PH)
-    predictor['Toa'] = get_Toa(ts+dt,dt,PH,Toa_year)
+    predictor['price'] = get_price(ts,dt,PH)
+    predictor['Toa'] = get_Toa(ts,dt,PH,Toa_year)
 
     # update fmu settings
     options['initialize'] = False
@@ -250,9 +261,13 @@ while ts<end:
 
     # Save all the optimal results for future simulation
     u_opt.append(uFan)
+    Tz_pred_opt.append(Tz_pred)
+    P_pred_opt.append(P_pred)
 
 final = {'u_opt':u_opt,
-        't_opt':t_opt}
+        't_opt':t_opt,
+        'Tz_pred_opt':Tz_pred_opt,
+        'P_pred_opt':P_pred_opt}
 
 with open('u_opt.json', 'w') as outfile:
     json.dump(final, outfile)

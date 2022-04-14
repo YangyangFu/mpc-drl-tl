@@ -7,5 +7,5 @@ docker run --name fmuc^
 	  -v %CD%:/mnt/shared^
 	  -i^
       -t^
-	  mpcdrl /bin/bash -c "cd /mnt/shared && python /mnt/shared/TZone_identification_ANN.py"
+	  yangyangfu/mpcdrl:cpu_py2 /bin/bash -c "cd /mnt/shared && python /mnt/shared/TZone_identification_ANN.py"
 

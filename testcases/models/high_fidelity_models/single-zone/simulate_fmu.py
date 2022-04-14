@@ -25,11 +25,11 @@ endTime = startTime + time_stop
 dt = 60*15.
 
 ## load fmu - cs
-fmu_name = "SingleZoneDamperControl"
+fmu_name = "SingleZoneFCU"
 fmu = load_fmu(fmu_name+'.fmu')
-fmu.set_log_level(0) # log level 0-7
+fmu.set_log_level(7) # log level 0-7
 options = fmu.simulate_options()
-options['filter']=['uFan','TRoo','hvac.uFan']
+options['filter']=['uFan','TRoo']
 options['result_handling']="memory" #"memory"
 
 options['ncp'] = 100
@@ -60,13 +60,14 @@ while ts < endTime:
     #u_trajectory = np.vstack((time,u))
     #input_object = (input_names,np.transpose(u_trajectory))
     fmu.set(list(input_names),list([u]))
+    fmu.set("zon.roo.T_start", 273.15+25)
     res_step = fmu.simulate(start_time=ts, final_time=te, options=options)
 
     initialize = False
     ts = te
 
     # get results
-
+    print(res_step["TRoo"])
 toc = time.process_time()
 
 print ('Finish simulation in:' + str(toc-tic)+" second(s)")

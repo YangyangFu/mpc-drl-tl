@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from gym import spaces
 from modelicagym.environment import FMI2CSEnv, FMI1CSEnv
-
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -28,24 +28,20 @@ class SingleZoneEnv(object):
     Reference:
         None
     Observation:
-        Type: Box(14)
-        Num    Observation                                   Min            Max
-        0      Time                                          0              86400
-        1      Zone temperature                              273.15 + 12    273.15 + 30
-        2      Outdoor temperature                           273.15 + 0     273.15 + 40
-        3      Solar radiation                               0              1200
-        4      Total power                                   0              1000
-        5      Energy price                                  0.064          0.3548
-        6      Outdoor temperature prediction at next 1 step 273.15 + 0     273.15 + 40
-        7      Outdoor temperature prediction at next 2 step 273.15 + 0     273.15 + 40
-        8      Outdoor temperature prediction at next 3 step 273.15 + 0     273.15 + 40
-        9      Solar radiation prediction at next 1 step     0              1200
-        10     Solar radiation prediction at next 2 step     0              1200
-        11     Solar radiation prediction at next 3 step     0              1200
-        12     Energy price at next 1 step                   0.064          0.3548
-        13     Energy price at next 2 step                   0.064          0.3548
-        14     Energy price at next 3 step                   0.064          0.3548
-    
+        Type: Box(5+3*n_next_steps+2*n_prev_steps)
+        Num                                     Observation                                     Min            Max
+        0                                       Time                                            0              86400
+        1                                       Zone temperature                                273.15 + 12    273.15 + 35
+        2                                       Outdoor temperature                             273.15 + 0     273.15 + 40
+        3                                       Solar radiation                                 0              1000
+        4                                       Total power                                     0              1500
+        5                                       Energy price                                    0              1
+        5+[1...,n_next_steps]                   Outdoor temperature prediction at next n step   273.15 + 0     273.15 + 40
+        5+n_next_steps+[1,...,n_next_steps]     Solar radiation prediction at next n step       0              1000
+        5+2*n_next_steps+[1,...,n_next_steps]   Energy price at next n step                     0              1
+        5+3*n_next_steps+[1,...,n_prev_steps]   Zone temperature from previous m steps          273.15 + 12    273.15 + 35   
+        5+3*n_next_steps+n_prev_steps+[1,...,n_prev_steps]   Total power from previous m steps  0              1500
+
     Actions:
         Type: Discret(nActions)
         Num         Action           
@@ -95,8 +91,14 @@ class SingleZoneEnv(object):
         """
         # open gym requires an observation space during initialization
 
-        high = np.array([86400.,273.15+30, 273.15+40,1200., 1000., 0.3548]+[273.15+40]*self.npre_step+[1200.]*self.npre_step+[0.3548]*self.npre_step)
-        low = np.array([0., 273.15+12, 273.15+0,0, 0, 0.064]+[273.15+0]*self.npre_step+[0.0]*self.npre_step+[0.064]*self.npre_step)
+        high = np.array([86400.,273.15+35, 273.15+40,1000., 1500., 1.0]+\
+                [273.15+40]*self.n_next_steps+[1000.]*self.n_next_steps+[1.]*self.n_next_steps+\
+                [273.15+35]*self.n_prev_steps+[1500.]*self.n_prev_steps)
+        
+        low = np.array([0., 273.15+12, 273.15+0.,0., 0., 0.]+\
+                [273.15+0]*self.n_next_steps+[0.]*self.n_next_steps+[0.]*self.n_next_steps+\
+                [273.15+12]*self.n_prev_steps+[0.]*self.n_prev_steps)
+                
         return spaces.Box(low, high)
 
     # OpenAI Gym API implementation
@@ -142,8 +144,8 @@ class SingleZoneEnv(object):
         # temperture upper and lower bound
         T_upper = [30.0 for i in range(24)] # upper bound for unoccuppied: cooling
         T_lower = [12.0 for i in range(24)] # lower bound for unoccuppied: heating 
-        T_upper[7:19] = [26.0]*12 # upper bound for occuppied: cooling 
-        T_lower[7:19] = [22.0]*12 # lower bound for occuppied: heating
+        T_upper[8:18] = [26.0]*12 # upper bound for occuppied: cooling 
+        T_lower[8:18] = [22.0]*12 # lower bound for occuppied: heating
         
         # control period:
         delCtrl = self.tau/3600.0 #may be better to set a variable in initial
@@ -198,6 +200,7 @@ class SingleZoneEnv(object):
         #   model_outputs
         # 2. get states that should be predicted from external predictor
         #   predictor_outputs
+        # 3. get states for historical measurement
 
         model_outputs = self.model_output_names
         
@@ -213,23 +216,49 @@ class SingleZoneEnv(object):
         state_list += energy_price
 
         # ============================================
-        # get oa predictors for next npre_step
-        predictor_list = self.predictor(self.npre_step)
-        # get price for next npre_step
-        energy_price_npre = []
-        for i in range(self.npre_step):
+        # get oa predictors for next n_next_steps
+        predictor_list = self.predictor(self.n_next_steps)
+        # get price for next n_next_steps
+        energy_price_next = []
+        for i in range(self.n_next_steps):
             time += self.tau 
             t = int(time)
             t = int((t%86400)/3600) # hour index 0~23
-            energy_price_npre += [self.p_g[t]]
+            energy_price_next += [self.p_g[t]]
         # append price to predictor list
-        predictor_list += energy_price_npre
+        predictor_list += energy_price_next
 
         # =================================================
         # reconstruct time for learning agent
         state_list[0] = int(state_list[0]) % 86400
 
-        return tuple(state_list+predictor_list) 
+        # ================================================
+        # historical measurement list
+        history_list=[]
+        if self.n_prev_steps>0:
+            TRoo_t = result.final('TRoo')
+            pow_t = result.final('PTot')
+            TRoo_his= self.history['TRoo']
+            pow_his = self.history['PTot']
+            TRoo_his.append(TRoo_t)
+
+            pow_his.append(pow_t)
+
+            history_list = TRoo_his[:-1] + pow_his[:-1]
+            self.history['TRoo'] = TRoo_his[1:]
+            self.history['PTot'] = pow_his[1:]
+
+        return tuple(state_list+predictor_list+history_list) 
+
+    def reset(self):
+        """
+        Inherit the existing internal reset method and customize for this environment
+        """
+        if self.n_prev_steps > 0:
+            self.history['TRoo'] = [273.15+25]*self.n_prev_steps 
+            self.history['PTot'] = [0.]*self.n_prev_steps
+        
+        return super(SingleZoneEnv, self).reset()
 
     def predictor(self,n):
         """
@@ -248,7 +277,7 @@ class SingleZoneEnv(object):
         
         #time = self.state[0]
         time = self.start
-        # return future 3 steps
+        # return future n steps
         tem = list(tem_sol_step[time+self.tau:time+n*self.tau]['temp_air']+273.15)
         sol = list(tem_sol_step[time+self.tau:time+n*self.tau]['ghi'])
 
@@ -262,7 +291,8 @@ class SingleZoneEnv(object):
         """
         from pvlib.iotools import read_epw
 
-        dat = read_epw(self.weather_file)
+        file_path = os.path.dirname(os.path.realpath(__file__))
+        dat = read_epw(file_path+'/'+self.weather_file)
 
         tem_sol_h = dat[0][['temp_air','ghi']]
         index_h = np.arange(0,3600.*len(tem_sol_h),3600.)
@@ -341,7 +371,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
     Attributes:
         mass_flow_nor (float): List, norminal mass flow rate of VAV terminals.
         weather_file (str): Energyplus epw weather file name 
-        npre_step (int): number of future prediction steps
+        n_next_steps (int): number of future prediction steps
         time_step (float): time difference between simulation steps.
 
     """
@@ -349,7 +379,7 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
     def __init__(self,
                  mass_flow_nor,
                  weather_file,
-                 npre_step,
+                 n_next_steps,
                  simulation_start_time,
                  simulation_end_time,
                  time_step,
@@ -361,14 +391,16 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
                  nActions=11,
                  rf=None,
                  p_g=None,
-                 n_substeps=15):
+                 n_substeps=15,
+                 n_prev_steps=0):
 
         logger.setLevel(log_level)
 
         # system parameters
         self.mass_flow_nor = mass_flow_nor 
         self.weather_file = weather_file 
-        self.npre_step = npre_step 
+        self.n_next_steps = n_next_steps 
+        self.n_prev_steps = n_prev_steps
 
         # virtual environment simulation period
         self.simulation_end_time = simulation_end_time
@@ -382,12 +414,12 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         self.rf = rf # this is an external function        
         # customized hourly TOU energy price
         if not p_g:
-            self.p_g = [0.0640, 0.0640, 0.0640, 0.0640, 
-                0.0640, 0.0640, 0.0640, 0.0640, 
-                0.1391, 0.1391, 0.1391, 0.1391, 
-                0.3548, 0.3548, 0.3548, 0.3548, 
-                0.3548, 0.3548, 0.1391, 0.1391, 
-                0.1391, 0.1391, 0.1391, 0.0640]
+            self.p_g = [0.02987, 0.02987, 0.02987, 0.02987, 
+                        0.02987, 0.02987, 0.04667, 0.04667, 
+                        0.04667, 0.04667, 0.04667, 0.04667, 
+                        0.15877, 0.15877, 0.15877, 0.15877,
+                        0.15877, 0.15877, 0.15877, 0.04667, 
+                        0.04667, 0.04667, 0.02987, 0.02987]
         else:
             self.p_g = p_g           
         assert len(self.p_g)==24, "Daily hourly energy price should be provided!!!"
@@ -399,6 +431,13 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         self.viewer = None
         self.display = None
 
+        # conditional
+        self.history = {}
+        if self.n_prev_steps > 0:
+            self.history['TRoo'] = [273.15+25]*self.n_prev_steps
+            self.history['PTot'] = [0.]*self.n_prev_steps
+
+        # configuration of fmugym
         config = {
             'model_input_names': ['uFan'],
             'model_output_names': ['time','TRoo','TOut','GHI','PTot'],
@@ -413,7 +452,9 @@ class JModelicaCSSingleZoneEnv(SingleZoneEnv, FMI2CSEnv):
         self._cost = []
         self._max_temperature_violation = []
 
-        super(JModelicaCSSingleZoneEnv,self).__init__("./SingleZoneVAV.fmu",
+        # specify fmu path and model
+        fmu_path = os.path.dirname(os.path.realpath(__file__))
+        super(JModelicaCSSingleZoneEnv, self).__init__(fmu_path+"/SingleZoneFCU.fmu",
                          config, log_level=log_level,
                          simulation_start_time=simulation_start_time)
        # location of fmu is set to current working directory

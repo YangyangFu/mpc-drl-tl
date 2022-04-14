@@ -62,12 +62,12 @@ def get_states(states,measurement):
     return states
 
 def get_price(time,dt,PH):
-    price_tou = [0.0640, 0.0640, 0.0640, 0.0640, 
-        0.0640, 0.0640, 0.0640, 0.0640, 
-        0.1391, 0.1391, 0.1391, 0.1391, 
-        0.3548, 0.3548, 0.3548, 0.3548, 
-        0.3548, 0.3548, 0.1391, 0.1391, 
-        0.1391, 0.1391, 0.1391, 0.0640]
+    price_tou = [0.02987, 0.02987, 0.02987, 0.02987, 
+        0.02987, 0.02987, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.04667, 0.04667, 
+        0.04667, 0.04667, 0.15877, 0.15877, 
+        0.15877, 0.15877, 0.15877, 0.04667, 
+        0.04667, 0.04667, 0.02987, 0.02987]
     #- assume hourly TOU pricing
     t_ph = np.arange(time,time+dt*PH,dt)
     price_ph = [price_tou[int(t % 86400 /3600)] for t in t_ph]
@@ -146,7 +146,7 @@ predictor['Toa'] = get_Toa(ts,dt,PH,Toa_year)
 
 ### 3- MPC Control Loop
 # occupancy
-occ_start=6
+occ_start=7
 occ_end = 19
 # initialize setpoint
 uTSet_ini = 273.15+30
@@ -168,14 +168,18 @@ case = mpc_case(PH=PH,
 # initialize all results
 u_opt=[]
 t_opt=[]
-
+P_pred = []
+Tz_pred = []
 while ts<end:
     
     te = ts+dt*CH
     t_opt.append(ts)
     h = int((ts % 86400)/3600)  # hour index 0~23
     u_opt_ph=[uTSet_ini]*PH
+    P_pred_ph=[0.]*PH
+    Tz_pred_ph=[273.15+20]*PH
     ### generate control action from MPC
+    #if ts>=start+4*dt: # activate mpc after warmup
     if h>=occ_start-2 and h<=occ_end+1: # activate mpc after warmup
         # update mpc case
         case.set_time(ts)
@@ -188,7 +192,11 @@ while ts<end:
         # get objective and design variables
         f_opt_ph = optimum['objective']
         u_opt_ph = optimum['variable']
-    
+
+        # get predicted values from MPC for debugging
+        case.obj(u_opt_ph)
+        P_pred_ph=case.P_pred_ph
+        Tz_pred_ph=case.Tz_pred_ph
     # get the control action for the control horizon
     u_opt_ch = u_opt_ph[0]
 
@@ -197,6 +205,10 @@ while ts<end:
 
     # update start points for optimizer using previous optimum value
     case.set_u_start(u_opt_ph)
+    
+    # update power prediction for debugging purposes 
+    P_pred.append(P_pred_ph[0])
+    Tz_pred.append(Tz_pred_ph[0])
     ### advance building simulation by one step
     u_traj = np.transpose(np.vstack(([ts,te],[uTSet, uTSet])))
     input_object = ("TSetCoo",u_traj)
@@ -227,7 +239,9 @@ while ts<end:
     u_opt.append(uTSet)
 
 final = {'u_opt':u_opt,
-        't_opt':t_opt}
+        't_opt':t_opt,
+        'power_predicted':P_pred,
+        'Tz_predicted':Tz_pred}
 
 with open('u_opt.json', 'w') as outfile:
     json.dump(final, outfile)

@@ -46,13 +46,13 @@ lo=4
 # zone
 Tz_data = prepare_zone_data(data,lz,lo)
 Tz_data['mz'] = data['mass_flow']
-Tz_data['Tsa'] = 13#data['T_sa'] - 273.15
+Tz_data['Tsa'] = data['T_sa'] - 273.15
 Tz_data.dropna(inplace=True)
 data=Tz_data
 #print(Tz_data['Tsa'])
 
 # split training and testing
-ratio = 0.8
+ratio = 0.75
 n_train = int(ratio*len(data))
 data_train = data.iloc[:n_train,:]
 data_test = data.iloc[n_train:,:]
@@ -100,7 +100,7 @@ def func_TZone(x,alpha1,alpha2,alpha3,alpha4,beta1,beta2,beta3,beta4,gamma):
 x_train = data_train[['Tz_4','Tz_3','Tz_2','Tz_1', 'To_4','To_3','To_2','To_1', 'mz', 'Tsa']].values
 y_train = data_train['Tz'].values
 
-popt,pcov = curve_fit(func_TZone,x_train,y_train)
+popt,pcov = curve_fit(func_TZone,x_train,y_train,bounds=([-np.inf]*8+[0.1],[np.inf]*9))
 ypred_train = func_TZone(x_train,*popt)
 
 # test on testing data
