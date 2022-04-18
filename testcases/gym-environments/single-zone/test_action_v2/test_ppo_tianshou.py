@@ -151,7 +151,7 @@ def test_ppo(args):
                     vf_coef=args.vf_coef, 
                     ent_coef=args.ent_coef,
                     reward_normalization=args.rew_norm, 
-                    action_scaling=False, # auto-scale action to [-1, 1], which is not necessary 
+                    action_scaling=True, # weahter to map action from range [-1,1] to range[action-space.low, action_spaces.high]
                     action_bound_method=args.bound_action_method,
                     lr_scheduler=lr_scheduler, 
                     action_space=env.action_space,
@@ -216,13 +216,13 @@ def test_ppo(args):
         print(obs_mean)
         print(obs_var)
         # save data
-        np.save(os.path.join(args.logdir, args.task, 'his_act.npy'),buffer._meta.__dict__['act'])
-        np.save(os.path.join(args.logdir, args.task, 'his_obs.npy'),buffer._meta.__dict__['obs'])
-        np.save(os.path.join(args.logdir, args.task, 'his_rew.npy'),buffer._meta.__dict__['rew'])
+        np.save(os.path.join(args.logdir, args.task, 'his_act.npy'),policy.map_action(buffer.act)) 
+        np.save(os.path.join(args.logdir, args.task, 'his_obs.npy'),buffer.obs)
+        np.save(os.path.join(args.logdir, args.task, 'his_rew.npy'),buffer.rew)
         np.save(os.path.join(args.logdir, args.task, 'obs_mean.npy'),obs_mean)
         np.save(os.path.join(args.logdir, args.task, 'obs_var.npy'),obs_var)
         rew = result["rews"].mean()
-        print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
+        print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')    
 
     watch()
 
@@ -233,8 +233,10 @@ def trainable_function(config, reporter):
         args.weight_energy = config['weight_energy']
         args.lr = config['lr']
         args.batch_size = config['batch_size']
-        args.n_hidden_layer = config['n_hidden_layer']
+        args.n_hidden_layers = config['n_hidden_layers']
         args.buffer_size = config['buffer_size']
+        args.hidden_sizes=[256]*args.n_hidden_layers  # baselines [32, 32]
+        args.step_per_collect = config['step_per_collect']
         test_ppo(args)
 
         # a fake traing score to stop current simulation based on searched parameters
@@ -255,19 +257,18 @@ if __name__ == '__main__':
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--step-per-collect', type=int, default=48)#!!!!!!!!!!!!!
     parser.add_argument('--repeat-per-collect', type=int, default=10)
     parser.add_argument('--training-num', type=int, default=1)
     parser.add_argument('--test-num', type=int, default=1)
     # ppo special
-    parser.add_argument('--rew-norm', type=int, default=True)
+    parser.add_argument('--rew-norm', type=int, default=False)
     # In theory, `vf-coef` will not make any difference if using Adam optimizer.
     parser.add_argument('--vf-coef', type=float, default=0.25)
     parser.add_argument('--ent-coef', type=float, default=0.0)
     parser.add_argument('--gae-lambda', type=float, default=0.95)
     # bound action to [-1,1] using different methods. empty means no bounding
     parser.add_argument('--bound-action-method', type=str, default="clip")
-    parser.add_argument('--lr-decay', type=int, default=True)
+    parser.add_argument('--lr-decay', type=int, default=False)
     parser.add_argument('--max-grad-norm', type=float, default=0.5)
     parser.add_argument('--eps-clip', type=float, default=0.2)
     parser.add_argument('--dual-clip', type=float, default=None)
@@ -293,8 +294,7 @@ if __name__ == '__main__':
     parser.add_argument('--buffer-size', type=int, default=4096)
 
     args = parser.parse_args()
-    args.hidden_sizes=[256]*args.n_hidden_layers  # baselines [32, 32]
-
+ 
     # Define Ray tuning experiments
     tune.register_trainable("ppo", trainable_function)
     ray.init()
@@ -305,12 +305,13 @@ if __name__ == '__main__':
             "run": "ppo",
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
-                "epoch": tune.grid_search([500,1000]),
+                "epoch": tune.grid_search([500]),
                 "weight_energy": tune.grid_search([100.]),
-                "lr": tune.grid_search([1e-04]),
-                "batch_size": tune.grid_search([64]),
-                "n_hidden_layer": tune.grid_search([3]),
-                "buffer_size": tune.grid_search([2048])
+                "lr": tune.grid_search([1e-03, 1e-04, 1e-05]),
+                "batch_size": tune.grid_search([64, 256, 512]),
+                "n_hidden_layers": tune.grid_search([3]),
+                "buffer_size": tune.grid_search([4096]),
+                "step_per_collect": tune.grid_search([512, 512*2, 512*3])
             },
             "local_dir": "/mnt/shared",
         }
