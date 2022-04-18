@@ -304,7 +304,7 @@ if __name__ == '__main__':
                 "batch_size": tune.grid_search([64]),
                 "n_hidden_layer": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([100000]),
-                "reward_scale": tune.grid_search([0.1, 3, 1, 10, 30])
+                "reward_scale": tune.grid_search([1, 10, 30])
             },
             "local_dir": "/mnt/shared",
         }

@@ -34,7 +34,7 @@ def find_all_files(root_dir, algor, pattern, task='JModelicaCSSingleZoneEnv-pric
 
     return file_list
 
-def convert_tfevents_to_csv(root_dir, algor, task, refresh=False):
+def convert_tfevents_to_csv(root_dir, algor, task, plot_test=True, refresh=False):
     """Recursively convert test/rew from all tfevent file under root_dir to csv.
 
     This function assumes that there is at most one tfevents file in each directory
@@ -45,10 +45,11 @@ def convert_tfevents_to_csv(root_dir, algor, task, refresh=False):
     tfevent_files = find_all_files(root_dir, algor, re.compile(r"^.*tfevents.*$"), task)
     print(f"Converting {len(tfevent_files)} tfevents files under {root_dir} ...")
     result = {}
+    outfile_name = 'test_rew.csv' if plot_test else 'train_rew.csv'
     with tqdm.tqdm(tfevent_files) as t:
         for tfevent_file in t:
             t.set_postfix(file=tfevent_file)
-            output_file = os.path.join(os.path.split(tfevent_file)[0], "test_rew.csv")
+            output_file = os.path.join(os.path.split(tfevent_file)[0], outfile_name)
             if os.path.exists(output_file) and not refresh:
                 content = list(csv.reader(open(output_file, "r")))
                 if content[0] == ["env_step", "rew", "time"]:
@@ -60,7 +61,8 @@ def convert_tfevents_to_csv(root_dir, algor, task, refresh=False):
             ea.Reload()
             initial_time = ea._first_event_timestamp
             content = [["env_step", "rew", "time"]]
-            for test_rew in ea.scalars.Items("test/reward"):
+            rewards_tag = "test/reward" if plot_test else "train/reward"
+            for test_rew in ea.scalars.Items(rewards_tag):
                 content.append(
                     [
                         round(test_rew.step, 4),
@@ -72,10 +74,10 @@ def convert_tfevents_to_csv(root_dir, algor, task, refresh=False):
             result[output_file] = content
     return result
 
-def plot_reward(csv_files):
+def plot_reward(csv_files, plot_test=True):
     # assume this is only one .csv file
     keys = [key for key in csv_files.keys()]
-
+    plot_tag = "test_" if plot_test else "train_"
     for key in keys:
         dir_name = os.path.dirname(os.path.dirname(os.path.dirname(key)))
         print(dir_name)
@@ -86,12 +88,13 @@ def plot_reward(csv_files):
         plt.grid()
         plt.xlabel("step")
         plt.ylabel("reward")
-        plt.savefig(os.path.join(dir_name, "rewards.pdf"))
-        plt.savefig(os.path.join(dir_name, "rewards.png"))
+        plt.savefig(os.path.join(dir_name, plot_tag+"rewards.pdf"))
+        plt.savefig(os.path.join(dir_name, plot_tag+"rewards.png"))
         plt.close()
 
         # move test_rew.csv to dirname
-        des_path = os.path.join(dir_name, 'test_rew.csv')
+        rew_file = "test_rew.csv" if plot_test else "train_rew.csv"
+        des_path = os.path.join(dir_name, rew_file)
         if os.path.exists(des_path):
             os.remove(des_path)
         os.rename(key, des_path)
@@ -196,8 +199,11 @@ if __name__ == "__main__":
     parser.add_argument('--root-dir', type=str)
     parser.add_argument('--algor', type=str)
     parser.add_argument('--task', type=str)
+    parser.add_argument('--plot-test', type=int)
     args = parser.parse_args()
-
-    csv_files = convert_tfevents_to_csv(args.root_dir, args.algor, args.task, args.refresh)
-    plot_reward(csv_files)
+    print(args.plot_test)
+    plot_test = bool(args.plot_test)
+    print(plot_test)
+    csv_files = convert_tfevents_to_csv(args.root_dir, args.algor, args.task, plot_test, args.refresh)
+    plot_reward(csv_files, plot_test)
     plot_final_epoch(args.root_dir, args.algor, args.task)
