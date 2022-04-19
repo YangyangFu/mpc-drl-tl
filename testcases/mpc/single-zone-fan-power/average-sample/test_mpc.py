@@ -115,7 +115,7 @@ te_warm = ts + 1*3600
 
 ### 2- Initialize MPC case 
 dt = 15*60.
-PH = 48
+PH = 4
 CH = 1
 with open('zone_arx.json') as f:
   parameters_zone = json.load(f)

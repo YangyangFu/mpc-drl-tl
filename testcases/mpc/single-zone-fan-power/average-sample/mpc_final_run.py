@@ -17,7 +17,7 @@ period = nday*24*3600.
 te = ts + period
 dt = 15*60.
 nsteps_h = int(3600//dt)
-PH=48
+PH=4
 result_folder = "./PH="+str(PH)+"/"
 ##########################################
 ##          Baseline Simulation
