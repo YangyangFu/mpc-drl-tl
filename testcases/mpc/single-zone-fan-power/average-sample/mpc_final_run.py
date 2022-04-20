@@ -17,6 +17,8 @@ period = nday*24*3600.
 te = ts + period
 dt = 15*60.
 nsteps_h = int(3600//dt)
+PH=4
+result_folder = "./PH="+str(PH)+"/"
 ##########################################
 ##          Baseline Simulation
 ## =========================================
@@ -135,8 +137,8 @@ plt.grid(True)
 plt.xticks(xticks,xticks_label)
 plt.ylabel('Total [W]')
 plt.legend()
-plt.savefig('mpc-vs-rbc.pdf')
-plt.savefig('mpc-vs-rbc.png')
+plt.savefig(result_folder+'mpc-vs-rbc.pdf')
+plt.savefig(result_folder+'mpc-vs-rbc.png')
 
 ## some KPIs
 # save baseline and mpc measurements from simulation
@@ -219,5 +221,5 @@ comparison = {'base': {'energy': list(metrics_base['energy'].sum()),
                       'max_temp_violation': list(metrics_mpc['temp_violation'].max())}
               }
 
-with open('mpc-vs-rbc.json', 'w') as outfile:
+with open(result_folder+'mpc-vs-rbc.json', 'w') as outfile:
     json.dump(comparison, outfile)
