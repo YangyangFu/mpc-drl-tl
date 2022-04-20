@@ -151,7 +151,7 @@ def test_ppo(args):
                     vf_coef=args.vf_coef, 
                     ent_coef=args.ent_coef,
                     reward_normalization=args.rew_norm, 
-                    action_scaling=True, # weahter to map action from range [-1,1] to range[action-space.low, action_spaces.high]
+                    action_scaling=False, # weahter to map action from range [-1,1] to range[action-space.low, action_spaces.high]
                     action_bound_method=args.bound_action_method,
                     lr_scheduler=lr_scheduler, 
                     action_space=env.action_space,
@@ -261,14 +261,14 @@ if __name__ == '__main__':
     parser.add_argument('--training-num', type=int, default=1)
     parser.add_argument('--test-num', type=int, default=1)
     # ppo special
-    parser.add_argument('--rew-norm', type=int, default=False)
+    parser.add_argument('--rew-norm', type=int, default=True)
     # In theory, `vf-coef` will not make any difference if using Adam optimizer.
     parser.add_argument('--vf-coef', type=float, default=0.25)
     parser.add_argument('--ent-coef', type=float, default=0.0)
     parser.add_argument('--gae-lambda', type=float, default=0.95)
     # bound action to [-1,1] using different methods. empty means no bounding
     parser.add_argument('--bound-action-method', type=str, default="clip")
-    parser.add_argument('--lr-decay', type=int, default=False)
+    parser.add_argument('--lr-decay', type=int, default=True)
     parser.add_argument('--max-grad-norm', type=float, default=0.5)
     parser.add_argument('--eps-clip', type=float, default=0.2)
     parser.add_argument('--dual-clip', type=float, default=None)
@@ -307,11 +307,12 @@ if __name__ == '__main__':
             "config": {
                 "epoch": tune.grid_search([500]),
                 "weight_energy": tune.grid_search([100.]),
-                "lr": tune.grid_search([1e-03, 1e-04, 1e-05]),
-                "batch_size": tune.grid_search([64, 256, 512]),
+                "lr": tune.grid_search([1e-04]), #[1e-03]
+                "batch_size": tune.grid_search([64]),
                 "n_hidden_layers": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([4096]),
-                "step_per_collect": tune.grid_search([512, 512*2, 512*3])
+                "step_per_collect": tune.grid_search([64]), #[256, 512]
+                "eps_clip": tune.grid_search([0.1, 0.2])
             },
             "local_dir": "/mnt/shared",
         }
