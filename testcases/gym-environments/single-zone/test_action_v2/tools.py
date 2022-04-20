@@ -127,9 +127,9 @@ def plot_final_epoch(root_dir, algor, task):
         T_up = [30.0 for i in range(len(TRoo_obs))]
         T_low = [12.0 for i in range(len(TRoo_obs))]
         for i in range(ndays):
-            for j in range((19-8)*4):
-                T_up[i*24*4 + (j) + 4*7] = 26.0
-                T_low[i*24*4 + (j) + 4*7] = 22.0
+            for j in range((18-8)*4):
+                T_up[i*24*4 + (j) + 4*8] = 26.0
+                T_low[i*24*4 + (j) + 4*8] = 22.0
 
         # power 
         power_obs = [p*np.sqrt(obs_var[4])+obs_mean[4] for p in obss[:,4]]
