@@ -232,6 +232,7 @@ def trainable_function(config, reporter):
         args.n_hidden_layers = config['n_hidden_layers']
         args.buffer_size = config['buffer_size']
         args.reward_scale = config['reward_scale']
+        args.seed = config['seed']
         args.hidden_sizes = [256]*args.n_hidden_layers  # baselines [32, 32]
         args.actor_lr = args.lr
         args.critic_lr = args.lr
@@ -300,11 +301,12 @@ if __name__ == '__main__':
             "config": {
                 "epoch": tune.grid_search([500]),
                 "weight_energy": tune.grid_search([100.]),
-                "lr": tune.grid_search([1e-04, 1e-03, 3e-03]),
+                "lr": tune.grid_search([3e-03]),
                 "batch_size": tune.grid_search([64]),
                 "n_hidden_layers": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([100000]),
-                "reward_scale": tune.grid_search([1, 10, 30])
+                "reward_scale": tune.grid_search([1]),
+                "seed": tune.grid_search([0,1,2,3,4,5])
             },
             "local_dir": "/mnt/shared",
         }
