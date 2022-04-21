@@ -7,5 +7,5 @@ exec docker run \
 	  -v `pwd`:/mnt/shared \
 	  -i \
       -t \
-	  mpcdrl_debug /bin/bash -c "cd /mnt/shared && python /mnt/shared/plot_rewards.py --root-dir ./v2_action"
+	  mpcdrl_debug /bin/bash -c "cd /mnt/shared && python /mnt/shared/plot_rewards.py --root-dir ./v1_action"
 exit $
