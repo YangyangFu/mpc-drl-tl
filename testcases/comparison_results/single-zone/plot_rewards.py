@@ -1,13 +1,24 @@
 import pandas as pd
 import re
 import os
-import csv 
 import numpy as np
 import matplotlib 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import json 
+import argparse
+
+def find_all_algorithms(root_dir):
+    """Find all DRL algorithms in the root_dir"""
+    algors = []
+    for it in os.scandir(root_dir):
+        if it.is_dir():
+            # assume the folder follows the convention: algor_seedXXXX
+            algor = it.name.split('_')[0]
+            if algor not in algors:
+                algors.append(algor)
+    return algors
 
 def find_all_files(root_dir, algors, pattern):
     """Find all files under root_dir according to relative pattern."""
@@ -92,42 +103,50 @@ COLORS = (
     ]
 )
 
-## load mpc/rbc rewards
-with open('mpc_rewards.json') as f:
-    mpc_rewards = json.load(f)
-mpc = mpc_rewards['mpc']['rewards'][0]
-rbc = mpc_rewards['base']['rewards'][0]
 
-## read sac results
-root_dir = './v2_action'
-algors = ['sac']
-drl_rewards_files = find_all_files(root_dir, algors, re.compile(".*test_rew.csv"))
-drl_all = merge_csv(drl_rewards_files, algors)
-print(drl_all.head())
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--root-dir', type=str, help="Specify current root directory")
+    args = parser.parse_args()
 
-## plot rewards
-sns.set_theme() 
-sns.set(style = "darkgrid") #"darkgrid", "whitegrid", "dark", "white", 
-sns.set(font_scale = 1.5)
-sns.color_palette("bright") #"pastel", "muted", "bright"
+    ## load mpc/rbc rewards
+    with open('mpc_rewards.json') as f:
+        mpc_rewards = json.load(f)
+    mpc = mpc_rewards['mpc']['rewards'][0]
+    rbc = mpc_rewards['base']['rewards'][0]
 
-# set x ticks
-xticks = [drl_all.index[i] for i in range(0, len(drl_all.index), 100)]
-xticklabels = [int(drl_all.index[i]/672) for i in range(0, len(drl_all.index), 100)]
-fig, ax = plt.subplots(figsize=(12, 9))
-ax.plot(drl_all.index, [rbc]*len(drl_all.index), lw=1, c= COLORS[0], label='RBC')
-ax.plot(drl_all.index, [mpc]*len(drl_all.index), lw=1, c= COLORS[1], label='MPC')
-for i, algor in enumerate(algors):
-    ax.plot(drl_all.index, drl_all[algor,'mean'], lw=1, c= COLORS[i+2], label=algor.upper())
-    ax.fill_between(drl_all.index, 
-                    drl_all[algor,'mean']+drl_all[algor,'std'],
-                    drl_all[algor,'mean']-drl_all[algor,'std'], 
-                    alpha=.4, 
-                    fc=COLORS[i+2], 
-                    lw=0)
-ax.set_xlabel('Epoch')
-ax.set_ylabel('Rewards')
-ax.set_xticks(xticks, xticklabels)
-plt.legend(loc=4)
-plt.savefig(os.path.join(root_dir, 'rewards.png'))
-plt.savefig(os.path.join(root_dir, 'rewards.pdf'))
+    ## read DRL results
+    root_dir = args.root_dir
+    algors = find_all_algorithms(root_dir)
+    print(algors)
+    drl_rewards_files = find_all_files(root_dir, algors, re.compile(".*test_rew.csv"))
+    drl_all = merge_csv(drl_rewards_files, algors)
+    print(drl_all.head())
+
+    ## plot rewards
+    sns.set_theme() 
+    sns.set(style = "darkgrid") #"darkgrid", "whitegrid", "dark", "white", 
+    sns.set(font_scale = 1.5)
+    sns.color_palette("bright") #"pastel", "muted", "bright"
+
+    # set x ticks
+    xticks = [drl_all.index[i] for i in range(0, len(drl_all.index), 100)]
+    xticklabels = [int(drl_all.index[i]/672) for i in range(0, len(drl_all.index), 100)]
+    fig, ax = plt.subplots(figsize=(12, 9))
+    ax.plot(drl_all.index, [rbc]*len(drl_all.index), lw=1, c= COLORS[0], label='RBC')
+    ax.plot(drl_all.index, [mpc]*len(drl_all.index), lw=1, c= COLORS[1], label='MPC')
+    for i, algor in enumerate(algors):
+        ax.plot(drl_all.index, drl_all[algor,'mean'], lw=1, c= COLORS[i+2], label=algor.upper())
+        ax.fill_between(drl_all.index, 
+                        drl_all[algor,'mean']+drl_all[algor,'std'],
+                        drl_all[algor,'mean']-drl_all[algor,'std'], 
+                        alpha=.4, 
+                        fc=COLORS[i+2], 
+                        lw=0)
+    ax.set_xlabel('Epoch')
+    ax.set_ylabel('Rewards')
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xticklabels)
+    plt.legend(loc=4)
+    plt.savefig(os.path.join(root_dir, 'rewards.png'))
+    plt.savefig(os.path.join(root_dir, 'rewards.pdf'))

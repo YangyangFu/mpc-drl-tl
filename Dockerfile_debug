@@ -1,6 +1,7 @@
 FROM mpcdrl
 
 USER root
+RUN conda install seaborn
 
 WORKDIR $HOME
 COPY ./testcases/gym-environments/single-zone/gym_singlezone_jmodelica $HOME/github/testcases/gym-environments/single-zone/gym_singlezone_jmodelica
