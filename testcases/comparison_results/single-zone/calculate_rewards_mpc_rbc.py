@@ -67,7 +67,7 @@ hvac = load_fmu('SingleZoneFCU.fmu')
 
 ## fmu settings
 options = hvac.simulate_options()
-options['ncp'] = 15
+options['ncp'] = 100
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
@@ -101,7 +101,7 @@ hvac.reset()
 
 ## fmu settings
 options = hvac.simulate_options()
-options['ncp'] = 15
+options['ncp'] = 100
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
