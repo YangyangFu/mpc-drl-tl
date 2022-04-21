@@ -144,7 +144,7 @@ def plot_final_epoch(root_dir, algor, task):
         plt.grid()
 
         plt.subplot(412)
-        plt.plot(t, [(acts[i]+1)/2. for i in range(len(t))])
+        plt.plot(t, [acts[i]/50. for i in range(len(t))])
         plt.ylabel("Speed")
         #plt.xlabel("Time Step")
         plt.grid()
