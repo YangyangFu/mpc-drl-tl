@@ -226,7 +226,7 @@ def trainable_function(config, reporter):
         args.weight_action = config['weight_action']
         args.lr = config['lr']
         args.batch_size = config['batch_size']
-        args.n_hidden_layer = config['n_hidden_layer']
+        args.n_hidden_layers = config['n_hidden_layer']
         args.buffer_size = config['buffer_size']
         args.seed = config['seed']
         test_dqn(args)
@@ -292,12 +292,12 @@ if __name__ == '__main__':
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
                 "epoch": tune.grid_search([500]),
-                "weight_action": tune.grid_search([1, 5, 10, 15, 20]),
+                "weight_action": tune.grid_search([10]),
                 "lr": tune.grid_search([1e-04]),
                 "batch_size": tune.grid_search([256]),
-                "n_hidden_layer": tune.grid_search([3]),
+                "n_hidden_layers": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([4096*3]),
-                "seed":tune.grid_search([0])
+                "seed":tune.grid_search([0, 1, 2, 3, 4, 5])
             },
             "local_dir": "/mnt/shared",
         }
