@@ -308,11 +308,11 @@ if __name__ == '__main__':
                 "epoch": tune.grid_search([500]),
                 "weight_energy": tune.grid_search([100.]),
                 "lr": tune.grid_search([1e-04]), #[1e-03]
-                "batch_size": tune.grid_search([64]),
+                "batch_size": tune.grid_search([32]),
                 "n_hidden_layers": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([4096]),
-                "step_per_collect": tune.grid_search([64]), #[256, 512]
-                "eps_clip": tune.grid_search([0.1, 0.2])
+                "step_per_collect": tune.grid_search([48, 96,192]), #[256, 512]
+                "eps_clip": tune.grid_search([0.2])
             },
             "local_dir": "/mnt/shared",
         }
