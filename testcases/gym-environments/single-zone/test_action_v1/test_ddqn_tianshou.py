@@ -226,7 +226,7 @@ def trainable_function(config, reporter):
         args.weight_action = config['weight_action']
         args.lr = config['lr']
         args.batch_size = config['batch_size']
-        args.n_hidden_layers = config['n_hidden_layer']
+        args.n_hidden_layers = config['n_hidden_layers']
         args.buffer_size = config['buffer_size']
         args.seed = config['seed']
         test_dqn(args)
