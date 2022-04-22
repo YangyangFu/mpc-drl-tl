@@ -311,7 +311,7 @@ if __name__ == '__main__':
                 "batch_size": tune.grid_search([32]),
                 "n_hidden_layers": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([4096]),
-                "step_per_collect": tune.grid_search([48, 96,192]), #[256, 512]
+                "step_per_collect": tune.grid_search([96*3, 96*4, 96*5, 96*6, 96*7, 96*14]), #[256, 512]
                 "eps_clip": tune.grid_search([0.2])
             },
             "local_dir": "/mnt/shared",
