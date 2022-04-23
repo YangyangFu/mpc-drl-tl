@@ -7,5 +7,5 @@ docker run \
 	-v `pwd`:/mnt/shared \
 	-i \
 	-t \
-	mpcdrl_debug /bin/bash -c \
-	"source activate base && cd /mnt/shared && python2 /mnt/shared/test_mpc.py"  
+	yangyangfu/jmodelica_py2:mpc /bin/bash -c \
+	"cd /mnt/shared && python2 /mnt/shared/test_mpc.py"  
