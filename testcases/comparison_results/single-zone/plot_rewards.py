@@ -147,6 +147,7 @@ if __name__ == "__main__":
     ax.set_ylabel('Rewards')
     ax.set_xticks(xticks)
     ax.set_xticklabels(xticklabels)
+    ax.set_ylim([-3000, 0])
     plt.legend(loc=4)
     plt.savefig(os.path.join(root_dir, 'rewards.png'))
     plt.savefig(os.path.join(root_dir, 'rewards.pdf'))
