@@ -88,41 +88,6 @@ while t < te:
     i += 1
     options['initialize'] = False
 
-################################################
-##           DDQN Final Simulation
-## =============================================
-
-# read optimal control inputs
-acts = np.load('./his_act.npy', allow_pickle=True)
-acts = [act/50. for act in acts]
-
-### 1- Load virtual building model
-hvac.reset()
-
-## fmu settings
-options = hvac.simulate_options()
-options['ncp'] = 100
-options['initialize'] = True
-options['result_handling'] = 'memory'
-options['filter'] = measurement_names
-res_ddqn = []
-hvac.set("zon.roo.T_start", 273.15+25)
-# main loop - do step
-t = ts
-i = 0
-while t < te:
-    u = acts[i]
-    hvac.set("uFan", u)
-    ires = hvac.simulate(start_time=t,
-                         final_time=t+dt,
-                         options=options)
-    res_ddqn.append(ires)
-
-    t += dt
-    i += 1
-    options['initialize'] = False
-
-
 ################################################################
 ##           Compare MPC/DRL with Baseline
 ## =============================================================
@@ -139,11 +104,6 @@ for name in measurement_names:
     for ires in res_mpc:
       value_name_mpc += list(ires[name])
     measurement_mpc[name] = np.array(value_name_mpc)
-    # get ddqn 
-    value_name_ddqn = []
-    for ires in res_ddqn:
-      value_name_ddqn += list(ires[name])
-    measurement_ddqn[name] = np.array(value_name_ddqn)
 
 ## simulate baseline
 occ_start = 8
@@ -170,7 +130,6 @@ def interpolate_dataframe(df,new_index):
 
 measurement_base = pd.DataFrame(measurement_base,index=measurement_base['time'])
 measurement_mpc = pd.DataFrame(measurement_mpc,index=measurement_mpc['time'])
-measurement_ddqn = pd.DataFrame(measurement_ddqn,index=measurement_ddqn['time'])
 
 # shouldn't use mean value as the DRL use instant value
 #tim_intp_60 = np.arange(ts,te+1,60)
@@ -182,7 +141,6 @@ measurement_ddqn = pd.DataFrame(measurement_ddqn,index=measurement_ddqn['time'])
 tim_intp = np.arange(ts,te+1,dt)
 measurement_base = interpolate_dataframe(measurement_base[['PTot','TRoo', 'fcu.uFan']],tim_intp)
 measurement_mpc = interpolate_dataframe(measurement_mpc[['PTot','TRoo', 'fcu.uFan']],tim_intp)
-measurement_ddqn = interpolate_dataframe(measurement_ddqn[['PTot','TRoo', 'fcu.uFan']],tim_intp)
 
 def rw_func(cost, penalty, delta_action):
 
@@ -238,23 +196,25 @@ def get_rewards(u, Ptot,TZone,price_tou):
 #================================================================================
 rewards_base = get_rewards(measurement_base['fcu.uFan'].values, measurement_base['PTot'].values,measurement_base['TRoo'].values,price_tou)
 rewards_mpc = get_rewards(measurement_mpc['fcu.uFan'].values, measurement_mpc['PTot'].values,measurement_mpc['TRoo'].values,price_tou)
-rewards_ddqn = get_rewards(measurement_ddqn['fcu.uFan'].values, measurement_ddqn['PTot'].values,measurement_ddqn['TRoo'].values,price_tou)
 
 rewards_base = pd.DataFrame(rewards_base,columns=[['ene_cost','penalty', 'delta_action', 'rewards']])
 rewards_mpc = pd.DataFrame(rewards_mpc,columns=[['ene_cost','penalty','delta_action', 'rewards']])
-rewards_ddqn = pd.DataFrame(rewards_ddqn,columns=[['ene_cost','penalty','delta_action', 'rewards']])
 
 # get rewards - DRL - we can either read from training results or 
 # recalculate using the method for mpc and baseline (very time consuming for multi-epoch training)
-print("ddqn: " + str(rewards_ddqn['rewards'].sum()))
+### ===============
 mpc_rbc_rewards={'base': {'rewards':list(rewards_base['rewards'].sum()),
                         'ene_cost': list(rewards_base['ene_cost'].sum()),
                         'total_temp_violation': list(rewards_base['penalty'].sum()/4),
-                        'max_temp_violation': list(rewards_base['penalty'].max())},
+                        'max_temp_violation': list(rewards_base['penalty'].max()),
+                        'temp_violation_squared': list((rewards_base['penalty']**2).sum()),
+                        'delta_action_sqaured': list((rewards_base['delta_action']**2).sum())},
                  'mpc': {'rewards': list(rewards_mpc['rewards'].sum()),
                           'ene_cost': list(rewards_mpc['ene_cost'].sum()),
                           'total_temp_violation': list(rewards_mpc['penalty'].sum()/4),
-                          'max_temp_violation': list(rewards_mpc['penalty'].max())},
+                          'max_temp_violation': list(rewards_mpc['penalty'].max()),
+                          'temp_violation_squared': list((rewards_mpc['penalty']**2).sum()),
+                          'delta_action_sqaured': list((rewards_mpc['delta_action']**2).sum())},
                 }
 with open('mpc_rewards.json', 'w') as outfile:
     json.dump(mpc_rbc_rewards, outfile)
