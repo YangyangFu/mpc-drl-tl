@@ -44,16 +44,14 @@ def make_building_env(args):
     alpha = 1
     weight_energy = args.weight_energy #5.e4
     weight_temp = args.weight_temp #500.
-    weight_action = args.weight_action
 
-    def rw_func(cost, penalty, delta_action):
+    def rw_func(cost, penalty):
         if ( not hasattr(rw_func,'x')  ):
             rw_func.x = 0
             rw_func.y = 0
 
         cost = cost[0]
         penalty = penalty[0]
-        delta_action = delta_action[0]
         if rw_func.x > cost:
             rw_func.x = cost
         if rw_func.y > penalty:
@@ -61,7 +59,7 @@ def make_building_env(args):
 
         #print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
         #res = (penalty * 500.0 + cost*5e4)/1000.0#!!!!!!!!!!!!!!!!!!
-        res = -penalty*penalty * weight_temp + cost*weight_energy - delta_action*delta_action*weight_action
+        res = -penalty*penalty * weight_temp + cost*weight_energy
         
         return res
 
@@ -251,7 +249,7 @@ if __name__ == '__main__':
     max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task', type=str, default='JModelicaCSSingleZoneEnv-action-v2')
+    parser.add_argument('--task', type=str, default='JModelicaCSSingleZoneEnv-price-v2')
     parser.add_argument('--time-step', type=float, default=time_step)
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
     parser.add_argument('--seed', type=int, default=0)
@@ -300,12 +298,12 @@ if __name__ == '__main__':
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
                 "epoch": tune.grid_search([500]),
-                "weight_energy": tune.grid_search([100.]),
+                "weight_energy": tune.grid_search([10.]),
                 "lr": tune.grid_search([3e-03]),
                 "batch_size": tune.grid_search([64]),
                 "n_hidden_layers": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([100000]),
-                "reward_scale": tune.grid_search([0.1, 1]),
+                "reward_scale": tune.grid_search([1]),
                 "seed": tune.grid_search([0,1,2,3,4,5])
             },
             "local_dir": "/mnt/shared",
