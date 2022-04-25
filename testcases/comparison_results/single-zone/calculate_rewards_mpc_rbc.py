@@ -51,10 +51,12 @@ res_base = baseline.simulate(start_time = ts,
 ################################################
 ##           MPC Final Simulation
 ## =============================================
-
+# Which MPC rewards
+MPC = "R1"
+weights = [10., 1., 0.] if MPC=="R1" else [100., 1., 10.]
 # read optimal control inputs
-with open('./mpc/u_opt.json') as f:
-  opt = json.load(f)
+with open('./mpc/'+MPC+'/u_opt.json') as f:
+    opt = json.load(f)
 
 t_opt = opt['t_opt']
 u_opt = opt['u_opt']
@@ -144,8 +146,8 @@ measurement_mpc = interpolate_dataframe(measurement_mpc[['PTot','TRoo', 'fcu.uFa
 
 def rw_func(cost, penalty, delta_action):
 
-    res = -penalty*penalty - cost * \
-        100 - delta_action*delta_action*10
+    res = - weights[0]*cost - weights[1]*penalty*penalty \
+        - delta_action*delta_action*weights[2]
 
     return res
 
@@ -216,6 +218,6 @@ mpc_rbc_rewards={'base': {'rewards':list(rewards_base['rewards'].sum()),
                           'temp_violation_squared': list((rewards_mpc['penalty']**2).sum()),
                           'delta_action_sqaured': list((rewards_mpc['delta_action']**2).sum())},
                 }
-with open('mpc_rewards.json', 'w') as outfile:
+with open('./mpc/'+MPC+'/mpc_rewards.json', 'w') as outfile:
     json.dump(mpc_rbc_rewards, outfile)
 
