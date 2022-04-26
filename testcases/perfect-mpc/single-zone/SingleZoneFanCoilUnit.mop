@@ -716,8 +716,13 @@ First implementation.
 
     optimization FanControlMPC(objectiveIntegrand=10*uFan, 
                 startTime=203*24*3600, finalTime = 204*24*3600)
-      extends FanControlMPCModel(uFan(min=0, max=1), TRoo(min=273.15+22, max=273.15+26));
+      FanControlMPCModel hvac(uFan(free = true, initialGuess = 0, min=0, max=1));
 
+      input Real uFan = hvac.uFan;
+      
+      constraint
+        hvac.TRoo <= 273.15+26;
+        hvac.TRoo >= 273.15+22;
     end FanControlMPC;
   end TestCases;
 

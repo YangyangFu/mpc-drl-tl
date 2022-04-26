@@ -19,33 +19,12 @@ from pyjmi.optimization.casadi_collocation import BlockingFactors
 
 ### 1. Compute initial guess trajectories by means of simulation
 # Locate the Modelica and Optimica code
-file_path = "./SingleZoneFanCoilUnit.mop"
-
-# Compile and load the model used for simulation
-#sim_fmu = compile_fmu("SingleZoneFanCoilUnit.TestCases.FanControlMPCModel", file_path,
-#                        compiler_options={"state_initial_equations": True})
-sim_fmu = "SingleZoneFanCoilUnit_TestCases_FanControlMPCModel.fmu"
-sim_model = load_fmu(sim_fmu)
-
-# Define stationary point A and set initial values and inputs
-# TODO: check if we can use get_fmu_state or set_fmu_state here instead of manually extrac all state points
-sim_model.get("zon.roo.air.vol.dynBal.U")
-U_0_A = sim_model.get("zon.roo.air.vol.dynBal.U")[0]
-fan_0_A = sim_model.get("fcu.fan.filter.x[2]")[0]
-
-states = sim_model.get_states_list()
-state_names = [state for state in states]
-print(state_names)
-
-sim_model.set('_start_zon.roo.air.vol.dynBal.U', U_0_A)
-sim_model.set('_start_fcu.fan.filter.x[2]', fan_0_A)
-sim_model.set('uFan', 0.2)
-init_res = sim_model.simulate(start_time=203*24*3600., final_time=204*24*3600.)
+file_path = "./FanControl.mop"
 
 ### 2. Define the optimal control problem and solve it using the MPC class
 # Compile and load optimization problem
-op = transfer_optimization_problem("SingleZoneFanCoilUnit.TestCases.FanControlMPC", file_path,  compiler_log_level="debug")
-
+op = transfer_optimization_problem("FanControl.MinimizeEnergy", file_path,  compiler_log_level="debug")
+print(sssss)
 # Define MPC options
 startTime= 203*24*3600
 sample_period = 900.                           # s

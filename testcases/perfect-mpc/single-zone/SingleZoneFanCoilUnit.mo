@@ -233,7 +233,6 @@ layer-by-layer specifications are (Outside to Inside):
 <p>
 The windows are double pane clear 3.175mm glass with 13mm air gap.
 </p>
-
 <h4>Occupancy schedules</h4>
 <p>
 There is maximum occupancy (two people) from 8am to 6pm each day,
@@ -247,7 +246,6 @@ Both types of loads are at maximum during occupied periods and 0.1 maximum
 during all other times.  The occupied heating and cooling temperature
 setpoints are 21 C and 24 C respectively, while the unoccupied heating
 and cooling temperature setpoints are 15 C and 30 C respectively.
-
 </p>
 <h4>Climate data</h4>
 <p>
@@ -267,26 +265,21 @@ There is a variable speed drive serving the fan motor.  The cooling coil
 is served by chilled water produced by a chiller and the heating coil is
 served by hot water produced by a gas boiler.
 </p>
-
 <p>
 <br>
 </p>
-
 <p>
 <img src=\"../../../doc/images/Schematic.png\"/>
 <figcaption><small>Figure 1: System schematic.</small></figcaption>
 </p>
-
 <p>
 <br>
 </p>
-
 <h4>Equipment specifications and performance maps</h4>
 <p>
 For the fan, the design airflow rate is 0.55 kg/s and design pressure rise is
 185 Pa.  The fan and motor efficiencies are both constant at 0.7.
 The heat from the motor is added to the air stream.
-
 The COP of the chiller is assumed constant at 3.0.  The efficiency of the
 gas boiler is assumed constant at 0.9.
 </p>
@@ -306,29 +299,23 @@ zone occupied heating temperature setpoint.  For cooling, the minimum supply
 air temperature is 12 C and the maximum is the zone occupied cooling
 temperature setpoint.
 </p>
-
 <p>
 <br>
 </p>
-
 <p>
 <img src=\"../../../doc/images/C1.png\"/>
 <figcaption><small>Figure 2: Controller C1.</small></figcaption>
 </p>
-
 <p>
 <br>
 </p>
-
 <p>
 <img src=\"../../../doc/images/ControlSchematic_Ideal.png\" width=600 />
 <figcaption><small>Figure 3: Mapping of PI output to supply air temperature set point and fan speed in controller C1.</small></figcaption>
 </p>
-
 <p>
 <br>
 </p>
-
 <h3>Model IO's</h3>
 <h4>Inputs</h4>
 The model inputs are:
@@ -457,7 +444,6 @@ There is no energy generation or storage on the site.
 <p>
 A moist air model is used, but condensation is not modeled on the cooling coil
 and humidity is not monitored.
-
 </p>
 <h4>Pressure-flow models</h4>
 <p>
@@ -708,17 +694,6 @@ First implementation.
 </html>"));
     end FanControl;
 
-    model FanControlMPCModel
-      "Model construction for optimization"
-      extends SingleZoneFanCoilUnit.TestCases.FanControl;
-
-    end FanControlMPCModel;
-
-    optimization FanControlMPC(objectiveIntegrand=10*uFan, 
-                startTime=203*24*3600, finalTime = 204*24*3600)
-      extends FanControlMPCModel(uFan(min=0, max=1));
-
-    end FanControlMPC;
   end TestCases;
 
   package BaseClasses "Base classes for simple air testcase."

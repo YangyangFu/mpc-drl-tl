@@ -1,0 +1,64 @@
+within ;
+package FanControl
+  model Model
+    Buildings.Fluid.Movers.FlowControlled_m_flow pum(
+      redeclare package Medium = Buildings.Media.Water,
+      m_flow_nominal=0.0282446311858*1000,
+      redeclare
+        Buildings.Fluid.Movers.Data.Pumps.Wilo.CronolineIL80slash220dash4slash4
+        per,
+      addPowerToMedium=false,
+      use_inputFilter=false,
+      X_start={1.0},
+      nominalValuesDefineDefaultPressureCurve=true,
+      dp_nominal=86895)         "Supply fan"
+      annotation (Placement(transformation(extent={{-10,-10},{10,10}},
+          rotation=0,
+          origin={2,0})));
+    Modelica.Blocks.Interfaces.RealOutput P "Electrical power consumed"
+      annotation (Placement(transformation(extent={{100,0},{120,20}})));
+    Modelica.Blocks.Interfaces.RealInput u "Prescribed mass flow rate"
+      annotation (Placement(transformation(extent={{-140,10},{-100,50}})));
+    Modelica.Blocks.Math.Gain gain(k=0.0282446311858*1000)
+      annotation (Placement(transformation(extent={{-60,20},{-40,40}})));
+    Modelica.Fluid.Sources.FixedBoundary boundary(redeclare package Medium =
+          Buildings.Media.Water, nPorts=1)
+      annotation (Placement(transformation(extent={{-100,-20},{-80,0}})));
+    Modelica.Fluid.Sources.FixedBoundary boundary1(redeclare package Medium =
+          Buildings.Media.Water, nPorts=1)
+      annotation (Placement(transformation(extent={{60,-40},{80,-20}})));
+    Buildings.Fluid.FixedResistances.PressureDrop res(
+      redeclare package Medium = Buildings.Media.Water,
+      m_flow_nominal=0.0282446311858*1000,
+      dp_nominal=100000)        "Air system resistance"
+      annotation (Placement(transformation(extent={{-10,-10},{10,10}},
+          rotation=0,
+          origin={32,0})));
+    parameter Real P_ref = 5000;
+  equation
+    connect(pum.P, P) annotation (Line(points={{13,9},{12,9},{12,10},{110,10}},
+          color={0,0,127}));
+    connect(u, gain.u)
+      annotation (Line(points={{-120,30},{-62,30}}, color={0,0,127}));
+    connect(gain.y, pum.m_flow_in)
+      annotation (Line(points={{-39,30},{2,30},{2,12}}, color={0,0,127}));
+    connect(boundary.ports[1], pum.port_a) annotation (Line(points={{-80,-10},{
+            -44,-10},{-44,0},{-8,0}}, color={0,127,255}));
+    connect(pum.port_b, res.port_a)
+      annotation (Line(points={{12,0},{22,0}}, color={0,127,255}));
+    connect(res.port_b, boundary1.ports[1]) annotation (Line(points={{42,0},{88,
+            0},{88,-30},{80,-30}}, color={0,127,255}));
+    annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+          coordinateSystem(preserveAspectRatio=false)));
+  end Model;
+
+
+  optimization MinimizeEnergy(
+                objectiveIntegrand=(P-P_ref)^2,
+                startTime=0,
+                finalTime=100)
+      extends Model(u(free=true, initialGuess=1.0, min=0.5, max=1.0));
+
+  end MinimizeEnergy;
+
+end FanControl;
