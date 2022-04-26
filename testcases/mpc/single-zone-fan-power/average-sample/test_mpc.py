@@ -211,7 +211,7 @@ while ts<end:
         uFan = np.maximum(float(u_opt_ch[0]),0)
 
         # update start points for optimizer using previous optimum value
-        case.set_u_start(u_opt_ph)
+        #case.set_u_start(u_opt_ph)
 
         # update predictions after MPC predictor is called otherwise use measurement 
         print(u_opt_ph, case._autoerror)

@@ -112,11 +112,18 @@ if __name__ == "__main__":
     ## load mpc/rbc rewards
     with open('mpc_rewards.json') as f:
         mpc_rewards = json.load(f)
-    mpc = mpc_rewards['mpc']['rewards'][0]
-    rbc = mpc_rewards['base']['rewards'][0]
+    
+    root_dir = args.root_dir
+    if "DRL-R2" in root_dir:
+        mpc = mpc_rewards['mpc']['rewards'][0]
+        rbc = mpc_rewards['base']['rewards'][0]
+    elif "DRL-R1" in root_dir:
+        mpc = -(10*mpc_rewards['mpc']['ene_cost'][0] + \
+              mpc_rewards['mpc']['temp_violation_squared'][0])
+        rbc = -(10*mpc_rewards['base']['ene_cost'][0] +
+                mpc_rewards['base']['temp_violation_squared'][0])
 
     ## read DRL results
-    root_dir = args.root_dir
     algors = find_all_algorithms(root_dir)
     print(algors)
     drl_rewards_files = find_all_files(root_dir, algors, re.compile(".*test_rew.csv"))
@@ -147,7 +154,13 @@ if __name__ == "__main__":
     ax.set_ylabel('Rewards')
     ax.set_xticks(xticks)
     ax.set_xticklabels(xticklabels)
-    ax.set_ylim([-3000, 0])
+    
+    # SET YLIM
+    if "DRL-R2" in root_dir:
+        ylim = [-3000, 0]
+    elif "DRL-R1" in root_dir:
+        ylim = [-500, 0]
+    ax.set_ylim(ylim)
     plt.legend(loc=4)
     plt.savefig(os.path.join(root_dir, 'rewards.png'))
     plt.savefig(os.path.join(root_dir, 'rewards.pdf'))

@@ -22,7 +22,7 @@ def make_building_env(args):
     n_prev_steps = 4
     simulation_start_time = 201*24*3600.0
     simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
-    log_level = 7
+    log_level = 0
     alpha = 1
     nActions = 51
     weight_energy = args.weight_energy #5.e4
@@ -42,7 +42,7 @@ def make_building_env(args):
             rw_func.y = penalty
 
         print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
-        res = penalty * weight_temp + cost*weight_energy
+        res = -penalty*penalty * weight_temp + cost*weight_energy
         
         return res
 
@@ -225,7 +225,7 @@ def trainable_function(config, reporter):
         args.weight_energy = config['weight_energy']
         args.lr = config['lr']
         args.batch_size = config['batch_size']
-        args.n_hidden_layer = config['n_hidden_layer']
+        args.n_hidden_layers = config['n_hidden_layers']
         args.buffer_size = config['buffer_size']
         args.seed = config['seed']
         test_dqn(args)
@@ -292,9 +292,9 @@ if __name__ == '__main__':
                 "weight_energy": tune.grid_search([10]),
                 "lr": tune.grid_search([1e-04]),
                 "batch_size": tune.grid_search([256]),
-                "n_hidden_layer": tune.grid_search([3]),
+                "n_hidden_layers": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([4096*3]),
-                "seed": tune.grid_search([0,1, 2, 3,4,5,6,7,8,9]),
+                "seed": tune.grid_search([0, 1, 2, 3, 4,5]),
             },
             "local_dir": "/mnt/shared",
         }
