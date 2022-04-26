@@ -11,11 +11,12 @@ matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
 # Import the needed JModelica.org Python methods
-from pymodelica import compile_fmu
-from pyfmi import load_fmu
-from pyjmi import transfer_optimization_problem
-from pyjmi.optimization.mpc import MPC
-from pyjmi.optimization.casadi_collocation import BlockingFactors
+#from pymodelica import compile_fmu
+#from pyfmi import load_fmu
+#from pyjmi import transfer_optimization_problem
+#from pyjmi.optimization.mpc import MPC
+#from pyjmi.optimization.casadi_collocation import BlockingFactors
+from casadi import *
 
 ### 1. Compute initial guess trajectories by means of simulation
 # Locate the Modelica and Optimica code
@@ -23,7 +24,15 @@ file_path = "./FanControl.mop"
 
 ### 2. Define the optimal control problem and solve it using the MPC class
 # Compile and load optimization problem
-op = transfer_optimization_problem("FanControl.MinimizeEnergy", file_path,  compiler_log_level="debug")
+#op = transfer_optimization_problem("FanControl.MinimizeEnergy", file_path,  compiler_log_level="debug")
+fmu = 'FanControl_Model.fmu'
+from zipfile import ZipFile
+sfile = ZipFile(fmu, 'r')
+mfile = sfile.extract('modelDescription.xml', '.')
+ivp = DaeBuilder()
+ivp.parse_fmi('modelDescription.xml')
+ivp.make_explicit()
+
 print(sssss)
 # Define MPC options
 startTime= 203*24*3600
