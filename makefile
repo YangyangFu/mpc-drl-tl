@@ -1,5 +1,6 @@
 IMA_NAME = mpcdrl
 IMA_NAME_D = mpcdrl_debug
+IMA_NAME_PERFECTMPC = mpcdrl_perfect_mpc
 HOST = yangyangfu
 
 DOCKERFILE_DEBUG = Dockerfile_debug
@@ -12,6 +13,9 @@ TAG_CPU_PY2 = cpu_py2
 TAG_CPU_PY3 = cpu_py3
 TAG_GPU_PY2 = gpu_py2
 TAG_GPU_PY3 = gpu_py3
+
+build_perfect_mpc:
+	docker build -f Dockerfile_PERFECTMPC --no-cache --rm -t ${IMA_NAME_PERFECTMPC} .
 
 build_debug:
 	docker build -f ${DOCKERFILE_DEBUG} --no-cache --rm -t ${IMA_NAME_D} .
