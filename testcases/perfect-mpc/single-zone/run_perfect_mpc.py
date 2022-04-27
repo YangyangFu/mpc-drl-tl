@@ -312,7 +312,7 @@ class PerfectMPC(object):
 
     def set_u0(self, u_ph_prev):
         """ set initial guess for the optimization at current step """
-        self.u0 = u_ph_prev
+        self.u0 = u_ph_prev[self.ni:] + self.u_lb
 
     def set_u_ch_prev(self, u_ch_prev):
         """save actions at previous step """
