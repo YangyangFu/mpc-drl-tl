@@ -1,0 +1,6 @@
+FROM yangyangfu/jmodelica_py2:latest
+
+USER root
+RUN pip install pandas Py-BOBYQA
+
+USER developer
