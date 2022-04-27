@@ -8,5 +8,5 @@ docker run \
 	-v `pwd`:/mnt/shared \
 	-i \
 	-t \
-	mpcdrl_perfect_mpc /bin/bash -c \
+	mpcdrl_debug /bin/bash -c \
 	"cd /mnt/shared && python /mnt/shared/plot_perfect_mpc.py"  
