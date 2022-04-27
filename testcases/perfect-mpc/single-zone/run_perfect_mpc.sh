@@ -8,5 +8,5 @@ docker run \
 	-v `pwd`:/mnt/shared \
 	-i \
 	-t \
-	yangyangfu/mpcdrl:cpu_py3 /bin/bash -c \
-	"cd /mnt/shared && python2 /mnt/shared/run_fancontrol.py"  
+	mpcdrl_perfect_mpc /bin/bash -c \
+	"cd /mnt/shared && python /mnt/shared/run_perfect_mpc.py"  

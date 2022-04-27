@@ -187,8 +187,6 @@ class PerfectMPC(object):
                      self.weights[1]*temp_violations[i]*temp_violations[i] +
                      self.weights[2]*action_changes[i]*action_changes[i] for i in range(self.PH)]
         
-        print("")
-        print(u)
         print(sum(objective))
 
         return sum(objective)
