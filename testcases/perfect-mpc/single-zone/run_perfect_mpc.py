@@ -24,7 +24,9 @@ class PerfectMPC(object):
                 fmu_generator="jmodelica",
                 measurement_names = [],
                 control_names = [],
-                price = []):
+                price = [],
+                u_lb = [],
+                u_ub = []):
         # MPC settings
         self.PH = PH 
         self.CH = CH
@@ -53,13 +55,17 @@ class PerfectMPC(object):
         self.price = price
 
         # control input bounds
-        self.u_lb = [0.0]
-        self.u_ub = [1.0]
+        self.u_lb = u_lb
+        self.u_ub = u_ub
 
         # mpc tuning
         self.weights = [100., 1.0, 0.]
         self.u0 = [1.0]*self.PH
-        self.u_ch_prev = [0.0]
+        self.u_ch_prev = self.u_lb
+
+        # optimizer settings
+        self.global_solution = False # require global solution if tru. usually need more running time.
+
 
     def get_fmu_states(self):
         """ Return fmu states as a hash table"""
@@ -153,8 +159,8 @@ class PerfectMPC(object):
         upper =self.u_ub*self.PH 
 
         soln = pybobyqa.solve(self.objective, u0, maxfun=1000, bounds=(
-            lower, upper), seek_global_minimum=False)
-        
+            lower, upper), seek_global_minimum=False, print_progress=True)
+
         return soln
 
     def objective(self, u):
@@ -217,7 +223,6 @@ class PerfectMPC(object):
         power = outputs['PTot']
 
         energy_cost = []
-        print(t)
         for ti in t:
             h_index = int(ti % 86400/3600)
             energy_cost.append(power[ti]/1000*price[h_index]*self.dt/3600.)
@@ -312,7 +317,7 @@ class PerfectMPC(object):
 
     def set_u0(self, u_ph_prev):
         """ set initial guess for the optimization at current step """
-        self.u0 = u_ph_prev[self.ni:] + self.u_lb
+        self.u0 = list(u_ph_prev[self.ni:]) + self.u_lb
 
     def set_u_ch_prev(self, u_ch_prev):
         """save actions at previous step """
@@ -338,6 +343,10 @@ if __name__ == "__main__":
 
     measurement_names = ['uFan', 'PTot', 'TRoo']
     control_names = ['uFan']
+
+    u_lb = [0.0]*len(control_names)
+    u_ub = [1.0]*len(control_names)
+
     mpc = PerfectMPC(PH = PH,
                     CH = CH,
                     time = ts,
@@ -345,7 +354,9 @@ if __name__ == "__main__":
                     fmu_model = model, 
                     measurement_names = measurement_names,
                     control_names = control_names,
-                    price = price)
+                    price = price,
+                    u_lb = u_lb,
+                    u_ub = u_ub)
 
     # reset fmu
     mpc.reset_fmu()
@@ -365,9 +376,8 @@ if __name__ == "__main__":
         optimum = mpc.optimize()
         u_opt_ph = optimum.x 
         f_opt_ph = optimum.f
-
         u_opt_ch = u_opt_ph[:mpc.ni]
-
+        
         # need revisit u0 design
         mpc.set_u0(u_opt_ph)
         mpc.set_u_ch_prev(u_opt_ch)
@@ -382,7 +392,7 @@ if __name__ == "__main__":
 
         # save results for future use
         t_opt.append(t)
-        u_opt.append(u_opt_ch)
+        u_opt.append([float(i) for i in u_opt_ch])
         results = pd.concat([results, outputs], axis=0)
 
         # update mpc clcok
