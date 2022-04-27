@@ -8,5 +8,5 @@ docker run \
 	-v `pwd`:/mnt/shared \
 	-i \
 	-t \
-	mpcdrl_perfect_mpc /bin/bash -c \
-	"cd /mnt/shared && python /mnt/shared/run_perfect_mpc.py"  
+	mpcdrl_debug /bin/bash -c \
+	"source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/run_perfect_mpc.py"  

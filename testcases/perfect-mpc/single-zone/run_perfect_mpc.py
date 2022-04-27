@@ -41,7 +41,7 @@ class PerfectMPC(object):
         self.fmu_options = self.fmu_model.simulate_options()
         self.fmu_options["result_handling"] = "memory"
         self.fmu_options["filter"] = self.fmu_output_names
-        self.fmu_options["ncp"] = self.dt/60.
+        self.fmu_options["ncp"] = int(self.dt/60.)
 
         # define fmu model inputs for optimization: here we assume we only optimize control inputs (time-varying variabels in Modelica instead of parameter)
         self.fmu_input_names = control_names
