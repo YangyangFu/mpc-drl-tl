@@ -36,13 +36,13 @@ class PerfectMPC(object):
         # MPC models
         self.fmu_model = fmu_model
         self.fmu_generator = fmu_generator
-
-        self.fmu_options = self.fmu_model.simulate_options()
-        self.fmu_options["result_handling"] = "memory"
-
         self.fmu_output_names = measurement_names
         self._fmu_results = [] # store intermediate fmu results during optimization
-        
+        self.fmu_options = self.fmu_model.simulate_options()
+        self.fmu_options["result_handling"] = "memory"
+        self.fmu_options["filter"] = self.fmu_output_names
+        self.fmu_options["ncp"] = self.dt/60.
+
         # define fmu model inputs for optimization: here we assume we only optimize control inputs (time-varying variabels in Modelica instead of parameter)
         self.fmu_input_names = control_names
         self.ni = len(control_names)
@@ -123,9 +123,6 @@ class PerfectMPC(object):
         if states:
             self.set_fmu_states(states)
 
-        # filter: list of output variabels for objective calculation
-        self.fmu_options['filter'] = self.fmu_output_names
-
         # call simulate()    
         self._fmu_results = self.fmu_model.simulate(start_time, final_time, input=input, options=self.fmu_options)
         
@@ -176,9 +173,11 @@ class PerfectMPC(object):
         te = self.time + self.PH*self.dt
         
         # transfer inputs
-        self.reset_fmu()
-        self.initialize_fmu()
         input_object = self._transfer_inputs(u, piecewise_constant=True)
+
+        # call simulation
+        self.reset_fmu()
+        self.initialize_fmu() # this might be a bottleneck for complex system
         _, outputs = self.simulate(ts, te, input=input_object, states=self._states_)
         
         # interpolate outputs as 1 min data and 15-min average
@@ -357,6 +356,27 @@ if __name__ == "__main__":
                     price = price,
                     u_lb = u_lb,
                     u_ub = u_ub)
+    
+    """
+    states0 = mpc.get_fmu_states()
+    mpc.set_fmu_time(ts)
+    mpc.set_fmu_states(states0)
+    print(mpc.fmu_model.time)
+    _, out = mpc.simulate(ts, ts+60.)
+    print(mpc.fmu_model.time)
+    print(out.tail())
+    mpc.fmu_options['initialize'] = False 
+
+
+    #mpc.fmu_model.setup_experiment(start_time=ts)
+    #mpc.fmu_model.initialize()
+    mpc.set_fmu_time(ts)
+    mpc.set_fmu_states(states0)
+    print(mpc.fmu_model.time)
+    _, out = mpc.simulate(ts, ts+60.)
+    print(mpc.fmu_model.time)
+    print(out)
+    """
 
     # reset fmu
     mpc.reset_fmu()
@@ -408,3 +428,4 @@ if __name__ == "__main__":
         json.dump(final, outfile) 
     
     results.to_csv('results_opt.csv')
+
