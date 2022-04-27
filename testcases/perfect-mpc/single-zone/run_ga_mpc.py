@@ -35,6 +35,8 @@ class PerfectMPC(object):
         self.fmu_generator = fmu_generator
 
         self.fmu_options = self.fmu_model.simulate_options()
+        self.fmu_options["result_handling"] = "memory"
+
         self.fmu_output_names = measurement_names
         self._fmu_results = [] # store intermediate fmu results during optimization
         
@@ -52,6 +54,10 @@ class PerfectMPC(object):
         self.u_lb = [0.0]
         self.u_ub = [1.0]
 
+        # mpc tuning
+        self.weights = [100., 1.0, 0.]
+        self.u0 = [1.0]*self.PH
+        self.u_prev = [0.0]
 
     def get_fmu_states(self):
         """ Return fmu states as a hash table"""
@@ -95,6 +101,7 @@ class PerfectMPC(object):
         """
         self.fmu_model.reset()
         self.fmu_options = self.fmu_model.simulate_options()
+        self.fmu_options["result_handling"] = "memory"
 
     def simulate(self, start_time, final_time, input = None, states={}):
         """ simulate fmu from given states"""
@@ -132,7 +139,13 @@ class PerfectMPC(object):
             3. apply control inputs for next step, and return states and measurements
             4. recursively do step 2 and step 3 until the end time
         """
-        pass 
+        u0 = self.u0 
+        lower = self.u_lb*self.PH 
+        upper =self.u_ub*self.PH 
+
+        soln = pybobyqa.solve(self.objective, u0, maxfun=1000, bounds=(
+            lower, upper), seek_global_minimum=False)
+        print(soln)
 
     def objective(self, u):
         """ return objective values at a prediction horizon
@@ -149,7 +162,8 @@ class PerfectMPC(object):
         # transfer inputs
         input_object = self._transfer_inputs(u, piecewise_constant=True)
         _, outputs = self.simulate(ts, te, input=input_object, states=self._states_)
-        
+        self.reset_fmu()
+
         # interpolate outputs as 1 min data and 15-min average
         t_intp = np.arange(ts, te, 60)
         outputs = self._sample(self._interpolate(outputs, t_intp), self.dt)
@@ -158,7 +172,12 @@ class PerfectMPC(object):
         temp_violations = self._calculate_temperature_violation(outputs)
         action_changes = self._calculate_action_changes(u)
 
-        objective = [energy_cost[i] + temp_violations[i] + action_changes[i] for i in range(self.PH)]
+        objective = [self.weights[0]*energy_cost[i] + \
+                     self.weights[1]*temp_violations[i]*temp_violations[i] +
+                     self.weights[2]*action_changes[i]*action_changes[i] for i in range(self.PH)]
+        
+        print("")
+        print(sum(objective))
 
         return sum(objective)
 
@@ -324,12 +343,10 @@ if __name__ == "__main__":
 
     input = mpc._transfer_inputs(u, piecewise_constant=True)
     states_next, output = mpc.simulate(ts, ts+7200., input=input)
-    print(output)
 
     t = np.arange(ts, ts+7200., 60.)
     output = mpc._interpolate(output,t)
     output = mpc._sample(output, dt)
-    print(output)
 
     energy_cost = mpc._calculate_energy_cost(output)
     temp_violations = mpc._calculate_temperature_violation(output)
@@ -341,16 +358,15 @@ if __name__ == "__main__":
 
     #
     mpc.reset_fmu()
-    mpc.initialize_fmu()
+    #mpc.initialize_fmu()
     states = mpc.get_fmu_states()
     print(states)
-    print(len(states)
-    )
+    print(len(states))
     mpc.set_time(ts)
     mpc.set_mpc_states(states)
     print(mpc.objective(u))
     #
-
+    mpc.optimize()
 
     """
     # test optimizer
