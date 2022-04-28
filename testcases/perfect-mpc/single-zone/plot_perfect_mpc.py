@@ -1,9 +1,9 @@
 from __future__ import print_function
+from __future__ import absolute_import, division
+
 from pyfmi import load_fmu
 import json
 import matplotlib.pyplot as plt
-from __future__ import absolute_import, division
-
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -53,7 +53,7 @@ mpc = load_fmu('SingleZoneFCU.fmu')
 
 ## fmu settings
 options = mpc.simulate_options()
-options['ncp'] = 100.
+options['ncp'] = 15
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
@@ -62,10 +62,11 @@ res_mpc = []
 # main loop - do step
 t = ts
 i = 0
+
 mpc.set("zon.roo.T_start", 273.15+25)
 while t < te:
     u = u_opt[i]
-    mpc.set("uFan", u)
+    mpc.set("uFan", u[0])
     ires = mpc.simulate(start_time=t,
                          final_time=t+dt,
                          options=options)

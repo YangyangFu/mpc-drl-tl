@@ -59,7 +59,7 @@ class PerfectMPC(object):
         self.u_ub = u_ub
 
         # mpc tuning
-        self.weights = [100., 1.0, 0.]
+        self.weights = [100., 10.0, 5.0]
         self.u0 = [1.0]*self.PH
         self.u_ch_prev = self.u_lb
 
@@ -154,9 +154,14 @@ class PerfectMPC(object):
         u0 = self.u0 
         lower = self.u_lb*self.PH 
         upper =self.u_ub*self.PH 
-
-        soln = pybobyqa.solve(self.objective, u0, maxfun=1000, bounds=(
-            lower, upper), seek_global_minimum=False, print_progress=True)
+        user_params={}
+        user_params['logging.save_xk'] = True 
+        user_params['logging.save_diagnostic_info'] = False 
+        #user_params['init.run_in_parallel'] = True
+        soln = pybobyqa.solve(self.objective, u0, rhoend=1e-06, maxfun=1000, bounds=(
+            lower, upper), user_params=user_params, seek_global_minimum=False, print_progress=True)
+        if user_params['logging.save_diagnostic_info']:
+            soln.diagnostic_info.to_csv("diagnostic_"+str(self.time)+'.csv')
 
         return soln
 
@@ -380,6 +385,7 @@ if __name__ == "__main__":
 
     # reset fmu
     mpc.reset_fmu()
+    mpc.fmu_model.set("zon.roo.T_start", 273.15+25)
     mpc.initialize_fmu()
     states = mpc.get_fmu_states()
 
