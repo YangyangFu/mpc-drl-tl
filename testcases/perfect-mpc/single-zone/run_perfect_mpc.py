@@ -326,11 +326,11 @@ if __name__ == "__main__":
     model = load_fmu("SingleZoneFCU.fmu")
     states_names = model.get_states_list()
     states = [float(model.get(state)) for state in states_names]
-    PH = 8
+    PH = 4
     CH = 1
     dt = 900.
     ts = 201*24*3600.
-    period = 3600.
+    period = 7*24*3600.
     te = ts + period
 
     price = [0.02987, 0.02987, 0.02987, 0.02987,
