@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import pybobyqa
-
 # Import numerical libraries
 import numpy as np
 import pandas as pd
@@ -10,6 +9,8 @@ import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import json
+import argparse
+import os
 
 # Import the needed JModelica.org Python methods
 from pyfmi import load_fmu
@@ -327,11 +328,13 @@ class PerfectMPC(object):
         """save actions at previous step """
         self.u_ch_prev = u_ch_prev
         
-if __name__ == "__main__":
-    model = load_fmu("SingleZoneFCU.fmu")
+def tune_mpc(args):
+    fmu_path = os.path.dirname(os.path.realpath(__file__))
+    print(fmu_path)
+    model = load_fmu(os.path.join(fmu_path, "SingleZoneFCU.fmu"))
     states_names = model.get_states_list()
     states = [float(model.get(state)) for state in states_names]
-    PH = 4
+    PH = args.PH
     CH = 1
     dt = 900.
     ts = 201*24*3600.
@@ -361,28 +364,11 @@ if __name__ == "__main__":
                     price = price,
                     u_lb = u_lb,
                     u_ub = u_ub)
-    
-    """
-    states0 = mpc.get_fmu_states()
-    mpc.set_fmu_time(ts)
-    mpc.set_fmu_states(states0)
-    print(mpc.fmu_model.time)
-    _, out = mpc.simulate(ts, ts+60.)
-    print(mpc.fmu_model.time)
-    print(out.tail())
-    mpc.fmu_options['initialize'] = False 
 
-
-    #mpc.fmu_model.setup_experiment(start_time=ts)
-    #mpc.fmu_model.initialize()
-    mpc.set_fmu_time(ts)
-    mpc.set_fmu_states(states0)
-    print(mpc.fmu_model.time)
-    _, out = mpc.simulate(ts, ts+60.)
-    print(mpc.fmu_model.time)
-    print(out)
-    """
-
+    w_energy = args.weight_energy
+    w_temp = args.weight_temp
+    w_action = args.weight_action
+    mpc.weights = [w_energy, w_temp, w_action]
     # reset fmu
     mpc.reset_fmu()
     mpc.fmu_model.set("zon.roo.T_start", 273.15+25)
@@ -432,6 +418,46 @@ if __name__ == "__main__":
 
     with open('u_opt.json', 'w') as outfile:
         json.dump(final, outfile) 
-    
-    results.to_csv('results_opt.csv')
 
+def trainable_function(config, reporter):
+    while True:
+        args.weight_energy = config['weight_energy']
+        args.weight_temp = config['weight_temp']
+        args.weight_action = config['weight_action']
+        args.PH = config['PH']
+        tune_mpc(args)
+
+        # a fake traing score to stop current simulation based on searched parameters
+        reporter(timesteps_total=672)
+if __name__ == "__main__":
+    import ray
+    from ray import tune
+
+    ndays = 7
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--PH', type=int, default=4)
+    parser.add_argument('--weight-energy', type=float, default=100.)
+    parser.add_argument('--weight-temp', type=float, default=1.)
+    parser.add_argument('--weight-action', type=float, default=10.)
+    parser.add_argument('--ndays', type=int, default=ndays)
+    args = parser.parse_args()
+
+    # Define Ray tuning experiments
+    tune.register_trainable("mpc", trainable_function)
+    ray.init()
+
+    # Run tuning
+    tune.run_experiments({
+        'mpc_tuning': {
+            "run": "mpc",
+            "stop": {"timesteps_total": 672},
+            "config": {
+                "PH": tune.grid_search([4, 8, 16, 32, 48, 96]),
+                "weight_energy": tune.grid_search([100., 30., 10., 1.]),
+                "weight_temp": tune.grid_search([10., 3., 1.]),
+                "weight_action": tune.grid_search([10., 3., 1.])
+            },
+            "local_dir": "/mnt/shared",
+        }
+    })
