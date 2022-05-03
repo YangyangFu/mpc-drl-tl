@@ -454,9 +454,9 @@ if __name__ == "__main__":
             "stop": {"timesteps_total": 672},
             "config": {
                 "PH": tune.grid_search([4, 8, 16, 32, 48, 96]),
-                "weight_energy": tune.grid_search([100., 30., 10., 1.]),
-                "weight_temp": tune.grid_search([10., 3., 1.]),
-                "weight_action": tune.grid_search([10., 3., 1.])
+                "weight_energy": tune.grid_search([100.]),
+                "weight_temp": tune.grid_search([1.]),
+                "weight_action": tune.grid_search([10.])
             },
             "local_dir": "/mnt/shared",
         }
