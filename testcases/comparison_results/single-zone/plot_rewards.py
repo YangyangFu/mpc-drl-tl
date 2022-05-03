@@ -110,18 +110,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     ## load mpc/rbc rewards
+    PHs = [4, 8, 16, 32, 48]
     with open('mpc_rewards.json') as f:
         mpc_rewards = json.load(f)
     
     root_dir = args.root_dir
-    if "DRL-R2" in root_dir:
-        mpc = mpc_rewards['mpc']['rewards'][0]
-        rbc = mpc_rewards['base']['rewards'][0]
-    elif "DRL-R1" in root_dir:
-        mpc = -(10*mpc_rewards['mpc']['ene_cost'][0] + \
-              mpc_rewards['mpc']['temp_violation_squared'][0])
-        rbc = -(10*mpc_rewards['base']['ene_cost'][0] +
-                mpc_rewards['base']['temp_violation_squared'][0])
+    mpc = mpc_rewards['mpc']['rewards'][0]
+    rbc = mpc_rewards['base']['rewards'][0]
 
     ## read DRL results
     algors = find_all_algorithms(root_dir)
