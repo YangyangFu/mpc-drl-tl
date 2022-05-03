@@ -110,7 +110,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     ## load mpc/rbc rewards
-    PHs = [4, 8, 16, 32, 48]
     with open('mpc_rewards.json') as f:
         mpc_rewards = json.load(f)
     
@@ -132,8 +131,8 @@ if __name__ == "__main__":
     sns.color_palette("bright") #"pastel", "muted", "bright"
 
     # set x ticks
-    xticks = [drl_all.index[i] for i in range(0, len(drl_all.index), 100)]
-    xticklabels = [int(drl_all.index[i]/672) for i in range(0, len(drl_all.index), 100)]
+    #xticks = [drl_all.index[i] for i in range(0, len(drl_all.index), 100)]
+    #xticklabels = [int(drl_all.index[i]/672) for i in range(0, len(drl_all.index), 100)]
     fig, ax = plt.subplots(figsize=(12, 9))
     ax.plot(drl_all.index, [rbc]*len(drl_all.index), lw=1, c= COLORS[0], label='RBC')
     ax.plot(drl_all.index, [mpc]*len(drl_all.index), lw=1, c= COLORS[1], label='MPC')
@@ -145,16 +144,12 @@ if __name__ == "__main__":
                         alpha=.4, 
                         fc=COLORS[i+2], 
                         lw=0)
-    ax.set_xlabel('Epoch')
+    ax.set_xlabel('Steps')
     ax.set_ylabel('Rewards')
-    ax.set_xticks(xticks)
-    ax.set_xticklabels(xticklabels)
+    #ax.set_xticks(xticks)
+    #ax.set_xticklabels(xticklabels)
     
-    # SET YLIM
-    if "DRL-R2" in root_dir:
-        ylim = [-3000, 0]
-    elif "DRL-R1" in root_dir:
-        ylim = [-500, 0]
+    ylim = [-2000, 0]
     ax.set_ylim(ylim)
     plt.legend(loc=4)
     plt.savefig(os.path.join(root_dir, 'rewards.png'))
