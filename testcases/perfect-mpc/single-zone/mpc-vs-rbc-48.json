@@ -1,0 +1,1 @@
+{"base": {"energy": [57.479359665399826], "energy_cost": [7.026461569302897], "total_temp_violation": [0.09741547996391375], "max_temp_violation": [0.389661919855655]}, "mpc": {"energy": [50.631689332029524], "energy_cost": [5.348861948908036], "total_temp_violation": [20.720629156466842], "max_temp_violation": [3.8050008207575843]}}
