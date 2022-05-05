@@ -11,4 +11,7 @@ RUN cd $HOME/github/testcases/gym-environments/single-zone && pip install -e .
 WORKDIR $HOME
 RUN pip install Py-BOBYQA
 
+# install nueralmance for dpc
+RUN pip install git+https://github.com/yangyangfu/neuromancer.git@DPC
+
 USER developer
