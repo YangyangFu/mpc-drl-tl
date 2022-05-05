@@ -137,10 +137,13 @@ if __name__ == "__main__":
     ax.plot(drl_all.index, [rbc]*len(drl_all.index), lw=1, c= COLORS[0], label='RBC')
     ax.plot(drl_all.index, [mpc]*len(drl_all.index), lw=1, c= COLORS[1], label='MPC')
     for i, algor in enumerate(algors):
-        ax.plot(drl_all.index, drl_all[algor,'mean'], lw=1, c= COLORS[i+2], label=algor.upper())
-        ax.fill_between(drl_all.index, 
-                        drl_all[algor,'mean']+drl_all[algor,'std'],
-                        drl_all[algor,'mean']-drl_all[algor,'std'], 
+        drl = drl_all[algor]
+        drl.dropna(inplace=True)
+        print(drl)
+        ax.plot(drl.index, drl['mean'], lw=1, c=COLORS[i+2], label=algor.upper())
+        ax.fill_between(drl.index,
+                        drl['mean']+drl['std'],
+                        drl['mean']-drl['std'], 
                         alpha=.4, 
                         fc=COLORS[i+2], 
                         lw=0)
