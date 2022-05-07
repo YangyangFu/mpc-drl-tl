@@ -61,12 +61,20 @@ def merge_csv(csv_files, algors):
 ## define some colors 
 COLORS = (
     [
+        # personal color
+        '#313695',  # DARK BLUE
+        '#74add1',  # LIGHT BLUE
+        '#f46d43',  # ORANGE
+        '#4daf4a',  # GREEN
+        '#984ea3',  # PURPLE
+        '#f781bf',  # PINK
+        '#ffc832',  # YELLOW
+        '#000000',  # BLACK
         # deepmind style
         '#0072B2',
         '#009E73',
         '#D55E00',
         '#CC79A7',
-        # '#F0E442',
         '#d73027',  # RED
         # built-in color
         'blue',
@@ -90,16 +98,7 @@ COLORS = (
         'gold',
         'darkred',
         'darkblue',
-        'green',
-        # personal color
-        '#313695',  # DARK BLUE
-        '#74add1',  # LIGHT BLUE
-        '#f46d43',  # ORANGE
-        '#4daf4a',  # GREEN
-        '#984ea3',  # PURPLE
-        '#f781bf',  # PINK
-        '#ffc832',  # YELLOW
-        '#000000',  # BLACK
+        'green'
     ]
 )
 
@@ -133,14 +132,13 @@ if __name__ == "__main__":
     # set x ticks
     #xticks = [drl_all.index[i] for i in range(0, len(drl_all.index), 100)]
     #xticklabels = [int(drl_all.index[i]/672) for i in range(0, len(drl_all.index), 100)]
-    fig, ax = plt.subplots(figsize=(12, 9))
+    fig, ax = plt.subplots(figsize=(16, 12))
     ax.plot(drl_all.index, [rbc]*len(drl_all.index), lw=1, c= COLORS[0], label='RBC')
     ax.plot(drl_all.index, [mpc]*len(drl_all.index), lw=1, c= COLORS[1], label='MPC')
     for i, algor in enumerate(algors):
         drl = drl_all[algor]
         drl.dropna(inplace=True)
-        print(drl)
-        ax.plot(drl.index, drl['mean'], lw=1, c=COLORS[i+2], label=algor.upper())
+        ax.plot(drl.index, drl['mean'], lw=0.5, c=COLORS[i+2], label=algor.upper())
         ax.fill_between(drl.index,
                         drl['mean']+drl['std'],
                         drl['mean']-drl['std'], 
@@ -157,3 +155,22 @@ if __name__ == "__main__":
     plt.legend(loc=4)
     plt.savefig(os.path.join(root_dir, 'rewards.png'))
     plt.savefig(os.path.join(root_dir, 'rewards.pdf'))
+
+# calculate normalized score
+rew_max = drl_all.xs('mean', axis=1, level=1, drop_level=False).max()
+rew_max[('mpc','mean')] = mpc
+rew_max[('rbc','mean')] = rbc
+
+norm_rew_max = (-rew_max/rew_max.min()+2)*100
+index = norm_rew_max.index
+index = [i[0].upper() for i in index]
+norm_rew_max.index = index
+print(norm_rew_max)
+
+sns.set(font_scale=0.8)
+fig, ax = plt.subplots(figsize=(8, 4))
+nAlgors = len(index)
+plt.barh(range(nAlgors), norm_rew_max, height=1.0, fill=True, ec='k')
+plt.yticks(range(nAlgors), index)
+plt.xlabel("Normalized score [%]")
+plt.savefig('bar.png')
