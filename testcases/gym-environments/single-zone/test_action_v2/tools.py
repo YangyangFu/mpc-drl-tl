@@ -210,6 +210,6 @@ if __name__ == "__main__":
     print(args.plot_test)
     plot_test = bool(args.plot_test)
     print(plot_test)
-    #csv_files = convert_tfevents_to_csv(args.root_dir, args.algor, args.task, plot_test, args.refresh)
-    #plot_reward(csv_files, plot_test)
+    csv_files = convert_tfevents_to_csv(args.root_dir, args.algor, args.task, plot_test, args.refresh)
+    plot_reward(csv_files, plot_test)
     plot_final_epoch(args.root_dir, args.algor, args.task, generate_action=True)
