@@ -237,6 +237,7 @@ def trainable_function(config, reporter):
         args.buffer_size = config['buffer_size']
         args.hidden_sizes=[256]*args.n_hidden_layers  # baselines [32, 32]
         args.step_per_collect = config['step_per_collect']
+        args.seed = config['seed']
         test_ppo(args)
 
         # a fake traing score to stop current simulation based on searched parameters
@@ -307,12 +308,13 @@ if __name__ == '__main__':
             "config": {
                 "epoch": tune.grid_search([500]),
                 "weight_energy": tune.grid_search([100.]),
-                "lr": tune.grid_search([1e-04, 1e-03]), #[1e-03]
-                "batch_size": tune.grid_search([32]),
+                "lr": tune.grid_search([3e-04]), #[1e-03]
+                "batch_size": tune.grid_search([256]),
                 "n_hidden_layers": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([4096]),
-                "step_per_collect": tune.grid_search([672*2, 672*3, 672*4]), #[256, 512]
-                "eps_clip": tune.grid_search([0.2])
+                "step_per_collect": tune.grid_search([672*4]), #[256, 512]
+                "eps_clip": tune.grid_search([0.2]),
+                "seed": tune.grid_search([0, 1, 2, 3, 4, 5])
             },
             "local_dir": "/mnt/shared",
         }

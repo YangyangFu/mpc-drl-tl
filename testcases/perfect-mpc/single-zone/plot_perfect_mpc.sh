@@ -9,4 +9,4 @@ docker run \
 	-i \
 	-t \
 	mpcdrl_debug /bin/bash -c \
-	"source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/plot_perfect_mpc.py"  
+	"source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/plot_perfect_mpc.py --root-dir ./mpc_tuning"  
