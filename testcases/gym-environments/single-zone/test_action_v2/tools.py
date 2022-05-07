@@ -99,7 +99,7 @@ def plot_reward(csv_files, plot_test=True):
             os.remove(des_path)
         os.rename(key, des_path)
 
-def plot_final_epoch(root_dir, algor, task):
+def plot_final_epoch(root_dir, algor, task, generate_action=False):
 
     sub_dirs = []
     for it in os.scandir(root_dir):
@@ -184,6 +184,12 @@ def plot_final_epoch(root_dir, algor, task):
         with open(os.path.join(sub_dir,'drl_metric.json'), 'w') as outfile:
             json.dump(metric, outfile)
 
+        # we might also want to save actions
+        if generate_action:
+            actions = [[float((acts[i]+1)/2.)] for i in range(len(t))]
+            with open(os.path.join(sub_dir,'u_opt.json'), 'w') as outfile:
+                json.dump(actions, outfile)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -204,6 +210,6 @@ if __name__ == "__main__":
     print(args.plot_test)
     plot_test = bool(args.plot_test)
     print(plot_test)
-    csv_files = convert_tfevents_to_csv(args.root_dir, args.algor, args.task, plot_test, args.refresh)
-    plot_reward(csv_files, plot_test)
-    plot_final_epoch(args.root_dir, args.algor, args.task)
+    #csv_files = convert_tfevents_to_csv(args.root_dir, args.algor, args.task, plot_test, args.refresh)
+    #plot_reward(csv_files, plot_test)
+    plot_final_epoch(args.root_dir, args.algor, args.task, generate_action=True)
