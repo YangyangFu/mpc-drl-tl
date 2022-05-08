@@ -160,12 +160,13 @@ if __name__ == "__main__":
 rew_max = drl_all.xs('mean', axis=1, level=1, drop_level=False).max()
 rew_max[('mpc','mean')] = mpc
 rew_max[('rbc','mean')] = rbc
+print(rew_max)
 
 norm_rew_max = (-rew_max/rew_max.min()+2)*100
 index = norm_rew_max.index
 index = [i[0].upper() for i in index]
 norm_rew_max.index = index
-print(norm_rew_max)
+norm_rew_max.to_csv('rewards_max.csv')
 
 sns.set(font_scale=0.8)
 fig, ax = plt.subplots(figsize=(8, 4))
@@ -173,4 +174,5 @@ nAlgors = len(index)
 plt.barh(range(nAlgors), norm_rew_max, height=1.0, fill=True, ec='k')
 plt.yticks(range(nAlgors), index)
 plt.xlabel("Normalized score [%]")
-plt.savefig('bar.png')
+plt.savefig('normalized-score.png')
+plt.savefig('normalized-score.pdf')
