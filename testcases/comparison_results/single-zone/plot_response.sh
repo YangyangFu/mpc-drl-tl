@@ -7,5 +7,5 @@ exec docker run \
 	  -v `pwd`:/mnt/shared \
 	  -i \
       -t \
-	  yangyangfu/mpcdrl:gpu_py3 /bin/bash -c "cd /mnt/shared && python /mnt/shared/plot_response.py"
+	  mpcdrl_debug /bin/bash -c "source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/plot_response.py"
 exit $

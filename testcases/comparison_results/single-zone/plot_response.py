@@ -4,45 +4,52 @@ from __future__ import absolute_import, division
 import numpy as np
 import pandas as pd
 import matplotlib
-#matplotlib.use('agg')
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import json
 # load testbed
 from pyfmi import load_fmu
 
+COLORS = (
+    [
+        # personal color
+        '#313695',  # DARK BLUE
+        '#74add1',  # LIGHT BLUE
+        '#f46d43',  # ORANGE
+        '#4daf4a',  # GREEN
+        '#984ea3',  # PURPLE
+        '#f781bf',  # PINK
+        '#ffc832',  # YELLOW
+        '#000000',  # BLACK
+    ])
 #==========================================================
 ##              General Settings
 # =======================================================
 # simulation setup
-ts = 212*24*3600.#+13*24*3600
+ts = 201*24*3600.#+13*24*3600
 nday = 7
 period = nday*24*3600.
 te = ts + period
 dt = 15*60.
 nsteps_h = int(3600//dt)
 
-# setup for DRL test
-nActions = 51
-alpha = 1
-nepochs = 500
-
 # define some filters to save simulation time using fmu
-measurement_names = ['time','TRoo','TOut','PTot','hvac.uFan','hvac.fanSup.m_flow_in', 'senTSetRooCoo.y', 'CO2Roo']
+measurement_names = ['time','TRoo','TOut','PTot','fcu.uFan']
 
 ##########################################
 ##          Baseline Simulation
 ## =========================================
 # DEFINE MODEL
 # ------------
-baseline = load_fmu('SingleZoneDamperControlBaseline.fmu')
+baseline = load_fmu('SingleZoneFCUBaseline.fmu')
 
 ## fmu settings
 options = baseline.simulate_options()
-options['ncp'] = 5000.
+options['ncp'] = 5000
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
-
+baseline.set("zon.roo.T_start", 273.15+25)
 ## construct optimal input for fmu
 res_base = baseline.simulate(start_time = ts,
                     final_time = te, 
@@ -53,7 +60,7 @@ res_base = baseline.simulate(start_time = ts,
 ## =============================================
 
 # read optimal control inputs
-with open('./mpc/u_opt.json') as f:
+with open('./mpc/R2/PH=96/u_opt.json') as f:
   opt = json.load(f)
 
 t_opt = opt['t_opt']
@@ -63,27 +70,25 @@ print(len(t_opt))
 print(len(u_opt))
 
 ### 1- Load virtual building model
-hvac = load_fmu('SingleZoneDamperControl.fmu')
+hvac = load_fmu('SingleZoneFCU.fmu')
 
 ## fmu settings
 options = hvac.simulate_options()
-options['ncp'] = 100.
+options['ncp'] = 100
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
 res_mpc = []
-
+hvac.set("zon.roo.T_start", 273.15+25)
 # main loop - do step
 t = ts
 i = 0
 while t < te:
     u = u_opt[i]
-    u_traj = np.transpose(np.vstack(([t,t+dt],[u,u])))
-    input_object = ("uFan",u_traj)
+    hvac.set('uFan',u[0])
     ires = hvac.simulate(start_time = t,
                 final_time = t+dt, 
-                options = options,
-                input = input_object)
+                options = options)
     res_mpc.append(ires)
 
     t += dt 
@@ -92,74 +97,101 @@ while t < te:
 
 
 ###############################################################
-##              DRL final run: Discrete: v1-dqn
+##              DRL final run: ddqn-seed2
 ##===========================================================
 # get actions from the last epoch
-v1_dqn_case = './v1-dqn'
-actions= np.load(v1_dqn_case+'/his_act.npy')
-u_opt = np.array(actions[-1,:-1])/float(nActions-1)
-print (u_opt)
+ddqn_case = './DRL-R2/ddqn_seed2/'
+with open(ddqn_case+'u_opt.json') as f:
+  u_opt = json.load(f)
 
 ## fmu settings
 hvac.reset()
 options = hvac.simulate_options()
-options['ncp'] = 100.
+options['ncp'] = 100
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
-res_dqn_v1 = []
-
+res_ddqn = []
+hvac.set("zon.roo.T_start", 273.15+25)
 ## construct optimal input for fmu
 # main loop - do step
 t = ts
 i = 0
 while t < te:
     u = u_opt[i]
-    u_traj = np.transpose(np.vstack(([t,t+dt],[u,u])))
-    input_object = ("uFan",u_traj)
+    hvac.set('uFan',u[0])
     ires = hvac.simulate(start_time = t,
                 final_time = t+dt, 
-                options = options,
-                input = input_object)
-    res_dqn_v1.append(ires)
+                options = options)
+    res_ddqn.append(ires)
 
     t += dt 
     i += 1
     options['initialize'] = False
 
 ###############################################################
-##              DRL final run: Discrete: v1-sac
+##              DRL final run: sac_seed0
 ##===========================================================
 # get actions from the last epoch
-v1_sac_case = './v1-sac'
-actions= np.load(v1_sac_case+'/his_act.npy')
-u_opt = np.array(actions[-1,:-1])/float(nActions-1)
-print (u_opt)
+sac_case = './DRL-R2/sac_seed0/'
+with open(sac_case+'u_opt.json') as f:
+  u_opt = json.load(f)
 
 ## fmu settings
 hvac.reset()
 options = hvac.simulate_options()
-options['ncp'] = 100.
+options['ncp'] = 100
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
-res_sac_v1 = []
-
+res_sac = []
+hvac.set("zon.roo.T_start", 273.15+25)
 ## construct optimal input for fmu
 # main loop - do step
 t = ts
 i = 0
 while t < te:
     u = u_opt[i]
-    u_traj = np.transpose(np.vstack(([t,t+dt],[u,u])))
-    input_object = ("uFan",u_traj)
+    hvac.set('uFan', u[0])
     ires = hvac.simulate(start_time = t,
                 final_time = t+dt, 
-                options = options,
-                input = input_object)
-    res_sac_v1.append(ires)
+                options = options)
+    res_sac.append(ires)
 
     t += dt 
+    i += 1
+    options['initialize'] = False
+
+###############################################################
+##              DRL final run: ppo_seed3
+##===========================================================
+# get actions from the last epoch
+ppo_case = './DRL-R2/ppo_seed3/'
+with open(ppo_case+'u_opt.json') as f:
+  u_opt = json.load(f)
+
+## fmu settings
+hvac.reset()
+options = hvac.simulate_options()
+options['ncp'] = 100
+options['initialize'] = True
+options['result_handling'] = 'memory'
+options['filter'] = measurement_names
+res_ppo = []
+hvac.set("zon.roo.T_start", 273.15+25)
+## construct optimal input for fmu
+# main loop - do step
+t = ts
+i = 0
+while t < te:
+    u = u_opt[i]
+    hvac.set('uFan', u[0])
+    ires = hvac.simulate(start_time=t,
+                         final_time=t+dt,
+                         options=options)
+    res_ppo.append(ires)
+
+    t += dt
     i += 1
     options['initialize'] = False
 
@@ -170,8 +202,9 @@ while t < te:
 # read measurements
 measurement_mpc = {}
 measurement_base = {}
-measurement_dqn_v1 = {}
-measurement_sac_v1 = {}
+measurement_ddqn = {}
+measurement_sac = {}
+measurement_ppo = {}
 
 for name in measurement_names:
     measurement_base[name] = res_base[name]
@@ -180,84 +213,91 @@ for name in measurement_names:
     for ires in res_mpc:
       value_name_mpc += list(ires[name])
     measurement_mpc[name] = np.array(value_name_mpc)
-    # get dqn_v1 results
-    value_name_dqn_v1=[]
-    for ires in res_dqn_v1:
-      value_name_dqn_v1 += list(ires[name])
-    measurement_dqn_v1[name] = np.array(value_name_dqn_v1)
-    # get sac_v1 results
-    value_name_sac_v1=[]
-    for ires in res_sac_v1:
-      value_name_sac_v1 += list(ires[name])
-    measurement_sac_v1[name] = np.array(value_name_sac_v1)
+    # get ddqn results
+    value_name_ddqn=[]
+    for ires in res_ddqn:
+      value_name_ddqn += list(ires[name])
+    measurement_ddqn[name] = np.array(value_name_ddqn)
+    # get sac results
+    value_name_sac=[]
+    for ires in res_sac:
+      value_name_sac += list(ires[name])
+    measurement_sac[name] = np.array(value_name_sac)
+    # get ppo
+    value_name_ppo=[]
+    for ires in res_ppo:
+      value_name_ppo += list(ires[name])
+    measurement_ppo[name] = np.array(value_name_ppo)
 
 ## simulate baseline
-occ_start = 7
-occ_end = 19
+occ_start = 8
+occ_end = 18
 tim = np.arange(ts,te,dt)
 T_upper = np.array([30.0 for i in tim])
-#T_upper[occ_start*4:(occ_end-1)*4] = 26.0
 T_lower = np.array([12.0 for i in tim])
-#T_lower[occ_start*4:(occ_end-1)*4] = 22.0
 for i in range(nday):
-  T_upper[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 26.0
-  T_lower[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+(occ_end-1)*nsteps_h] = 22.
+  T_upper[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+occ_end*nsteps_h] = 26.0
+  T_lower[24*nsteps_h*i+occ_start*nsteps_h:24*nsteps_h*i+occ_end*nsteps_h] = 22.0
 
-price_tou = [0.0640, 0.0640, 0.0640, 0.0640, 
-        0.0640, 0.0640, 0.0640, 0.0640, 
-        0.1391, 0.1391, 0.1391, 0.1391, 
-        0.3548, 0.3548, 0.3548, 0.3548, 
-        0.3548, 0.3548, 0.1391, 0.1391, 
-        0.1391, 0.1391, 0.1391, 0.0640]*nday
+price_tou = [0.02987, 0.02987, 0.02987, 0.02987,
+            0.02987, 0.02987, 0.04667, 0.04667,
+            0.04667, 0.04667, 0.04667, 0.04667,
+            0.15877, 0.15877, 0.15877, 0.15877,
+            0.15877, 0.15877, 0.15877, 0.04667,
+            0.04667, 0.04667, 0.02987, 0.02987]*nday
 
-xticks=np.arange(ts,te,12*3600)
-xticks_label = np.arange(0,24*nday,12)
+xticks=np.arange(ts,te+1,12*3600)
+xticks_label = np.arange(0,24*nday+1,12)
 
 plt.figure(figsize=(16,12))
 plt.subplot(411)
-plt.step(np.arange(ts, te, 3600.),price_tou, where='post')
+plt.step(np.arange(ts, te, 3600.),price_tou, where='post',c='k')
 plt.xticks(xticks,[])
 plt.grid(True)
 plt.ylabel('Price ($/kW)')
 
 plt.subplot(412)
-plt.plot(measurement_base['time'], measurement_base['hvac.uFan'],'b-',label='Baseline')
-plt.plot(measurement_mpc['time'], measurement_mpc['hvac.uFan'],'b--',label='MPC')
-plt.plot(measurement_dqn_v1['time'], measurement_dqn_v1['hvac.uFan'],'r--',label='DQN')
-#plt.plot(measurement_sac_v1['time'], measurement_sac_v1['hvac.uFan'],'y--',label='SAC')
+plt.plot(measurement_base['time'], measurement_base['fcu.uFan'], c=COLORS[0], label='RBC')
+plt.plot(measurement_mpc['time'], measurement_mpc['fcu.uFan'],c=COLORS[1], label='MPC')
+plt.plot(measurement_ddqn['time'], measurement_ddqn['fcu.uFan'],c=COLORS[2], label='DDQN')
+plt.plot(measurement_ppo['time'], measurement_ppo['fcu.uFan'],c=COLORS[3], label='PPO')
+plt.plot(measurement_sac['time'], measurement_sac['fcu.uFan'],c=COLORS[5],label='SAC')
 plt.grid(True)
 plt.xticks(xticks,[])
-plt.legend()
+plt.legend(fancybox=True, framealpha=0.5)
 plt.ylabel('Fan Speed')
 
 plt.subplot(413)
-plt.plot(measurement_base['time'], measurement_base['TRoo']-273.15,'b-',label='Baseline')
-plt.plot(measurement_mpc['time'],  measurement_mpc['TRoo']-273.15,'b--',label='MPC')
-plt.plot(measurement_dqn_v1['time'],  measurement_dqn_v1['TRoo']-273.15,'r--',label='DQN')
-#plt.plot(measurement_sac_v1['time'],  measurement_sac_v1['TRoo']-273.15,'y--',label='SAC')
-plt.plot(tim,T_upper, 'g-.', lw=1,label='Bounds')
-plt.plot(tim,T_lower, 'g-.', lw=1)
+plt.plot(measurement_base['time'], measurement_base['TRoo']-273.15,c=COLORS[0], label='RBC')
+plt.plot(measurement_mpc['time'],  measurement_mpc['TRoo']-273.15,c=COLORS[1], label='MPC')
+plt.plot(measurement_ddqn['time'],  measurement_ddqn['TRoo']-273.15,c=COLORS[2], label='DDQN')
+plt.plot(measurement_ppo['time'],  measurement_ppo['TRoo']-273.15,c=COLORS[3], label='PPO')
+plt.plot(measurement_sac['time'],  measurement_sac['TRoo']-273.15,c=COLORS[5],label='SAC')
+plt.plot(tim,T_upper, 'k-.', lw=1,label='Bounds')
+plt.plot(tim,T_lower, 'k-.', lw=1)
 plt.grid(True)
 plt.xticks(xticks,[])
-plt.legend()
+plt.legend(fancybox=True, framealpha=0.5)
 plt.ylabel('Room Temperature [C]')
 
 plt.subplot(414)
-plt.plot(measurement_base['time'], measurement_base['PTot'],'b-',label='Baseline')
-plt.plot(measurement_mpc['time'], measurement_mpc['PTot'],'b--',label='MPC')
-plt.plot(measurement_dqn_v1['time'], measurement_dqn_v1['PTot'],'r--',label='DQN')
-#plt.plot(measurement_sac_v1['time'], measurement_sac_v1['PTot'],'y--',label='SAC')
+plt.plot(measurement_base['time'], measurement_base['PTot'], c=COLORS[0], label='RBC')
+plt.plot(measurement_mpc['time'], measurement_mpc['PTot'], c=COLORS[1], label='MPC')
+plt.plot(measurement_ddqn['time'], measurement_ddqn['PTot'], c=COLORS[2], label='DDQN')
+plt.plot(measurement_ppo['time'], measurement_ppo['PTot'], c=COLORS[3], label='PPO')
+plt.plot(measurement_sac['time'], measurement_sac['PTot'],c=COLORS[5], label='SAC')
 plt.grid(True)
 plt.xticks(xticks,xticks_label)
+plt.legend(fancybox=True, framealpha=0.5)
 plt.ylabel('Total [W]')
-plt.savefig('mpc-drl.pdf')
-plt.savefig('mpc-drl.png')
+plt.xlabel('Time [h]')
+plt.savefig('control-response.pdf')
+plt.savefig('control-response.png')
 
+"""
 # save baseline and mpc measurements from simulation
 ## save interpolated measurement data for comparison
 def interpolate_dataframe(df,new_index):
-    """Interpolate a dataframe along its index based on a new index
-    """
     df_out = pd.DataFrame(index=new_index)
     df_out.index.name = df.index.name
 
@@ -267,19 +307,19 @@ def interpolate_dataframe(df,new_index):
 
 measurement_base = pd.DataFrame(measurement_base,index=measurement_base['time'])
 measurement_mpc = pd.DataFrame(measurement_mpc,index=measurement_mpc['time'])
-measurement_dqn_v1 = pd.DataFrame(measurement_dqn_v1,index=measurement_dqn_v1['time'])
-measurement_sac_v1 = pd.DataFrame(measurement_sac_v1,index=measurement_sac_v1['time'])
+measurement_ddqn = pd.DataFrame(measurement_ddqn,index=measurement_ddqn['time'])
+measurement_sac = pd.DataFrame(measurement_sac,index=measurement_sac['time'])
 
 tim_intp = np.arange(ts,te,dt)
 measurement_base = interpolate_dataframe(measurement_base[['PTot','TRoo']],tim_intp)
 measurement_mpc = interpolate_dataframe(measurement_mpc[['PTot','TRoo']],tim_intp)
-measurement_dqn_v1 = interpolate_dataframe(measurement_dqn_v1[['PTot','TRoo']],tim_intp)
-measurement_sac_v1 = interpolate_dataframe(measurement_sac_v1[['PTot','TRoo']],tim_intp)
+measurement_ddqn = interpolate_dataframe(measurement_ddqn[['PTot','TRoo']],tim_intp)
+measurement_sac = interpolate_dataframe(measurement_sac[['PTot','TRoo']],tim_intp)
 
 #measurement_base.to_csv('measurement_base.csv')
 #measurement_mpc.to_csv('measurement_mpc.csv')
-#measurement_dqn_v1.to_csv('measurement_dqn_v1.csv')
-#measurement_sac_v1.to_csv('measurement_sac_v1.csv')
+#measurement_ddqn.to_csv('measurement_ddqn.csv')
+#measurement_sac.to_csv('measurement_sac.csv')
 
 def rw_func(cost, penalty):
     if ( not hasattr(rw_func,'x')  ):
@@ -395,10 +435,10 @@ plt.savefig('rewards_epoch.png')
 #print rewards_dqn_v1_last['ene_cost'].sum()
 
 # save total energy cost, violations etc using the final episode for DRL
-rewards_dqn_v1_last = get_rewards(measurement_dqn_v1['PTot'].values,measurement_dqn_v1['TRoo'].values,price_tou,alpha)
+rewards_dqn_v1_last = get_rewards(measurement_ddqn['PTot'].values,measurement_ddqn['TRoo'].values,price_tou,alpha)
 rewards_dqn_v1_last = pd.DataFrame(rewards_dqn_v1_last,columns=[['ene_cost','penalty','rewards']])
 
-rewards_sac_v1_last = get_rewards(measurement_sac_v1['PTot'].values,measurement_sac_v1['TRoo'].values,price_tou,alpha)
+rewards_sac_v1_last = get_rewards(measurement_sac['PTot'].values,measurement_sac['TRoo'].values,price_tou,alpha)
 rewards_sac_v1_last = pd.DataFrame(rewards_sac_v1_last,columns=[['ene_cost','penalty','rewards']])
 
 comparison={'base':{'energy_cost':list(rewards_base['ene_cost'].sum()),
@@ -413,3 +453,4 @@ comparison={'base':{'energy_cost':list(rewards_base['ene_cost'].sum()),
 with open('comparison_epoch.json', 'w') as outfile:
     json.dump(comparison, outfile)
 
+"""
