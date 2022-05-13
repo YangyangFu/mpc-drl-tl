@@ -130,10 +130,6 @@ def test_qrdqn(args):
                     target_update_freq=args.target_update_freq, 
                     reward_normalization = False, 
                     is_double=True)
-    # load a previous policy
-    if args.resume_path:
-        policy.load_state_dict(torch.load(args.resume_path, map_location=args.device))
-        print("Loaded agent from: ", os.path.join(log_path, 'policy.pth'))
 
     # collector
     buffer = VectorReplayBuffer(
@@ -152,20 +148,7 @@ def test_qrdqn(args):
     
     def save_fn(policy):
         torch.save(policy.state_dict(), os.path.join(log_path, 'policy.pth'))
-
-    def save_checkpoint_fn(epoch, env_step, gradient_step):
-        # see also: https://pytorch.org/tutorials/beginner/saving_loading_models.html
-        torch.save(
-            {
-                'model': policy.state_dict(),
-                'optim': optim.state_dict(),
-            }, os.path.join(log_path, 'checkpoint.pth')
-        )
-        pickle.dump(
-            train_collector.buffer,
-            open(os.path.join(log_path, 'train_buffer.pkl'), "wb")
-        )
-
+    
     def train_fn(epoch, env_step):
         # nature DQN setting, linear decay in the first 1M steps
         #max_eps_steps = int(args.epoch * args.step_per_epoch * 0.9) # this will not help speedup learning with large epoch
@@ -182,6 +165,26 @@ def test_qrdqn(args):
     
     def test_fn(epoch, env_step):
         policy.set_eps(args.eps_test)
+
+    # load a previous policy
+    if args.resume:
+        # load from existing checkpoint
+        print(f"Loading agent under {log_path}")
+        print("================================\n")
+        ckpt_path = os.path.join(log_path, 'checkpoint.pth')
+        if os.path.exists(ckpt_path):
+            checkpoint = torch.load(ckpt_path, map_location=args.device)
+            policy.load_state_dict(checkpoint['model'])
+            policy.optim.load_state_dict(checkpoint['optim'])
+            print("Successfully restore policy and optim.")
+        else:
+            print("Fail to restore policy and optim.")
+        buffer_path = os.path.join(log_path, 'train_buffer.pkl')
+        if os.path.exists(buffer_path):
+            train_collector.buffer = pickle.load(open(buffer_path, "rb"))
+            print("Successfully restore buffer.")
+        else:
+            print("Fail to restore buffer.")
 
     if not args.test_only:
         # start filling replay buffer by collecting data at the beginning
@@ -203,7 +206,6 @@ def test_qrdqn(args):
             save_fn = save_fn, 
             logger = logger,
             update_per_step = args.update_per_step, 
-            save_checkpoint_fn = save_checkpoint_fn,
             test_in_train = False)
         pprint.pprint(result)
 
@@ -242,22 +244,6 @@ def test_qrdqn(args):
         print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')
     watch()
 
-# added hyperparameter tuning scripting using Ray.tune
-def trainable_function(config, reporter):
-    while True:
-        args.epoch = config['epoch']
-        args.weight_action = config['weight_action']
-        args.lr = config['lr']
-        args.batch_size = config['batch_size']
-        args.n_hidden_layers = config['n_hidden_layers']
-        args.buffer_size = config['buffer_size']
-        args.num_quantiles = config['num_quantiles']
-        args.seed = config['seed']
-        test_qrdqn(args)
-
-        # a fake traing score to stop current simulation based on searched parameters
-        reporter(timesteps_total=args.step_per_epoch)
-
 if __name__ == '__main__':
     import ray 
     from ray import tune
@@ -290,41 +276,20 @@ if __name__ == '__main__':
     
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
     parser.add_argument('--frames-stack', type=int, default=1)
-    parser.add_argument('--resume-path', type=str, default=None)
+    parser.add_argument('--resume', type=bool, default=True)
     parser.add_argument('--test-only', type=bool, default=False)
 
     # tunable parameters
     parser.add_argument('--weight-energy', type=float, default= 100.)   
     parser.add_argument('--weight-temp', type=float, default= 1.)   
-    parser.add_argument('--weight-action', type=float, default=0.1)
-    parser.add_argument('--lr', type=float, default=0.0003) #0.0003!!!!!!!!!!!!!!!!!!!!!
-    parser.add_argument('--epoch', type=int, default=2)
-    parser.add_argument('--batch-size', type=int, default=128)
+    parser.add_argument('--weight-action', type=float, default=10)
+    parser.add_argument('--lr', type=float, default=0.0001) #0.0003!!!!!!!!!!!!!!!!!!!!!
+    parser.add_argument('--epoch', type=int, default=500)
+    parser.add_argument('--batch-size', type=int, default=256)
     parser.add_argument('--n-hidden-layers', type=int, default=3)
-    parser.add_argument('--buffer-size', type=int, default=50000)
+    parser.add_argument('--buffer-size', type=int, default=4096*3)
     parser.add_argument('--num-quantiles', type=int, default=400)  # !!!!!!200
-
+    
     args = parser.parse_args()
 
-# Define Ray tuning experiments
-    tune.register_trainable("qrdqn", trainable_function)
-    ray.init()
-
-    # Run tuning
-    tune.run_experiments({
-        'qrdqn_tuning': {
-            "run": "qrdqn",
-            "stop": {"timesteps_total": args.step_per_epoch},
-            "config": {
-                "epoch": tune.grid_search([500]),
-                "weight_action": tune.grid_search([10]),
-                "lr": tune.grid_search([1e-04]),
-                "batch_size": tune.grid_search([256]),
-                "n_hidden_layers": tune.grid_search([3]),
-                "buffer_size": tune.grid_search([4096*3]),
-                "seed":tune.grid_search([0, 1, 2]),
-                "num_quantiles": tune.grid_search([400])
-            },
-            "local_dir": "/mnt/shared",
-        }
-    })
+    test_qrdqn(args)
