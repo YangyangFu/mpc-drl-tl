@@ -108,11 +108,13 @@ if __name__ == "__main__":
     parser.add_argument('--root-dir', type=str, help="Specify current root directory")
     args = parser.parse_args()
 
-    ## load mpc/rbc rewards
-    with open('mpc_rewards.json') as f:
-        mpc_rewards = json.load(f)
-    
     root_dir = args.root_dir
+    mpc_dir = os.path.dirname(root_dir)
+
+    ## load mpc/rbc rewards
+    with open(os.path.join(mpc_dir,'mpc','R2','PH=96','mpc_rewards.json')) as f:
+        mpc_rewards = json.load(f)
+
     mpc = mpc_rewards['mpc']['rewards'][0]
     rbc = mpc_rewards['base']['rewards'][0]
 
