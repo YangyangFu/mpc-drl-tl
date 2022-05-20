@@ -160,7 +160,7 @@ class PerfectMPC(object):
         user_params['logging.save_diagnostic_info'] = False 
         #user_params['init.run_in_parallel'] = True
         np.random.seed(0)
-        soln = pybobyqa.solve(self.objective, u0, rhoend=1e-04, maxfun=1500, bounds=(
+        soln = pybobyqa.solve(self.objective, u0, rhoend=1e-04, maxfun=1000000, bounds=(
             lower, upper), user_params=user_params, seek_global_minimum=True, scaling_within_bounds=True,print_progress=True)
         if user_params['logging.save_diagnostic_info']:
             soln.diagnostic_info.to_csv("diagnostic_"+str(self.time)+'.csv')
