@@ -3,6 +3,7 @@ import torch
 import pprint
 import argparse
 import numpy as np
+import pickle
 from torch.utils.tensorboard import SummaryWriter
 
 from tianshou.policy import QRDQNPolicy
@@ -151,7 +152,20 @@ def test_qrdqn(args):
     
     def save_fn(policy):
         torch.save(policy.state_dict(), os.path.join(log_path, 'policy.pth'))
-    
+
+    def save_checkpoint_fn(epoch, env_step, gradient_step):
+        # see also: https://pytorch.org/tutorials/beginner/saving_loading_models.html
+        torch.save(
+            {
+                'model': policy.state_dict(),
+                'optim': optim.state_dict(),
+            }, os.path.join(log_path, 'checkpoint.pth')
+        )
+        pickle.dump(
+            train_collector.buffer,
+            open(os.path.join(log_path, 'train_buffer.pkl'), "wb")
+        )
+
     def train_fn(epoch, env_step):
         # nature DQN setting, linear decay in the first 1M steps
         #max_eps_steps = int(args.epoch * args.step_per_epoch * 0.9) # this will not help speedup learning with large epoch
@@ -189,6 +203,7 @@ def test_qrdqn(args):
             save_fn = save_fn, 
             logger = logger,
             update_per_step = args.update_per_step, 
+            save_checkpoint_fn = save_checkpoint_fn,
             test_in_train = False)
         pprint.pprint(result)
 
@@ -307,7 +322,7 @@ if __name__ == '__main__':
                 "batch_size": tune.grid_search([256]),
                 "n_hidden_layers": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([4096*3]),
-                "seed":tune.grid_search([0, 1, 2, 3, 4]),
+                "seed":tune.grid_search([0, 1, 2]),
                 "num_quantiles": tune.grid_search([400])
             },
             "local_dir": "/mnt/shared",

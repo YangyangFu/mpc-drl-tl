@@ -136,6 +136,9 @@ def simulate_mpc(ts, te, dt, nday, u_opt_path, weights, measurement_names):
     measurement_base = interpolate_dataframe(measurement_base[['PTot','TRoo', 'fcu.uFan']],tim_intp)
     measurement_mpc = interpolate_dataframe(measurement_mpc[['PTot','TRoo', 'fcu.uFan']],tim_intp)
 
+    #measurement_base = measurement_base.groupby(measurement_base.index//900).mean()
+    #measurement_mpc = measurement_mpc.groupby(measurement_mpc.index//900).mean()
+
     def rw_func(cost, penalty, delta_action):
 
         res = - weights[0]*cost - weights[1]*penalty*penalty \
