@@ -135,12 +135,18 @@ if __name__ == "__main__":
     #xticks = [drl_all.index[i] for i in range(0, len(drl_all.index), 100)]
     #xticklabels = [int(drl_all.index[i]/672) for i in range(0, len(drl_all.index), 100)]
     fig, ax = plt.subplots(figsize=(16, 12))
-    ax.plot(drl_all.index, [rbc]*len(drl_all.index), lw=1, c= COLORS[0], label='RBC')
-    ax.plot(drl_all.index, [mpc]*len(drl_all.index), lw=1, c= COLORS[1], label='MPC')
+    ax.plot(drl_all.index, [rbc]*len(drl_all.index),
+            lw=1, c=COLORS[0], label='RBC: '+str(round(rbc,2))+'± 0')
+    ax.plot(drl_all.index, [mpc]*len(drl_all.index),
+            lw=1, c=COLORS[1], label='MPC: '+str(round(mpc,2))+'± 0')
     for i, algor in enumerate(algors):
         drl = drl_all[algor]
         drl.dropna(inplace=True)
-        ax.plot(drl.index, drl['mean'], lw=0.5, c=COLORS[i+2], label=algor.upper())
+        name = algor.upper()
+        mean = float(drl['mean'].dropna().iloc[-1])
+        std = float(drl['std'].dropna().iloc[-1])
+        label = '{name}: {mean} ± {std}'.format(name=name, mean=round(mean,2), std=round(std,2))
+        ax.plot(drl.index, drl['mean'], lw=0.5, c=COLORS[i+2], label=label)
         ax.fill_between(drl.index,
                         drl['mean']+drl['std'],
                         drl['mean']-drl['std'], 

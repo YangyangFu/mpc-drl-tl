@@ -100,7 +100,7 @@ while t < te:
 ##              DRL final run: ddqn-seed2
 ##===========================================================
 # get actions from the last epoch
-ddqn_case = './DRL-R2/ddqn_seed2/'
+ddqn_case = './DRL-R2/ddqn_seed5/'
 with open(ddqn_case+'u_opt.json') as f:
   u_opt = json.load(f)
 
@@ -196,10 +196,10 @@ while t < te:
     options['initialize'] = False
 
 ###############################################################
-##              DRL final run: qrdqn_seed0
+##              DRL final run: qrdqn_seed0:
 ##===========================================================
 # get actions from the last epoch
-qrdqn_case = './DRL-R2/qrdqn_seed0/'
+qrdqn_case = './DRL-R2/qrdqn_seed3/'
 with open(qrdqn_case+'u_opt.json') as f:
   u_opt = json.load(f)
 
@@ -286,6 +286,9 @@ price_tou = [0.02987, 0.02987, 0.02987, 0.02987,
 xticks=np.arange(ts,te+1,12*3600)
 xticks_label = np.arange(0,24*nday+1,12)
 
+matplotlib.rcParams['lines.linewidth'] = 1
+matplotlib.rcParams['lines.linestyle'] = '-'
+
 plt.figure(figsize=(16,12))
 plt.subplot(411)
 plt.step(np.arange(ts, te, 3600.),price_tou, where='post',c='k')
@@ -302,7 +305,7 @@ plt.plot(measurement_qrdqn['time'], measurement_qrdqn['fcu.uFan'],c=COLORS[4], l
 plt.plot(measurement_sac['time'], measurement_sac['fcu.uFan'],c=COLORS[5],label='SAC')
 plt.grid(True)
 plt.xticks(xticks,[])
-plt.legend(fancybox=True, framealpha=0.5)
+plt.legend(fancybox=True, framealpha=0.3, loc=1)
 plt.ylabel('Fan Speed')
 
 plt.subplot(413)
@@ -316,7 +319,7 @@ plt.plot(tim,T_upper, 'k-.', lw=1,label='Bounds')
 plt.plot(tim,T_lower, 'k-.', lw=1)
 plt.grid(True)
 plt.xticks(xticks,[])
-plt.legend(fancybox=True, framealpha=0.5)
+plt.legend(fancybox=True, framealpha=0.3, loc=1)
 plt.ylabel('Room Temperature [C]')
 
 plt.subplot(414)
@@ -328,7 +331,7 @@ plt.plot(measurement_qrdqn['time'], measurement_qrdqn['PTot'],c=COLORS[4], label
 plt.plot(measurement_sac['time'], measurement_sac['PTot'],c=COLORS[5], label='SAC')
 plt.grid(True)
 plt.xticks(xticks,xticks_label)
-plt.legend(fancybox=True, framealpha=0.5)
+plt.legend(fancybox=True, framealpha=0.3, loc=1)
 plt.ylabel('Total [W]')
 plt.xlabel('Time [h]')
 plt.savefig('control-response.pdf')
