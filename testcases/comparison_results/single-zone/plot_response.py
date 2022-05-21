@@ -45,7 +45,7 @@ baseline = load_fmu('SingleZoneFCUBaseline.fmu')
 
 ## fmu settings
 options = baseline.simulate_options()
-options['ncp'] = 5000
+options['ncp'] = 672
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
@@ -74,7 +74,7 @@ hvac = load_fmu('SingleZoneFCU.fmu')
 
 ## fmu settings
 options = hvac.simulate_options()
-options['ncp'] = 100
+options['ncp'] = 15
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
@@ -107,7 +107,7 @@ with open(ddqn_case+'u_opt.json') as f:
 ## fmu settings
 hvac.reset()
 options = hvac.simulate_options()
-options['ncp'] = 100
+options['ncp'] = 15
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
@@ -140,7 +140,7 @@ with open(sac_case+'u_opt.json') as f:
 ## fmu settings
 hvac.reset()
 options = hvac.simulate_options()
-options['ncp'] = 100
+options['ncp'] = 15
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
@@ -173,7 +173,7 @@ with open(ppo_case+'u_opt.json') as f:
 ## fmu settings
 hvac.reset()
 options = hvac.simulate_options()
-options['ncp'] = 100
+options['ncp'] = 15
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names

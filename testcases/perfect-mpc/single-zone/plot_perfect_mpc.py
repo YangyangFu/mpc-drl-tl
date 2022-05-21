@@ -33,7 +33,7 @@ def simulate_baseline(ts, te, measurement_names):
 
     ## fmu settings
     options = baseline.simulate_options()
-    options['ncp'] = 500
+    options['ncp'] = 672
     options['initialize'] = True
 
     ## construct optimal input for fmu
