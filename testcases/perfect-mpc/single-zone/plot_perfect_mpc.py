@@ -47,49 +47,6 @@ def simulate_baseline(ts, te, measurement_names):
 
     return measurement_base
 
-def get_metrics(Ptot, TZone, price_tou, nsteps_h=4):
-    """
-    TZone: ixk - k is the number of zones
-    """
-    occ_start = 8
-    occ_end = 18
-
-    n = len(Ptot)
-    energy_cost = []
-    temp_violation = []
-    energy = []
-
-    for i in range(n):
-        # assume 1 step is 15 minutes and data starts from hour 0
-        hindex = (i % (nsteps_h*24))//nsteps_h
-
-        # energy cost
-        power = Ptot[i]
-        price = price_tou[hindex]
-        energy_cost.append(power/1000./nsteps_h*price)
-        energy.append(power/1000./nsteps_h)
-        # maximum temperature violation
-        number_zone = 1
-
-        T_upper = np.array([30.0 for j in range(24)])
-        T_upper[occ_start:occ_end] = 26.0
-        T_lower = np.array([12.0 for j in range(24)])
-        T_lower[occ_start:occ_end] = 22.0
-
-        overshoot = []
-        undershoot = []
-        violation = []
-        for k in range(number_zone):
-            overshoot.append(
-                np.array([float((TZone[i, k] - 273.15) - T_upper[hindex]), 0.0]).max())
-            undershoot.append(
-                np.array([float(T_lower[hindex] - (TZone[i, k]-273.15)), 0.0]).max())
-            violation.append(overshoot[k]+undershoot[k])
-        temp_violation.append(violation)
-
-    return np.concatenate((np.array(energy).reshape(-1, 1), np.array(energy_cost).reshape(-1, 1), np.array(temp_violation)), axis=1)
-
-
 def interpolate_dataframe(df, new_index):
     """Interpolate a dataframe along its index based on a new index
     """
@@ -100,7 +57,7 @@ def interpolate_dataframe(df, new_index):
         df_out[col_name] = np.interp(new_index, df.index, col)
     return df_out
     
-def simulate_mpc(u_opt, ts, te, measurement_names):
+def simulate_mpc(u_opt, ts, te, dt, measurement_names):
     # read optimal control inputs
     with open(u_opt) as f:
         opt = json.load(f)
@@ -145,10 +102,12 @@ def simulate_mpc(u_opt, ts, te, measurement_names):
 
     return measurement_mpc
 
-def plot(ts, te, dt, nday, PH, measurement_base, measurement_mpc):
+def plot(ts, te, dt, nday, PH, measurement_base, measurement_mpc, path):
     ## simulate baseline
     occ_start = 8
     occ_end = 18
+    nsteps_h = int(3600./dt)
+
     tim = np.arange(ts, te, dt)
     T_upper = np.array([30.0 for i in tim])
     #T_upper[occ_start*4:(occ_end-1)*4] = 26.0
@@ -209,11 +168,15 @@ def plot(ts, te, dt, nday, PH, measurement_base, measurement_mpc):
     plt.xticks(xticks, xticks_label)
     plt.ylabel('Total [W]')
     plt.legend()
-    plt.savefig('mpc-vs-rbc-'+str(PH)+'.pdf')
-    plt.savefig('mpc-vs-rbc-'+str(PH)+'.png')
+    plt.savefig(os.path.join(path, 'mpc-vs-rbc-'+str(PH)+'.pdf'))
+    plt.savefig(os.path.join(path, 'mpc-vs-rbc-'+str(PH)+'.png'))
 
 
-def calculate_metrics(ts, te, PH, measurement_base, measurement_mpc):
+def calculate_metrics(ts, te, dt, measurement_base, measurement_mpc, weights, path):
+    occ_start = 8
+    occ_end = 18
+    nsteps_h = int(3600//dt)
+
     price_tou = [0.02987, 0.02987, 0.02987, 0.02987,
                  0.02987, 0.02987, 0.04667, 0.04667,
                  0.04667, 0.04667, 0.04667, 0.04667,
@@ -221,35 +184,92 @@ def calculate_metrics(ts, te, PH, measurement_base, measurement_mpc):
                  0.15877, 0.15877, 0.15877, 0.04667,
                  0.04667, 0.04667, 0.02987, 0.02987]*nday
 
-    measurement_base = pd.DataFrame(measurement_base, index=measurement_base['time'])
-    measurement_mpc = pd.DataFrame(measurement_mpc, index=measurement_mpc['time'])
+    measurement_base = pd.DataFrame(measurement_base,index=measurement_base['time'])
+    measurement_mpc = pd.DataFrame(measurement_mpc,index=measurement_mpc['time'])
 
-    tim_intp = np.arange(ts, te+1, 60)
-    measurement_base_60 = interpolate_dataframe(measurement_base[['PTot', 'TRoo']], tim_intp)
-    measurement_mpc_60 = interpolate_dataframe(measurement_mpc[['PTot', 'TRoo']], tim_intp)
-    measurement_base_900 = measurement_base_60.groupby(measurement_base_60.index//900).mean()  # every 15 minutes
-    measurement_mpc_900 = measurement_mpc_60.groupby(measurement_mpc_60.index//900).mean()  # every 15 minutes
+    tim_intp = np.arange(ts,te+1,dt)
+    measurement_base = interpolate_dataframe(measurement_base[['PTot','TRoo', 'fcu.uFan']],tim_intp)
+    measurement_mpc = interpolate_dataframe(measurement_mpc[['PTot','TRoo', 'fcu.uFan']],tim_intp)
 
-    #### get metrics
+    #measurement_base = measurement_base.groupby(measurement_base.index//900).mean()
+    #measurement_mpc = measurement_mpc.groupby(measurement_mpc.index//900).mean()
+
+    def rw_func(cost, penalty, delta_action):
+
+        res = - weights[0]*cost - weights[1]*penalty*penalty \
+            - delta_action*delta_action*weights[2]
+
+        return res
+
+    def get_rewards(u, Ptot,TZone,price_tou):
+        n = len(u)
+        energy_cost = []
+        penalty = []
+        delta_action = []
+        rewards = []
+
+        u_prev = [0.] + list(u)
+        u_prev = u_prev[:-1]
+
+        for i in range(n):
+            # assume 1 step is 15 minutes and data starts from hour 0
+            hindex = (i%(nsteps_h*24))//nsteps_h
+            power=Ptot[i]
+            price = price_tou[hindex]
+            # the power should divide by 1000
+            energy_cost.append(power/1000./nsteps_h*price)
+
+            # zone temperature penalty
+            number_zone = 1
+
+            # zone temperature bounds - need check with the high-fidelty model
+            T_upper = np.array([30.0 for j in range(24)])
+            T_upper[occ_start:occ_end] = 26.0
+            T_lower = np.array([12.0 for j in range(24)])
+            T_lower[occ_start:occ_end] = 22.0
+
+            overshoot = []
+            undershoot = []
+            for k in range(number_zone):
+                overshoot.append(np.array([float((TZone[i] -273.15) - T_upper[hindex]), 0.0]).max())
+                undershoot.append(np.array([float(T_lower[hindex] - (TZone[i]-273.15)), 0.0]).max())
+
+            penalty.append(sum(np.array(overshoot)) + sum(np.array(undershoot)))
+        
+            # action changes
+            delta_action.append(abs(u[i] - u_prev[i]))
+
+            # sum up for rewards
+            rewards.append(rw_func(energy_cost[-1], penalty[-1], delta_action[-1]))
+
+        return np.array([energy_cost, penalty, delta_action, rewards]).transpose()
+
+    #### get rewards
     #================================================================================
-    metrics_base = get_metrics(measurement_base_900['PTot'].values, measurement_base_900['TRoo'].values.reshape(-1, 1), price_tou)
-    metrics_mpc = get_metrics(measurement_mpc_900['PTot'].values, measurement_mpc_900['TRoo'].values.reshape(-1, 1), price_tou)
+    rewards_base = get_rewards(measurement_base['fcu.uFan'].values, measurement_base['PTot'].values,measurement_base['TRoo'].values,price_tou)
+    rewards_mpc = get_rewards(measurement_mpc['fcu.uFan'].values, measurement_mpc['PTot'].values,measurement_mpc['TRoo'].values,price_tou)
 
-    metrics_base = pd.DataFrame(metrics_base, columns=[['energy', 'ene_cost', 'temp_violation']])
-    metrics_mpc = pd.DataFrame(metrics_mpc, columns=[['energy', 'ene_cost', 'temp_violation']])
+    rewards_base = pd.DataFrame(rewards_base,columns=[['ene_cost','penalty', 'delta_action', 'rewards']])
+    rewards_mpc = pd.DataFrame(rewards_mpc,columns=[['ene_cost','penalty','delta_action', 'rewards']])
 
-    comparison = {'base': {'energy': list(metrics_base['energy'].sum()),
-                        'energy_cost': list(metrics_base['ene_cost'].sum()),
-                        'total_temp_violation': list(metrics_base['temp_violation'].sum()/nsteps_h),
-                        'max_temp_violation': list(metrics_base['temp_violation'].max())},
-                'mpc': {'energy': list(metrics_mpc['energy'].sum()),
-                        'energy_cost': list(metrics_mpc['ene_cost'].sum()),
-                        'total_temp_violation': list(metrics_mpc['temp_violation'].sum()/nsteps_h),
-                        'max_temp_violation': list(metrics_mpc['temp_violation'].max())}
-                }
-
-    with open('mpc-vs-rbc-'+str(PH)+'.json', 'w') as outfile:
-        json.dump(comparison, outfile)
+    # get rewards - DRL - we can either read from training results or 
+    # recalculate using the method for mpc and baseline (very time consuming for multi-epoch training)
+    ### ===============
+    mpc_rbc_rewards={'base': {'rewards':list(rewards_base['rewards'].sum()),
+                            'ene_cost': list(rewards_base['ene_cost'].sum()),
+                            'total_temp_violation': list(rewards_base['penalty'].sum()/4),
+                            'max_temp_violation': list(rewards_base['penalty'].max()),
+                            'temp_violation_squared': list((rewards_base['penalty']**2).sum()),
+                            'delta_action_sqaured': list((rewards_base['delta_action']**2).sum())},
+                    'mpc': {'rewards': list(rewards_mpc['rewards'].sum()),
+                            'ene_cost': list(rewards_mpc['ene_cost'].sum()),
+                            'total_temp_violation': list(rewards_mpc['penalty'].sum()/4),
+                            'max_temp_violation': list(rewards_mpc['penalty'].max()),
+                            'temp_violation_squared': list((rewards_mpc['penalty']**2).sum()),
+                            'delta_action_sqaured': list((rewards_mpc['delta_action']**2).sum())},
+                    }
+    with open(os.path.join(path, 'mpc_rewards.json'), 'w') as outfile:
+        json.dump(mpc_rbc_rewards, outfile)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -262,7 +282,7 @@ if __name__ == "__main__":
     period = nday*24*3600.
     te = ts + period
     dt = 15*60.
-    nsteps_h = int(3600//dt)
+
     measurement_names = ['time', 'TRoo', 'TOut', 'PTot', 'fcu.uFan', 'm_flow_in']
     
     # simulate baseline
@@ -273,10 +293,13 @@ if __name__ == "__main__":
     ## =============================================
     root_dir = args.root_dir
     u_opt_files = find_all_files(root_dir)
-    
+    weights = [100., 1., 10.]
+
     for file in u_opt_files:
+        #extract path
+        path = os.path.dirname(file)
         #extract PH
         PH = int(re.findall("PH=\d+", file)[0].split("=")[1])
-        measurement_mpc = simulate_mpc(file, ts, te, measurement_names)
-        plot(ts, te, dt, nday, PH, measurement_base, measurement_mpc)
-        calculate_metrics(ts, te, PH, measurement_base, measurement_mpc)
+        measurement_mpc = simulate_mpc(file, ts, te, dt, measurement_names)
+        plot(ts, te, dt, nday, PH, measurement_base, measurement_mpc, path)
+        calculate_metrics(ts, te, dt, measurement_base, measurement_mpc, weights, path)

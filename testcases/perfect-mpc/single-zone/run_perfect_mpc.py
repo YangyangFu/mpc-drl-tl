@@ -156,11 +156,12 @@ class PerfectMPC(object):
         lower = self.u_lb*self.PH 
         upper =self.u_ub*self.PH 
         user_params={}
-        user_params['logging.save_xk'] = True 
+        user_params['logging.save_xk'] = False
         user_params['logging.save_diagnostic_info'] = False 
         #user_params['init.run_in_parallel'] = True
-        soln = pybobyqa.solve(self.objective, u0, rhoend=1e-06, maxfun=1000, bounds=(
-            lower, upper), user_params=user_params, seek_global_minimum=False, print_progress=True)
+        np.random.seed(0)
+        soln = pybobyqa.solve(self.objective, u0, rhoend=1e-04, maxfun=1500, bounds=(
+            lower, upper), user_params=user_params, seek_global_minimum=True, scaling_within_bounds=True,print_progress=True)
         if user_params['logging.save_diagnostic_info']:
             soln.diagnostic_info.to_csv("diagnostic_"+str(self.time)+'.csv')
 
@@ -453,9 +454,9 @@ if __name__ == "__main__":
             "run": "mpc",
             "stop": {"timesteps_total": 672},
             "config": {
-                "PH": tune.grid_search([4, 8, 16, 32, 48, 96]),
+                "PH": tune.grid_search([48, 96]),
                 "weight_energy": tune.grid_search([100.]),
-                "weight_temp": tune.grid_search([100.]),
+                "weight_temp": tune.grid_search([10.]),
                 "weight_action": tune.grid_search([10.])
             },
             "local_dir": "/mnt/shared",

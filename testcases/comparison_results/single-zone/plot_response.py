@@ -100,7 +100,7 @@ while t < te:
 ##              DRL final run: ddqn-seed2
 ##===========================================================
 # get actions from the last epoch
-ddqn_case = './DRL-R2/ddqn_seed2/'
+ddqn_case = './DRL-R2/ddqn_seed5/'
 with open(ddqn_case+'u_opt.json') as f:
   u_opt = json.load(f)
 
@@ -195,6 +195,38 @@ while t < te:
     i += 1
     options['initialize'] = False
 
+###############################################################
+##              DRL final run: qrdqn_seed0:
+##===========================================================
+# get actions from the last epoch
+qrdqn_case = './DRL-R2/qrdqn_seed3/'
+with open(qrdqn_case+'u_opt.json') as f:
+  u_opt = json.load(f)
+
+## fmu settings
+hvac.reset()
+options = hvac.simulate_options()
+options['ncp'] = 100
+options['initialize'] = True
+options['result_handling'] = 'memory'
+options['filter'] = measurement_names
+res_qrdqn = []
+hvac.set("zon.roo.T_start", 273.15+25)
+## construct optimal input for fmu
+# main loop - do step
+t = ts
+i = 0
+while t < te:
+    u = u_opt[i]
+    hvac.set('uFan', u[0])
+    ires = hvac.simulate(start_time=t,
+                         final_time=t+dt,
+                         options=options)
+    res_qrdqn.append(ires)
+
+    t += dt
+    i += 1
+    options['initialize'] = False
 ################################################################
 ##           Compare MPC/DRL with Baseline
 ## =============================================================
@@ -205,6 +237,7 @@ measurement_base = {}
 measurement_ddqn = {}
 measurement_sac = {}
 measurement_ppo = {}
+measurement_qrdqn = {}
 
 for name in measurement_names:
     measurement_base[name] = res_base[name]
@@ -228,7 +261,11 @@ for name in measurement_names:
     for ires in res_ppo:
       value_name_ppo += list(ires[name])
     measurement_ppo[name] = np.array(value_name_ppo)
-
+    # get qrdqn
+    value_name_qrdqn = []
+    for ires in res_qrdqn:
+      value_name_qrdqn += list(ires[name])
+    measurement_qrdqn[name] = np.array(value_name_qrdqn)
 ## simulate baseline
 occ_start = 8
 occ_end = 18
@@ -249,6 +286,9 @@ price_tou = [0.02987, 0.02987, 0.02987, 0.02987,
 xticks=np.arange(ts,te+1,12*3600)
 xticks_label = np.arange(0,24*nday+1,12)
 
+matplotlib.rcParams['lines.linewidth'] = 1
+matplotlib.rcParams['lines.linestyle'] = '-'
+
 plt.figure(figsize=(16,12))
 plt.subplot(411)
 plt.step(np.arange(ts, te, 3600.),price_tou, where='post',c='k')
@@ -261,10 +301,11 @@ plt.plot(measurement_base['time'], measurement_base['fcu.uFan'], c=COLORS[0], la
 plt.plot(measurement_mpc['time'], measurement_mpc['fcu.uFan'],c=COLORS[1], label='MPC')
 plt.plot(measurement_ddqn['time'], measurement_ddqn['fcu.uFan'],c=COLORS[2], label='DDQN')
 plt.plot(measurement_ppo['time'], measurement_ppo['fcu.uFan'],c=COLORS[3], label='PPO')
+plt.plot(measurement_qrdqn['time'], measurement_qrdqn['fcu.uFan'],c=COLORS[4], label='QRDQN')
 plt.plot(measurement_sac['time'], measurement_sac['fcu.uFan'],c=COLORS[5],label='SAC')
 plt.grid(True)
 plt.xticks(xticks,[])
-plt.legend(fancybox=True, framealpha=0.5)
+plt.legend(fancybox=True, framealpha=0.3, loc=1)
 plt.ylabel('Fan Speed')
 
 plt.subplot(413)
@@ -272,12 +313,13 @@ plt.plot(measurement_base['time'], measurement_base['TRoo']-273.15,c=COLORS[0], 
 plt.plot(measurement_mpc['time'],  measurement_mpc['TRoo']-273.15,c=COLORS[1], label='MPC')
 plt.plot(measurement_ddqn['time'],  measurement_ddqn['TRoo']-273.15,c=COLORS[2], label='DDQN')
 plt.plot(measurement_ppo['time'],  measurement_ppo['TRoo']-273.15,c=COLORS[3], label='PPO')
+plt.plot(measurement_qrdqn['time'],  measurement_qrdqn['TRoo']-273.15,c=COLORS[4], label='QRDQN')
 plt.plot(measurement_sac['time'],  measurement_sac['TRoo']-273.15,c=COLORS[5],label='SAC')
 plt.plot(tim,T_upper, 'k-.', lw=1,label='Bounds')
 plt.plot(tim,T_lower, 'k-.', lw=1)
 plt.grid(True)
 plt.xticks(xticks,[])
-plt.legend(fancybox=True, framealpha=0.5)
+plt.legend(fancybox=True, framealpha=0.3, loc=1)
 plt.ylabel('Room Temperature [C]')
 
 plt.subplot(414)
@@ -285,10 +327,11 @@ plt.plot(measurement_base['time'], measurement_base['PTot'], c=COLORS[0], label=
 plt.plot(measurement_mpc['time'], measurement_mpc['PTot'], c=COLORS[1], label='MPC')
 plt.plot(measurement_ddqn['time'], measurement_ddqn['PTot'], c=COLORS[2], label='DDQN')
 plt.plot(measurement_ppo['time'], measurement_ppo['PTot'], c=COLORS[3], label='PPO')
+plt.plot(measurement_qrdqn['time'], measurement_qrdqn['PTot'],c=COLORS[4], label='QRDQN')
 plt.plot(measurement_sac['time'], measurement_sac['PTot'],c=COLORS[5], label='SAC')
 plt.grid(True)
 plt.xticks(xticks,xticks_label)
-plt.legend(fancybox=True, framealpha=0.5)
+plt.legend(fancybox=True, framealpha=0.3, loc=1)
 plt.ylabel('Total [W]')
 plt.xlabel('Time [h]')
 plt.savefig('control-response.pdf')
@@ -309,7 +352,7 @@ measurement_base = pd.DataFrame(measurement_base,index=measurement_base['time'])
 measurement_mpc = pd.DataFrame(measurement_mpc,index=measurement_mpc['time'])
 measurement_ddqn = pd.DataFrame(measurement_ddqn,index=measurement_ddqn['time'])
 measurement_ppo = pd.DataFrame(measurement_ppo,index=measurement_ppo['time'])
-#measurement_qrdqn = pd.DataFrame(measurement_qrdqn,index=measurement_qrdqn['time'])
+measurement_qrdqn = pd.DataFrame(measurement_qrdqn,index=measurement_qrdqn['time'])
 measurement_sac = pd.DataFrame(measurement_sac,index=measurement_sac['time'])
 
 tim_intp = np.arange(ts,te+1,dt)
@@ -317,7 +360,7 @@ measurement_base = interpolate_dataframe(measurement_base[['PTot','TRoo', 'fcu.u
 measurement_mpc = interpolate_dataframe(measurement_mpc[['PTot','TRoo', 'fcu.uFan']],tim_intp)
 measurement_ddqn = interpolate_dataframe(measurement_ddqn[['PTot','TRoo', 'fcu.uFan']],tim_intp)
 measurement_ppo = interpolate_dataframe(measurement_ppo[['PTot','TRoo', 'fcu.uFan']],tim_intp)
-#measurement_qrdqn = interpolate_dataframe(measurement_qrdqn[['PTot','TRoo', 'fcu.uFan']],tim_intp)
+measurement_qrdqn = interpolate_dataframe(measurement_qrdqn[['PTot','TRoo', 'fcu.uFan']],tim_intp)
 measurement_sac = interpolate_dataframe(measurement_sac[['PTot','TRoo', 'fcu.uFan']],tim_intp)
 
 #measurement_base = measurement_base.groupby(measurement_base.index//900).mean()
@@ -382,14 +425,14 @@ rewards_base = get_rewards(measurement_base['fcu.uFan'].values, measurement_base
 rewards_mpc = get_rewards(measurement_mpc['fcu.uFan'].values, measurement_mpc['PTot'].values,measurement_mpc['TRoo'].values,price_tou)
 rewards_ddqn = get_rewards(measurement_ddqn['fcu.uFan'].values, measurement_ddqn['PTot'].values,measurement_ddqn['TRoo'].values,price_tou)
 rewards_ppo = get_rewards(measurement_ppo['fcu.uFan'].values, measurement_ppo['PTot'].values,measurement_ppo['TRoo'].values,price_tou)
-#rewards_qrdqn = get_rewards(measurement_qrdqn['fcu.uFan'].values, measurement_qrdqn['PTot'].values,measurement_qrdqn['TRoo'].values,price_tou)
+rewards_qrdqn = get_rewards(measurement_qrdqn['fcu.uFan'].values, measurement_qrdqn['PTot'].values,measurement_qrdqn['TRoo'].values,price_tou)
 rewards_sac = get_rewards(measurement_sac['fcu.uFan'].values, measurement_sac['PTot'].values,measurement_sac['TRoo'].values,price_tou)
 
 rewards_base = pd.DataFrame(rewards_base,columns=[['energy','ene_cost','penalty', 'delta_action', 'rewards']])
 rewards_mpc = pd.DataFrame(rewards_mpc,columns=[['energy','ene_cost','penalty','delta_action', 'rewards']])
 rewards_ddqn = pd.DataFrame(rewards_ddqn,columns=[['energy','ene_cost','penalty','delta_action', 'rewards']])
 rewards_ppo = pd.DataFrame(rewards_ppo,columns=[['energy','ene_cost','penalty','delta_action', 'rewards']])
-#rewards_qrdqn = pd.DataFrame(rewards_qrdqn,columns=[['ene_cost','penalty','delta_action', 'rewards']])
+rewards_qrdqn = pd.DataFrame(rewards_qrdqn,columns=[['energy','ene_cost','penalty','delta_action', 'rewards']])
 rewards_sac = pd.DataFrame(rewards_sac,columns=[['energy','ene_cost','penalty','delta_action', 'rewards']])
 
 # get rewards - DRL - we can either read from training results or 
@@ -427,6 +470,14 @@ mpc_drl_kpis = {'base': {'rewards': float(rewards_base['rewards'].sum()),
                         'delta_action': float(rewards_ppo['delta_action'].sum()/4),
                         'temp_violation_squared': float((rewards_ppo['penalty']**2).sum()),
                         'delta_action_sqaured': float((rewards_ppo['delta_action']**2).sum())},
+                'qrdqn': {'rewards': float(rewards_qrdqn['rewards'].sum()),
+                          'energy': float(rewards_qrdqn['energy'].sum()),
+                          'ene_cost': float(rewards_qrdqn['ene_cost'].sum()),
+                          'total_temp_violation': float(rewards_qrdqn['penalty'].sum()/4),
+                          'max_temp_violation': float(rewards_qrdqn['penalty'].max()),
+                          'delta_action': float(rewards_qrdqn['delta_action'].sum()/4),
+                          'temp_violation_squared': float((rewards_qrdqn['penalty']**2).sum()),
+                          'delta_action_sqaured': float((rewards_qrdqn['delta_action']**2).sum())},
                 'sac': {'rewards': float(rewards_sac['rewards'].sum()),
                         'energy': float(rewards_sac['energy'].sum()),
                         'ene_cost': float(rewards_sac['ene_cost'].sum()),
