@@ -322,7 +322,7 @@ if __name__ == '__main__':
                 "batch_size": tune.grid_search([256]),
                 "n_hidden_layers": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([4096*3]),
-                "seed":tune.grid_search([0, 1, 2]),
+                "seed":tune.grid_search([1, 2]),
                 "num_quantiles": tune.grid_search([400])
             },
             "local_dir": "/mnt/shared",
