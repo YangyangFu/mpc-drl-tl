@@ -97,7 +97,7 @@ while t < te:
 
 
 ###############################################################
-##              DRL final run: ddqn-seed2
+##              DRL final run: ddqn-seed5
 ##===========================================================
 # get actions from the last epoch
 ddqn_case = './DRL-R2/ddqn_seed5/'
@@ -133,7 +133,7 @@ while t < te:
 ##              DRL final run: sac_seed0
 ##===========================================================
 # get actions from the last epoch
-sac_case = './DRL-R2/sac_seed0/'
+sac_case = './DRL-R2/sac_seed1/'
 with open(sac_case+'u_opt.json') as f:
   u_opt = json.load(f)
 
@@ -196,7 +196,7 @@ while t < te:
     options['initialize'] = False
 
 ###############################################################
-##              DRL final run: qrdqn_seed0:
+##              DRL final run: qrdqn_seed3:
 ##===========================================================
 # get actions from the last epoch
 qrdqn_case = './DRL-R2/qrdqn_seed3/'
@@ -206,7 +206,7 @@ with open(qrdqn_case+'u_opt.json') as f:
 ## fmu settings
 hvac.reset()
 options = hvac.simulate_options()
-options['ncp'] = 100
+options['ncp'] = 15
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
@@ -488,7 +488,7 @@ mpc_drl_kpis = {'base': {'rewards': float(rewards_base['rewards'].sum()),
                         'delta_action_sqaured': float((rewards_sac['delta_action']**2).sum())}
                 }
 
-with open('/mpc-drl-kpis.json', 'w') as outfile:
+with open('/control-response-kpis.json', 'w') as outfile:
     json.dump(mpc_drl_kpis, outfile)
 
-pd.DataFrame(mpc_drl_kpis).transpose().to_csv('mpc-drl-kpis.csv')
+pd.DataFrame(mpc_drl_kpis).transpose().to_csv('control-response-kpis.csv')

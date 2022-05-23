@@ -37,7 +37,7 @@ baseline = load_fmu('SingleZoneFCUBaseline.fmu')
 
 ## fmu settings
 options = baseline.simulate_options()
-options['ncp'] = 500
+options['ncp'] = 672
 options['initialize'] = True
 options['result_handling'] = 'memory'
 options['filter'] = measurement_names
@@ -68,7 +68,7 @@ def simulate_mpc(ts, te, dt, nday, u_opt_path, weights, measurement_names):
 
     ## fmu settings
     options = hvac.simulate_options()
-    options['ncp'] = 100
+    options['ncp'] = 15
     options['initialize'] = True
     options['result_handling'] = 'memory'
     options['filter'] = measurement_names
@@ -219,7 +219,7 @@ def simulate_mpc(ts, te, dt, nday, u_opt_path, weights, measurement_names):
 
 # Which MPC rewards
 weights = [100., 1., 10.]
-PHs=[4, 8 ,16, 32, 48]
+PHs=[4, 8 ,16, 32, 48, 96]
 for PH in PHs:
     u_opt_path = './mpc/R2/PH='+str(PH)
     simulate_mpc(ts, te, dt, nday, u_opt_path, weights, measurement_names)

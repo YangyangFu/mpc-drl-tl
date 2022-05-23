@@ -131,14 +131,15 @@ if __name__ == "__main__":
     sns.set(font_scale = 1.5)
     sns.color_palette("bright") #"pastel", "muted", "bright"
 
+    # plot with all epoches
     # set x ticks
     #xticks = [drl_all.index[i] for i in range(0, len(drl_all.index), 100)]
     #xticklabels = [int(drl_all.index[i]/672) for i in range(0, len(drl_all.index), 100)]
     fig, ax = plt.subplots(figsize=(16, 12))
     ax.plot(drl_all.index, [rbc]*len(drl_all.index),
-            lw=1, c=COLORS[0], label='RBC: '+str(round(rbc,2))+'± 0')
+            lw=1, c=COLORS[0], label='RBC: '+str(round(rbc,2))+'± 0.00')
     ax.plot(drl_all.index, [mpc]*len(drl_all.index),
-            lw=1, c=COLORS[1], label='MPC: '+str(round(mpc,2))+'± 0')
+            lw=1, c=COLORS[1], label='MPC: '+str(round(mpc,2))+'± 0.00')
     for i, algor in enumerate(algors):
         drl = drl_all[algor]
         drl.dropna(inplace=True)
@@ -163,6 +164,42 @@ if __name__ == "__main__":
     plt.legend(loc=4)
     plt.savefig(os.path.join(root_dir, 'rewards.png'))
     plt.savefig(os.path.join(root_dir, 'rewards.pdf'))
+
+
+    # plot with first 500 epochs
+    # set x ticks
+    #xticks = [drl_all.index[i] for i in range(0, len(drl_all.index), 100)]
+    #xticklabels = [int(drl_all.index[i]/672) for i in range(0, len(drl_all.index), 100)]
+    drl_500 = drl_all.loc[drl_all.index<=500*672,:]
+    fig, ax = plt.subplots(figsize=(16, 12))
+    ax.plot(drl_500.index, [rbc]*len(drl_500.index),
+            lw=1, c=COLORS[0], label='RBC: '+str(round(rbc,2))+'± 0.00')
+    ax.plot(drl_500.index, [mpc]*len(drl_500.index),
+            lw=1, c=COLORS[1], label='MPC: '+str(round(mpc,2))+'± 0.00')
+    for i, algor in enumerate(algors):
+        drl = drl_500[algor]
+        drl.dropna(inplace=True)
+        name = algor.upper()
+        mean = float(drl['mean'].dropna().iloc[-1])
+        std = float(drl['std'].dropna().iloc[-1])
+        label = '{name}: {mean} ± {std}'.format(name=name, mean=round(mean,2), std=round(std,2))
+        ax.plot(drl.index, drl['mean'], lw=0.5, c=COLORS[i+2], label=label)
+        ax.fill_between(drl.index,
+                        drl['mean']+drl['std'],
+                        drl['mean']-drl['std'], 
+                        alpha=.4, 
+                        fc=COLORS[i+2], 
+                        lw=0)
+    ax.set_xlabel('Steps')
+    ax.set_ylabel('Rewards')
+    #ax.set_xticks(xticks)
+    #ax.set_xticklabels(xticklabels)
+    
+    ylim = [-3000, 0]
+    ax.set_ylim(ylim)
+    plt.legend(loc=4)
+    plt.savefig(os.path.join(root_dir, 'rewards_500.png'))
+    plt.savefig(os.path.join(root_dir, 'rewards_500.pdf'))
 
 # calculate normalized score
 rew_max = drl_all.xs('mean', axis=1, level=1, drop_level=False).max()
