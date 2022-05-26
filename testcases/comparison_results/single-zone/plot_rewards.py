@@ -49,10 +49,11 @@ def merge_csv(csv_files, algors):
         for f in csv_files:
             if algor in f:
                 csvs = pd.concat([csvs, pd.read_csv(f, index_col=["env_step"], usecols=["env_step","rew"])], axis=1)
+        csvs['max'] = csvs.max(axis=1)
         csvs['mean'] = csvs.mean(axis=1)
         csvs['std'] = csvs.std(axis=1)
-        columns = [(algor, 'mean'), (algor, 'std')]
-        csvs_mean_std_algor = csvs[['mean', 'std']]
+        columns = [(algor, 'mean'), (algor, 'std'), (algor, 'max')]
+        csvs_mean_std_algor = csvs[['mean', 'std', 'max']]
         csvs_mean_std_algor.columns = pd.MultiIndex.from_tuples(columns)
         csvs_mean_std = pd.concat([csvs_mean_std, csvs_mean_std_algor], axis=1)
         #csvs[['mean', 'std']].to_csv(os.path.join(root_dir, algor+'_test_rew.csv'))
@@ -202,16 +203,16 @@ if __name__ == "__main__":
     plt.savefig(os.path.join(root_dir, 'rewards_500.pdf'))
 
 # calculate normalized score
-rew_max = drl_all.xs('mean', axis=1, level=1, drop_level=False).max()
-rew_max[('mpc','mean')] = mpc
-rew_max[('rbc','mean')] = rbc
+rew_max = drl_all.xs('max', axis=1, level=1, drop_level=False).max()
+rew_max[('mpc','max')] = mpc
+rew_max[('rbc','max')] = rbc
 print(rew_max)
 
 norm_rew_max = (-rew_max/rew_max.min()+2)*100
 index = norm_rew_max.index
 index = [i[0].upper() for i in index]
 norm_rew_max.index = index
-norm_rew_max.to_csv('rewards_max.csv')
+norm_rew_max.to_csv('best-rewards.csv')
 
 sns.set(font_scale=0.8)
 fig, ax = plt.subplots(figsize=(8, 4))
@@ -219,5 +220,5 @@ nAlgors = len(index)
 plt.barh(range(nAlgors), norm_rew_max, height=1.0, fill=True, ec='k')
 plt.yticks(range(nAlgors), index)
 plt.xlabel("Normalized score [%]")
-plt.savefig('normalized-score.png')
-plt.savefig('normalized-score.pdf')
+plt.savefig('normalized-best-score.png')
+plt.savefig('normalized-best-score.pdf')
