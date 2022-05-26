@@ -371,6 +371,13 @@ def tune_mpc(args):
     w_temp = args.weight_temp
     w_action = args.weight_action
     mpc.weights = [w_energy, w_temp, w_action]
+
+    # update u0
+    with open('u0.json') as f:
+        u0 = json.load(f) 
+    u0 = [i[0] for i in u0]
+    mpc.u0 = u0 
+    
     # reset fmu
     mpc.reset_fmu()
     mpc.initialize_fmu()
