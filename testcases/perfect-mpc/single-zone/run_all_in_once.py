@@ -373,7 +373,7 @@ def tune_mpc(args):
     mpc.weights = [w_energy, w_temp, w_action]
 
     # update u0
-    with open('u0.json') as f:
+    with open(os.path.join(fmu_path,'u0.json')) as f:
         u0 = json.load(f) 
     u0 = [i[0] for i in u0]
     mpc.u0 = u0 
@@ -381,7 +381,6 @@ def tune_mpc(args):
     # reset fmu
     mpc.reset_fmu()
     mpc.initialize_fmu()
-    mpc.fmu_model.set("zon.roo.T_start", 273.15+25)
     states = mpc.get_fmu_states()
 
     results = pd.DataFrame()

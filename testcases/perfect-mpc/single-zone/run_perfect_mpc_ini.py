@@ -382,7 +382,7 @@ def tune_mpc(args):
     mpc.weights = [w_energy, w_temp, w_action]
 
     # update u0
-    with open('u0.json') as f:
+    with open(os.path.join(fmu_path,'u0.json')) as f:
         u0 = json.load(f) 
     u0 = [i[0] for i in u0]
 
