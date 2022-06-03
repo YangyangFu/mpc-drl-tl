@@ -63,7 +63,7 @@ class PerfectMPC(object):
         self.weights = [100., 10.0, 5.0]
         self.u0 = [1.0]*self.PH
         self.u_ch_prev = self.u_lb
-
+        
         # optimizer settings
         self.global_solution = False # require global solution if tru. usually need more running time.
 
@@ -191,14 +191,14 @@ class PerfectMPC(object):
         # call simulation
         if self.fmu_generator == "jmodelica":
             self.reset_fmu()
-            self.initialize_fmu() # this might be a bottleneck for complex system
+            self.initialize_fmu()  # this might be a bottleneck for complex system
         elif self.fmu_generator == "dymola":
             pass
 
         _, outputs = self.simulate(ts, te, input=input_object, states=self._states_)
         
         # interpolate outputs as 1 min data and 15-min average
-        t_intp = np.arange(ts, te, 60)
+        t_intp = np.arange(ts, te+1, self.dt)
         outputs = self._sample(self._interpolate(outputs, t_intp), self.dt)
         # post processing the results to calculate objective terms
         energy_cost = self._calculate_energy_cost(outputs)
@@ -227,7 +227,7 @@ class PerfectMPC(object):
         """ 
             assume df is interpolated at 1-min interval
         """
-        index_sampled = np.arange(df.index[0], df.index[-1], freq)
+        index_sampled = np.arange(df.index[0], df.index[-1]+1, freq)
         df_sampled = df.groupby(df.index//freq).mean()
         df_sampled.index = index_sampled
 
@@ -380,8 +380,17 @@ def tune_mpc(args):
     w_temp = args.weight_temp
     w_action = args.weight_action
     mpc.weights = [w_energy, w_temp, w_action]
+
+    # update u0
+    with open(os.path.join(fmu_path,'u0.json')) as f:
+        u0 = json.load(f) 
+    u0 = [i[0] for i in u0]
+
+    u0_array = get_u0_array(u0, int(period/dt), PH)
+
     # reset fmu
     mpc.reset_fmu()
+    mpc.fmu_model.set("zon.roo.T_start", 273.15+25)
     mpc.initialize_fmu()
     states = mpc.get_fmu_states()
 
@@ -390,7 +399,11 @@ def tune_mpc(args):
     t_opt = []
 
     t = ts
+    i = 0
     while t < te:
+        # seet initial point
+        u0 = mpc.get_u0(u0_array, i)
+        mpc.u0 = u0
         # set starting states
         mpc.set_time(t)
         mpc.set_mpc_states(states)
@@ -401,7 +414,6 @@ def tune_mpc(args):
         u_opt_ch = u_opt_ph[:mpc.ni]
         
         # need revisit u0 design
-        mpc.set_u0(u_opt_ph)
         mpc.set_u_ch_prev(u_opt_ch)
 
         # apply optimal control actions to virtual buildings
@@ -419,6 +431,7 @@ def tune_mpc(args):
 
         # update mpc clcok
         t += dt
+        i += 1
         # update mpc states
         states = states_next
 
@@ -428,6 +441,15 @@ def tune_mpc(args):
 
     with open('u_opt.json', 'w') as outfile:
         json.dump(final, outfile) 
+
+def get_u0_array(u0,nsteps,PH):
+    u0 = u0*2
+    u0_array = []
+    for i in range(nsteps):
+        u0_array += [u0[i:i+PH]]
+    return u0_array
+def get_u0(u0_array,step):
+    return u0_array[step]
 
 def trainable_function(config, reporter):
     while True:
