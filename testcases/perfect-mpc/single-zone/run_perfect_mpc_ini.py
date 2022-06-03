@@ -42,7 +42,7 @@ class PerfectMPC(object):
         self.fmu_options = self.fmu_model.simulate_options()
         self.fmu_options["result_handling"] = "memory"
         self.fmu_options["filter"] = self.fmu_output_names
-        self.fmu_options["ncp"] = int(self.dt/60.)
+        self.fmu_options["ncp"] = min(1000, int(self.dt/60.)*PH)
 
         # define fmu model inputs for optimization: here we assume we only optimize control inputs (time-varying variabels in Modelica instead of parameter)
         self.fmu_input_names = control_names
@@ -79,6 +79,10 @@ class PerfectMPC(object):
             names = self.fmu_model.get_states_list()
             for name in names:
                 states[name] = float(self.fmu_model.get(name))
+        elif self.fmu_generator == "dymola":
+            states = self.fmu_model.get_fmu_states()
+        else:
+            ValueError("FMU Generator not supported")
 
         return states
 
@@ -94,7 +98,9 @@ class PerfectMPC(object):
             for name in states.keys():
                 self.fmu_model.set(name, states[name])
         elif self.fmu_generator == "dymola":
-            pass 
+            self.fmu_model.set_fmu_states(states)
+        else:
+            pass
 
     def set_time(self, time):
         self.set_fmu_time(time)
@@ -183,8 +189,12 @@ class PerfectMPC(object):
         input_object = self._transfer_inputs(u, piecewise_constant=True)
 
         # call simulation
-        self.reset_fmu()
-        self.initialize_fmu() # this might be a bottleneck for complex system
+        if self.fmu_generator == "jmodelica":
+            self.reset_fmu()
+            self.initialize_fmu()  # this might be a bottleneck for complex system
+        elif self.fmu_generator == "dymola":
+            pass
+
         _, outputs = self.simulate(ts, te, input=input_object, states=self._states_)
         
         # interpolate outputs as 1 min data and 15-min average
