@@ -372,9 +372,9 @@ def tune_mpc(args):
     mpc.weights = [w_energy, w_temp, w_action]
 
     # update u0
-    with open(os.path.join(fmu_path,'u0.json')) as f:
+    with open(os.path.join(fmu_path,'u0_2.json')) as f:
         u0 = json.load(f) 
-    u0 = [i[0] for i in u0]
+    u0 = [i[0] for i in u0['u_opt']]
 
     u0_array = get_u0_array(u0, int(period/dt), PH)
 
