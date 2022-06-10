@@ -492,3 +492,22 @@ with open('/control-response-kpis.json', 'w') as outfile:
     json.dump(mpc_drl_kpis, outfile)
 
 pd.DataFrame(mpc_drl_kpis).transpose().to_csv('control-response-kpis.csv')
+
+
+## ===================================================
+##       calculate the shifted load
+## ====================================================
+shift_mpc = (measurement_mpc['PTot'] - measurement_base['PTot']).abs().sum()/4/1000/2 # kwH
+shift_ddqn = (measurement_ddqn['PTot'] - measurement_base['PTot']).abs().sum()/4/1000/2 # kwH
+shift_qrdqn = (measurement_qrdqn['PTot'] - measurement_base['PTot']).abs().sum()/4/1000/2 # kwH
+shift_ppo = (measurement_ppo['PTot'] - measurement_base['PTot']).abs().sum()/4/1000/2 # kwH
+shift_sac = (measurement_sac['PTot'] - measurement_base['PTot']).abs().sum()/4/1000/2 # kwH
+
+shift_energy = {'mpc': shift_mpc,
+                'ddqn': shift_ddqn,
+                'qrdqn': shift_qrdqn,
+                'ppo': shift_ppo,
+                'sac': shift_sac}
+
+with open("shifted-energy.json", 'w') as file:
+    json.dump(shift_energy, file)
