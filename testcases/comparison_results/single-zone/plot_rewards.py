@@ -119,7 +119,7 @@ if __name__ == "__main__":
     mpc = mpc_rewards['mpc']['rewards'][0]
     rbc = mpc_rewards['base']['rewards'][0]
 
-    ## read DRL results
+    ## read DRL resultsß
     algors = find_all_algorithms(root_dir)
     print(algors)
     drl_rewards_files = find_all_files(root_dir, algors, re.compile(".*test_rew.csv"))
@@ -165,7 +165,6 @@ if __name__ == "__main__":
     plt.legend(loc=4)
     plt.savefig(os.path.join(root_dir, 'rewards.png'))
     plt.savefig(os.path.join(root_dir, 'rewards.pdf'))
-
 
     # plot with first 500 epochs
     # set x ticks
