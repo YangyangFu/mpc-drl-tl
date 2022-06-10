@@ -42,7 +42,7 @@ class PerfectMPC(object):
         self.fmu_options = self.fmu_model.simulate_options()
         self.fmu_options["result_handling"] = "memory"
         self.fmu_options["filter"] = self.fmu_output_names
-        self.fmu_options["ncp"] = min(1000, int(self.dt/60.)*PH)
+        self.fmu_options["ncp"] = int(self.dt/60.)
 
         # define fmu model inputs for optimization: here we assume we only optimize control inputs (time-varying variabels in Modelica instead of parameter)
         self.fmu_input_names = control_names
@@ -79,10 +79,6 @@ class PerfectMPC(object):
             names = self.fmu_model.get_states_list()
             for name in names:
                 states[name] = float(self.fmu_model.get(name))
-        elif self.fmu_generator == "dymola":
-            states = self.fmu_model.get_fmu_states()
-        else:
-            ValueError("FMU Generator not supported")
 
         return states
 
@@ -98,9 +94,7 @@ class PerfectMPC(object):
             for name in states.keys():
                 self.fmu_model.set(name, states[name])
         elif self.fmu_generator == "dymola":
-            self.fmu_model.set_fmu_states(states)
-        else:
-            pass
+            pass 
 
     def set_time(self, time):
         self.set_fmu_time(time)
@@ -189,12 +183,8 @@ class PerfectMPC(object):
         input_object = self._transfer_inputs(u, piecewise_constant=True)
 
         # call simulation
-        if self.fmu_generator == "jmodelica":
-            self.reset_fmu()
-            self.initialize_fmu()  # this might be a bottleneck for complex system
-        elif self.fmu_generator == "dymola":
-            pass
-
+        self.reset_fmu()
+        self.initialize_fmu() # this might be a bottleneck for complex system
         _, outputs = self.simulate(ts, te, input=input_object, states=self._states_)
         
         # interpolate outputs as 1 min data and 15-min average
@@ -382,9 +372,9 @@ def tune_mpc(args):
     mpc.weights = [w_energy, w_temp, w_action]
 
     # update u0
-    with open(os.path.join(fmu_path,'u0.json')) as f:
+    with open(os.path.join(fmu_path,'u0_2.json')) as f:
         u0 = json.load(f) 
-    u0 = [i[0] for i in u0]
+    u0 = [i[0] for i in u0['u_opt']]
 
     u0_array = get_u0_array(u0, int(period/dt), PH)
 
