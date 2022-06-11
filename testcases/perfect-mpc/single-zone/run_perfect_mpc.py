@@ -177,17 +177,17 @@ class PerfectMPC(object):
             user_params = {'c1': 0.5, 'c2': 0.3, 'w': 0.9}
             # Call instance of PSO
             optimizer = pyswarms.single.GlobalBestPSO(
-                n_particles=10, 
-                dimensions=2, 
+                n_particles=min(60, 5*self.PH), 
+                dimensions=self.PH, 
                 options=user_params, 
                 bounds=(np.array(lower), np.array(upper)), 
-                #oh_strategy={"w": 'exp_decay', 'c1': 'lin_variation'},
-                #ftol = 1e-04,
-                #init_pos = np.array(u0)
+                oh_strategy={"w": 'exp_decay', 'c1': 'lin_variation'},
+                ftol = 1e-04,
+                ftol_iter = 10
                 )
     
             # Perform optimization
-            cost, pos = optimizer.optimize(self.objective_pso, iters=2000)
+            cost, pos = optimizer.optimize(self.objective_pso, iters=1500)
             opt = (pos, cost)
         return opt
 
@@ -216,7 +216,7 @@ class PerfectMPC(object):
         _, outputs = self.simulate(ts, te, input=input_object, states=self._states_)
         
         # interpolate outputs as 1 min data and 15-min average
-        t_intp = np.arange(ts, te, 60)
+        t_intp = np.arange(ts, te+1, 60)
         outputs = self._sample(self._interpolate(outputs, t_intp), self.dt)
         # post processing the results to calculate objective terms
         energy_cost = self._calculate_energy_cost(outputs)
@@ -260,7 +260,7 @@ class PerfectMPC(object):
                 ts, te, input=input_object, states=self._states_)
 
             # interpolate outputs as 1 min data and 15-min average
-            t_intp = np.arange(ts, te, 60)
+            t_intp = np.arange(ts, te+1, 60)
             outputs = self._sample(self._interpolate(outputs, t_intp), self.dt)
             # post processing the results to calculate objective terms
             energy_cost = self._calculate_energy_cost(outputs)
@@ -289,7 +289,7 @@ class PerfectMPC(object):
         """ 
             assume df is interpolated at 1-min interval
         """
-        index_sampled = np.arange(df.index[0], df.index[-1], freq)
+        index_sampled = np.arange(df.index[0], df.index[-1]+1, freq)
         df_sampled = df.groupby(df.index//freq).mean()
         df_sampled.index = index_sampled
 
@@ -412,7 +412,7 @@ def tune_mpc(args):
     CH = 1
     dt = 900.
     ts = 201*24*3600.
-    period = 7*24*3600.
+    period = 3600.
     te = ts + period
 
     price = [0.02987, 0.02987, 0.02987, 0.02987,
@@ -492,14 +492,11 @@ def tune_mpc(args):
     with open('u_opt.json', 'w') as outfile:
         json.dump(final, outfile) 
 
-ndays = 7
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--PH', type=int, default=2)
-parser.add_argument('--weight-energy', type=float, default=100.)
+parser.add_argument('--weight-energy', type=float, default=1.)
 parser.add_argument('--weight-temp', type=float, default=1.)
-parser.add_argument('--weight-action', type=float, default=10.)
-parser.add_argument('--ndays', type=int, default=ndays)
+parser.add_argument('--weight-action', type=float, default=1.)
 args = parser.parse_args()
 tune_mpc(args)
 
