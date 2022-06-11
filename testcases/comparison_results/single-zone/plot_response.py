@@ -290,11 +290,17 @@ matplotlib.rcParams['lines.linewidth'] = 1
 matplotlib.rcParams['lines.linestyle'] = '-'
 
 plt.figure(figsize=(16,12))
-plt.subplot(411)
-plt.step(np.arange(ts, te, 3600.),price_tou, where='post',c='k')
+ax1 = plt.subplot(411)
+ax1.step(np.arange(ts, te, 3600.),price_tou, where='post',c='k', label = "Price ($/kWh)")
+ax2 = ax1.twinx()
+ax2.plot(measurement_base['time'], measurement_base['TOut']-273.15, label='Outdoor Temperature ($^\circ$C)')
+ax1.grid(True)
+ax1.legend(fancybox=True, framealpha=0.3, loc=2)
+ax2.legend(fancybox=True, framealpha=0.3, loc=1)
 plt.xticks(xticks,[])
-plt.grid(True)
-plt.ylabel('Price ($/kW)')
+
+#ax1.set_ylabel('Price ($/kW)')
+#ax2.set_ylabel('Outdoor Temperature ($^\circ$C)')
 
 plt.subplot(412)
 plt.plot(measurement_base['time'], measurement_base['fcu.uFan'], c=COLORS[0], label='RBC')
@@ -320,7 +326,7 @@ plt.plot(tim,T_lower, 'k-.', lw=1)
 plt.grid(True)
 plt.xticks(xticks,[])
 plt.legend(fancybox=True, framealpha=0.3, loc=1)
-plt.ylabel('Room Temperature [C]')
+plt.ylabel('Room Temperature ($^\circ$C)')
 
 plt.subplot(414)
 plt.plot(measurement_base['time'], measurement_base['PTot'], c=COLORS[0], label='RBC')
@@ -332,8 +338,8 @@ plt.plot(measurement_sac['time'], measurement_sac['PTot'],c=COLORS[5], label='SA
 plt.grid(True)
 plt.xticks(xticks,xticks_label)
 plt.legend(fancybox=True, framealpha=0.3, loc=1)
-plt.ylabel('Total [W]')
-plt.xlabel('Time [h]')
+plt.ylabel('Power (W)')
+plt.xlabel('Time (h)')
 plt.savefig('control-response.pdf')
 plt.savefig('control-response.png')
 
