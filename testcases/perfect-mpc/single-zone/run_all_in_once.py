@@ -79,6 +79,10 @@ class PerfectMPC(object):
             names = self.fmu_model.get_states_list()
             for name in names:
                 states[name] = float(self.fmu_model.get(name))
+        elif self.fmu_generator == "dymola":
+            states = self.fmu_model.get_fmu_state()
+        else:
+            ValueError("FMU Generator not supported")
 
         return states
 
@@ -94,7 +98,9 @@ class PerfectMPC(object):
             for name in states.keys():
                 self.fmu_model.set(name, states[name])
         elif self.fmu_generator == "dymola":
-            pass 
+            self.fmu_model.set_fmu_state(states)
+        else:
+            pass
 
     def set_time(self, time):
         self.set_fmu_time(time)
@@ -457,9 +463,9 @@ def tune_mpc():
     mpc.set_time(t)
     mpc.set_mpc_states(states)
     
-    optimum = mpc.optimize()
-    u_opt_ph = optimum.x 
-    f_opt_ph = optimum.f
+    x, f = mpc.optimize()
+    u_opt_ph = x 
+    f_opt_ph = f
     u_opt_ch = u_opt_ph[:mpc.ni]
     
     # need revisit u0 design
