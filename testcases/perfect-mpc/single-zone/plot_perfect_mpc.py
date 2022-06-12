@@ -203,6 +203,7 @@ def calculate_metrics(ts, te, dt, measurement_base, measurement_mpc, weights, pa
 
     def get_rewards(u, Ptot,TZone,price_tou):
         n = len(u)
+        energy = []
         energy_cost = []
         penalty = []
         delta_action = []
@@ -217,6 +218,7 @@ def calculate_metrics(ts, te, dt, measurement_base, measurement_mpc, weights, pa
             power=Ptot[i]
             price = price_tou[hindex]
             # the power should divide by 1000
+            energy.append(power/1000./nsteps_h)
             energy_cost.append(power/1000./nsteps_h*price)
 
             # zone temperature penalty
@@ -242,32 +244,36 @@ def calculate_metrics(ts, te, dt, measurement_base, measurement_mpc, weights, pa
             # sum up for rewards
             rewards.append(rw_func(energy_cost[-1], penalty[-1], delta_action[-1]))
 
-        return np.array([energy_cost, penalty, delta_action, rewards]).transpose()
+        return np.array([energy, energy_cost, penalty, delta_action, rewards]).transpose()
 
     #### get rewards
     #================================================================================
     rewards_base = get_rewards(measurement_base['fcu.uFan'].values, measurement_base['PTot'].values,measurement_base['TRoo'].values,price_tou)
     rewards_mpc = get_rewards(measurement_mpc['fcu.uFan'].values, measurement_mpc['PTot'].values,measurement_mpc['TRoo'].values,price_tou)
 
-    rewards_base = pd.DataFrame(rewards_base,columns=[['ene_cost','penalty', 'delta_action', 'rewards']])
-    rewards_mpc = pd.DataFrame(rewards_mpc,columns=[['ene_cost','penalty','delta_action', 'rewards']])
+    rewards_base = pd.DataFrame(rewards_base,columns=[['energy','ene_cost','penalty', 'delta_action', 'rewards']])
+    rewards_mpc = pd.DataFrame(rewards_mpc,columns=[['energy','ene_cost','penalty','delta_action', 'rewards']])
 
     # get rewards - DRL - we can either read from training results or 
     # recalculate using the method for mpc and baseline (very time consuming for multi-epoch training)
     ### ===============
-    mpc_rbc_rewards={'base': {'rewards':list(rewards_base['rewards'].sum()),
-                            'ene_cost': list(rewards_base['ene_cost'].sum()),
-                            'total_temp_violation': list(rewards_base['penalty'].sum()/4),
-                            'max_temp_violation': list(rewards_base['penalty'].max()),
-                            'temp_violation_squared': list((rewards_base['penalty']**2).sum()),
-                            'delta_action_sqaured': list((rewards_base['delta_action']**2).sum())},
-                    'mpc': {'rewards': list(rewards_mpc['rewards'].sum()),
-                            'ene_cost': list(rewards_mpc['ene_cost'].sum()),
-                            'total_temp_violation': list(rewards_mpc['penalty'].sum()/4),
-                            'max_temp_violation': list(rewards_mpc['penalty'].max()),
-                            'temp_violation_squared': list((rewards_mpc['penalty']**2).sum()),
-                            'delta_action_sqaured': list((rewards_mpc['delta_action']**2).sum())},
-                    }
+    mpc_rbc_rewards = {'base': {'rewards': float(rewards_base['rewards'].sum()),
+                                'energy': float(rewards_base['energy'].sum()),
+                                'ene_cost': float(rewards_base['ene_cost'].sum()),
+                                'total_temp_violation': float(rewards_base['penalty'].sum()/4),
+                                'max_temp_violation': float(rewards_base['penalty'].max()),
+                                'delta_action': float(rewards_base['delta_action'].sum()/4),
+                                'temp_violation_squared': float((rewards_base['penalty']**2).sum()),
+                                'delta_action_sqaured': float((rewards_base['delta_action']**2).sum())},
+                       'mpc': {'rewards': float(rewards_mpc['rewards'].sum()),
+                               'energy': float(rewards_mpc['energy'].sum()),
+                               'ene_cost': float(rewards_mpc['ene_cost'].sum()),
+                               'total_temp_violation': float(rewards_mpc['penalty'].sum()/4),
+                               'max_temp_violation': float(rewards_mpc['penalty'].max()),
+                               'delta_action': float(rewards_mpc['delta_action'].sum()/4),
+                               'temp_violation_squared': float((rewards_mpc['penalty']**2).sum()),
+                               'delta_action_sqaured': float((rewards_mpc['delta_action']**2).sum())}
+                        }
     with open(os.path.join(path, 'mpc_rewards.json'), 'w') as outfile:
         json.dump(mpc_rbc_rewards, outfile)
 

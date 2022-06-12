@@ -119,7 +119,7 @@ if __name__ == "__main__":
     mpc = mpc_rewards['mpc']['rewards'][0]
     rbc = mpc_rewards['base']['rewards'][0]
 
-    ## read DRL results
+    ## read DRL resultsß
     algors = find_all_algorithms(root_dir)
     print(algors)
     drl_rewards_files = find_all_files(root_dir, algors, re.compile(".*test_rew.csv"))
@@ -166,7 +166,6 @@ if __name__ == "__main__":
     plt.savefig(os.path.join(root_dir, 'rewards.png'))
     plt.savefig(os.path.join(root_dir, 'rewards.pdf'))
 
-
     # plot with first 500 epochs
     # set x ticks
     #xticks = [drl_all.index[i] for i in range(0, len(drl_all.index), 100)]
@@ -177,6 +176,7 @@ if __name__ == "__main__":
             lw=1, c=COLORS[0], label='RBC: '+str(round(rbc,2))+'± 0.00')
     ax.plot(drl_500.index, [mpc]*len(drl_500.index),
             lw=1, c=COLORS[1], label='MPC: '+str(round(mpc,2))+'± 0.00')
+
     for i, algor in enumerate(algors):
         drl = drl_500[algor]
         drl.dropna(inplace=True)
@@ -191,12 +191,13 @@ if __name__ == "__main__":
                         alpha=.4, 
                         fc=COLORS[i+2], 
                         lw=0)
+    ax.set_yscale('symlog')
     ax.set_xlabel('Steps')
     ax.set_ylabel('Rewards')
     #ax.set_xticks(xticks)
     #ax.set_xticklabels(xticklabels)
     
-    ylim = [-3000, 0]
+    ylim = [-10000, -100]
     ax.set_ylim(ylim)
     plt.legend(loc=4)
     plt.savefig(os.path.join(root_dir, 'rewards_500.png'))

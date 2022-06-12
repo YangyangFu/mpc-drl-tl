@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import pybobyqa
+import pyswarms
 # Import numerical libraries
 import numpy as np
 import pandas as pd
@@ -42,7 +43,7 @@ class PerfectMPC(object):
         self.fmu_options = self.fmu_model.simulate_options()
         self.fmu_options["result_handling"] = "memory"
         self.fmu_options["filter"] = self.fmu_output_names
-        self.fmu_options["ncp"] = min(int(self.dt/60.)*PH, 1000)
+        self.fmu_options["ncp"] = min(1000, int(self.dt/60.)*PH)
 
         # define fmu model inputs for optimization: here we assume we only optimize control inputs (time-varying variabels in Modelica instead of parameter)
         self.fmu_input_names = control_names
@@ -65,8 +66,7 @@ class PerfectMPC(object):
         self.u_ch_prev = self.u_lb
 
         # optimizer settings
-        self.global_solution = False # require global solution if tru. usually need more running time.
-
+        self.optimizer = "pso"
 
     def get_fmu_states(self):
         """ Return fmu states as a hash table"""
@@ -155,17 +155,37 @@ class PerfectMPC(object):
         u0 = self.u0 
         lower = self.u_lb*self.PH 
         upper =self.u_ub*self.PH 
-        user_params={}
-        user_params['logging.save_xk'] = True
-        user_params['logging.save_diagnostic_info'] = True
-        #user_params['init.run_in_parallel'] = True
-        np.random.seed(0)
-        soln = pybobyqa.solve(self.objective, u0, rhoend=1e-04, maxfun=10000, bounds=(
-            lower, upper), user_params=user_params, seek_global_minimum=True, scaling_within_bounds=True,print_progress=True)
-        if user_params['logging.save_diagnostic_info']:
-            soln.diagnostic_info.to_csv("diagnostic_"+str(self.time)+'.csv')
+        if self.optimizer == "bobyqa":
+            user_params = {}
+            user_params['logging.save_xk'] = False
+            user_params['logging.save_diagnostic_info'] = False
+            #user_params['init.run_in_parallel'] = True
+            np.random.seed(0)
+            soln = pybobyqa.solve(self.objective, u0, rhoend=1e-04, maxfun=5000, bounds=(
+                lower, upper), user_params=user_params, seek_global_minimum=True, scaling_within_bounds=True, print_progress=True)
+            if user_params['logging.save_diagnostic_info']:
+                soln.diagnostic_info.to_csv(
+                    "diagnostic_"+str(self.time)+'.csv')
+            opt = (soln.x, soln.f)
+        elif self.optimizer == "pso":
+            # Set-up hyperparameters
+            user_params = {'c1': 0.5, 'c2': 0.3, 'w': 0.9}
+            # Call instance of PSO
+            optimizer = pyswarms.single.GlobalBestPSO(
+                n_particles=min(60, 5*self.PH),
+                dimensions=self.PH,
+                options=user_params,
+                bounds=(np.array(lower), np.array(upper)),
+                oh_strategy={"w": 'exp_decay', 'c1': 'lin_variation'},
+                ftol=1e-04,
+                ftol_iter=5,
+                init_pos=u0
+            )
 
-        return soln
+            # Perform optimization
+            cost, pos = optimizer.optimize(self.objective_pso, iters=5000)
+            opt = (pos, cost)
+        return opt
 
     def objective(self, u):
         """ return objective values at a prediction horizon
@@ -202,6 +222,50 @@ class PerfectMPC(object):
         print(sum(objective))
 
         return sum(objective)
+
+    def objective_pso(self, u):
+        """ return objective values at a prediction horizon
+            u is array with n_particles: n-by-PH dimension
+            
+            1. transfer control variables generated from optimizer to fmu inputs
+            2. call simulate() and return key measurements
+            3. calculate and return MPC objective based on key measurements
+
+        """
+        # fetch simulation settings
+        ts = self.time
+        te = self.time + self.PH*self.dt
+        u = u.tolist()
+        objective = []
+        for ui in u:
+            # transfer inputs
+            input_object = self._transfer_inputs(ui, piecewise_constant=True)
+
+            # call simulation
+            if self.fmu_generator == "jmodelica":
+                self.reset_fmu()
+                self.initialize_fmu()  # this might be a bottleneck for complex system
+            elif self.fmu_generator == "dymola":
+                pass
+
+            _, outputs = self.simulate(
+                ts, te, input=input_object, states=self._states_)
+
+            # interpolate outputs as 1 min data and 15-min average
+            t_intp = np.arange(ts, te+1, 60)
+            outputs = self._sample(self._interpolate(outputs, t_intp), self.dt)
+            # post processing the results to calculate objective terms
+            energy_cost = self._calculate_energy_cost(outputs)
+            temp_violations = self._calculate_temperature_violation(outputs)
+            action_changes = self._calculate_action_changes(ui)
+
+            objective_ph = [self.weights[0]*energy_cost[i] +
+                        self.weights[1]*temp_violations[i]*temp_violations[i] +
+                        self.weights[2]*action_changes[i]*action_changes[i] for i in range(self.PH)]
+
+            objective += [sum(objective_ph)]
+        print(objective)
+        return objective
 
     def _interpolate(self, df, new_index):
         """Interpolate a dataframe along its index based on a new index
@@ -374,7 +438,9 @@ def tune_mpc():
     with open(os.path.join(fmu_path,'u0.json')) as f:
         u0 = json.load(f) 
     u0 = [i[0] for i in u0]
-    mpc.u0 = u0 
+    u0_all = np.random.rand(60,PH)
+    u0_all[0,:] = np.array(u0)
+    mpc.u0 = u0_all
     
     # reset fmu
     mpc.reset_fmu()
