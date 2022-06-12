@@ -43,7 +43,7 @@ class PerfectMPC(object):
         self.fmu_options = self.fmu_model.simulate_options()
         self.fmu_options["result_handling"] = "memory"
         self.fmu_options["filter"] = self.fmu_output_names
-        self.fmu_options["ncp"] = int(self.dt/60.)
+        self.fmu_options["ncp"] = min(1000, int(self.dt/60.)*PH)
 
         # define fmu model inputs for optimization: here we assume we only optimize control inputs (time-varying variabels in Modelica instead of parameter)
         self.fmu_input_names = control_names
@@ -161,7 +161,7 @@ class PerfectMPC(object):
             user_params['logging.save_diagnostic_info'] = False
             #user_params['init.run_in_parallel'] = True
             np.random.seed(0)
-            soln = pybobyqa.solve(self.objective, u0, rhoend=1e-04, maxfun=1500, bounds=(
+            soln = pybobyqa.solve(self.objective, u0, rhoend=1e-04, maxfun=5000, bounds=(
                 lower, upper), user_params=user_params, seek_global_minimum=True, scaling_within_bounds=True, print_progress=True)
             if user_params['logging.save_diagnostic_info']:
                 soln.diagnostic_info.to_csv(
@@ -177,11 +177,13 @@ class PerfectMPC(object):
                 options=user_params,
                 bounds=(np.array(lower), np.array(upper)),
                 oh_strategy={"w": 'exp_decay', 'c1': 'lin_variation'},
-                ftol=1e-04
+                ftol=1e-04,
+                ftol_iter=5,
+                init_pos=u0
             )
 
             # Perform optimization
-            cost, pos = optimizer.optimize(self.objective_pso, iters=1500)
+            cost, pos = optimizer.optimize(self.objective_pso, iters=5000)
             opt = (pos, cost)
         return opt
 
@@ -203,7 +205,6 @@ class PerfectMPC(object):
         # call simulation
         self.reset_fmu()
         self.initialize_fmu() # this might be a bottleneck for complex system
-        print(u)
         _, outputs = self.simulate(ts, te, input=input_object, states=self._states_)
         
         # interpolate outputs as 1 min data and 15-min average
@@ -263,7 +264,7 @@ class PerfectMPC(object):
                         self.weights[2]*action_changes[i]*action_changes[i] for i in range(self.PH)]
 
             objective += [sum(objective_ph)]
-
+        print(objective)
         return objective
 
     def _interpolate(self, df, new_index):
@@ -438,7 +439,9 @@ def tune_mpc(args):
     with open(os.path.join(fmu_path,'u0.json')) as f:
         u0 = json.load(f) 
     u0 = [i[0] for i in u0]
-    mpc.u0 = u0 
+    u0_all = np.random.rand(60,PH)
+    u0_all[0,:] = np.array(u0)
+    mpc.u0 = u0_all
     
     # reset fmu
     mpc.reset_fmu()
