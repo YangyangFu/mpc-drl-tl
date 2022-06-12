@@ -22,7 +22,7 @@ class PerfectMPC(object):
                 time,
                 dt,
                 fmu_model, 
-                fmu_generator="jmodelica",
+                fmu_generator="dymola",
                 measurement_names = [],
                 control_names = [],
                 price = [],
@@ -42,7 +42,7 @@ class PerfectMPC(object):
         self.fmu_options = self.fmu_model.simulate_options()
         self.fmu_options["result_handling"] = "memory"
         self.fmu_options["filter"] = self.fmu_output_names
-        self.fmu_options["ncp"] = int(self.dt/60.)
+        self.fmu_options["ncp"] = min(int(self.dt/60.)*PH, 1000)
 
         # define fmu model inputs for optimization: here we assume we only optimize control inputs (time-varying variabels in Modelica instead of parameter)
         self.fmu_input_names = control_names
@@ -60,7 +60,7 @@ class PerfectMPC(object):
         self.u_ub = u_ub
 
         # mpc tuning
-        self.weights = [100., 10.0, 5.0]
+        self.weights = [100., 1.0, 10.0]
         self.u0 = [1.0]*self.PH
         self.u_ch_prev = self.u_lb
 
@@ -156,11 +156,11 @@ class PerfectMPC(object):
         lower = self.u_lb*self.PH 
         upper =self.u_ub*self.PH 
         user_params={}
-        user_params['logging.save_xk'] = False
-        user_params['logging.save_diagnostic_info'] = False 
+        user_params['logging.save_xk'] = True
+        user_params['logging.save_diagnostic_info'] = True
         #user_params['init.run_in_parallel'] = True
         np.random.seed(0)
-        soln = pybobyqa.solve(self.objective, u0, rhoend=1e-04, maxfun=1000000, bounds=(
+        soln = pybobyqa.solve(self.objective, u0, rhoend=1e-04, maxfun=10000, bounds=(
             lower, upper), user_params=user_params, seek_global_minimum=True, scaling_within_bounds=True,print_progress=True)
         if user_params['logging.save_diagnostic_info']:
             soln.diagnostic_info.to_csv("diagnostic_"+str(self.time)+'.csv')
@@ -185,7 +185,6 @@ class PerfectMPC(object):
         # call simulation
         self.reset_fmu()
         self.initialize_fmu() # this might be a bottleneck for complex system
-        print(u)
         _, outputs = self.simulate(ts, te, input=input_object, states=self._states_)
         
         # interpolate outputs as 1 min data and 15-min average
@@ -330,13 +329,12 @@ class PerfectMPC(object):
         """save actions at previous step """
         self.u_ch_prev = u_ch_prev
         
-def tune_mpc(args):
+def tune_mpc():
     fmu_path = os.path.dirname(os.path.realpath(__file__))
     print(fmu_path)
-    model = load_fmu(os.path.join(fmu_path, "SingleZoneFCU.fmu"))
-    states_names = model.get_states_list()
-    states = [float(model.get(state)) for state in states_names]
-    PH = args.PH
+    model = load_fmu(os.path.join(fmu_path, "SingleZoneFCUDymola.fmu"))
+
+    PH = 672
     CH = 1
     dt = 900.
     ts = 201*24*3600.
@@ -367,9 +365,9 @@ def tune_mpc(args):
                     u_lb = u_lb,
                     u_ub = u_ub)
 
-    w_energy = args.weight_energy
-    w_temp = args.weight_temp
-    w_action = args.weight_action
+    w_energy = 100.
+    w_temp = 1.0
+    w_action = 10.
     mpc.weights = [w_energy, w_temp, w_action]
 
     # update u0
@@ -425,45 +423,4 @@ def tune_mpc(args):
     with open('u_opt.json', 'w') as outfile:
         json.dump(final, outfile) 
 
-def trainable_function(config, reporter):
-    while True:
-        args.weight_energy = config['weight_energy']
-        args.weight_temp = config['weight_temp']
-        args.weight_action = config['weight_action']
-        args.PH = config['PH']
-        tune_mpc(args)
-
-        # a fake traing score to stop current simulation based on searched parameters
-        reporter(timesteps_total=672)
-if __name__ == "__main__":
-    import ray
-    from ray import tune
-
-    ndays = 7
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--PH', type=int, default=4)
-    parser.add_argument('--weight-energy', type=float, default=100.)
-    parser.add_argument('--weight-temp', type=float, default=1.)
-    parser.add_argument('--weight-action', type=float, default=10.)
-    parser.add_argument('--ndays', type=int, default=ndays)
-    args = parser.parse_args()
-
-    # Define Ray tuning experiments
-    tune.register_trainable("mpc", trainable_function)
-    ray.init()
-
-    # Run tuning
-    tune.run_experiments({
-        'mpc_tuning': {
-            "run": "mpc",
-            "stop": {"timesteps_total": 672},
-            "config": {
-                "PH": tune.grid_search([96*7]),
-                "weight_energy": tune.grid_search([100.]),
-                "weight_temp": tune.grid_search([1.]),
-                "weight_action": tune.grid_search([10.])
-            },
-            "local_dir": "/mnt/shared",
-        }
-    })
+tune_mpc()
