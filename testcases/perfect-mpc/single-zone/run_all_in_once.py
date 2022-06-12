@@ -5,6 +5,7 @@ import pybobyqa
 import pyswarms
 # Import numerical libraries
 import numpy as np
+import numpy.matlib
 import pandas as pd
 import matplotlib
 matplotlib.use('agg')
@@ -444,7 +445,7 @@ def tune_mpc():
     with open(os.path.join(fmu_path,'u0.json')) as f:
         u0 = json.load(f) 
     u0 = [i[0] for i in u0]
-    u0_all = np.random.rand(60,PH)
+    u0_all = np.matlib.repmat(u0,60,1) + 0.1*np.random.rand(60, PH)
     u0_all[0,:] = np.array(u0)
     mpc.u0 = u0_all
     
