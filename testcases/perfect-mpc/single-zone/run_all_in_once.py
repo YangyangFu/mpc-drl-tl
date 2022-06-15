@@ -202,10 +202,10 @@ class PerfectMPC(object):
                 sigma = 0.25,
                 normalize = True,
                 parallelize = False,
-                maxfevals = 10000,
-                maxiter = 100,
-                tolfun = 1e-4,
-                tolx = 1e-3,
+                maxfevals = 50000,
+                maxiter = 1000,
+                tolfun = 1e-11,
+                tolx = 1e-11,
                 restarts = 0,
                 restart_from_best=False,
                 verb_log = 1,
@@ -402,11 +402,15 @@ class PerfectMPC(object):
         self.u_ch_prev = u_ch_prev
 
 def tune_mpc():
+    fmu_generator = "jmodelica"
     fmu_path = os.path.dirname(os.path.realpath(__file__))
     print(fmu_path)
-    model = load_fmu(os.path.join(fmu_path, "SingleZoneFCU.fmu"))
+    if fmu_generator == "jmodelica":
+        model = load_fmu(os.path.join(fmu_path, "SingleZoneFCU.fmu"))
+    elif fmu_generator == "dymola":
+        model = load_fmu(os.path.join(fmu_path, "SingleZoneFCU.fmu"))
 
-    PH = 8
+    PH = 672
     CH = 1
     dt = 900.
     ts = 201*24*3600.
@@ -431,6 +435,7 @@ def tune_mpc():
                     time = ts,
                     dt = dt,
                     fmu_model = model, 
+                    fmu_generator = fmu_generator,
                     measurement_names = measurement_names,
                     control_names = control_names,
                     price = price,

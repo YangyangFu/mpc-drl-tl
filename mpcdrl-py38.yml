@@ -18,5 +18,4 @@ dependencies:
   - pip:
     - git+https://github.com/YangyangFu/modelicagym.git
     - pvlib 
-    - Py-BOBYQA
-    - pyswarms
+    - pymoo
