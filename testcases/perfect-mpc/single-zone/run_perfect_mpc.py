@@ -80,7 +80,7 @@ class PerfectMPC(object):
             for name in names:
                 states[name] = float(self.fmu_model.get(name))
         elif self.fmu_generator == "dymola":
-            states = self.fmu_model.get_fmu_states()
+            states = self.fmu_model.get_fmu_state()
         else:
             ValueError("FMU Generator not supported")
 
@@ -98,7 +98,7 @@ class PerfectMPC(object):
             for name in states.keys():
                 self.fmu_model.set(name, states[name])
         elif self.fmu_generator == "dymola":
-            self.fmu_model.set_fmu_states(states)
+            self.fmu_model.set_fmu_state(states)
         else:
             pass
 
