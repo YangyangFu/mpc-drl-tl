@@ -193,7 +193,6 @@ class PerfectMPC(object):
             4. recursively do step 2 and step 3 until the end time
         """
         u0 = self.u0 
-        print(u0)
         lower = self.u_lb*self.PH 
         upper =self.u_ub*self.PH 
         if self.optimizer == "cmaes":

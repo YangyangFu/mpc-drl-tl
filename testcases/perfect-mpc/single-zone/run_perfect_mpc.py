@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# import global optimizer
+from pymoo.algorithms.soo.nonconvex.cmaes import CMAES
+from pymoo.optimize import minimize
+from pymoo.problems.functional import FunctionalProblem
+from pymoo.util.display import Display
 
-import pybobyqa
-import pyswarms
 # Import numerical libraries
 import numpy as np
 import pandas as pd
@@ -15,6 +18,35 @@ import os
 
 # Import the needed JModelica.org Python methods
 from pyfmi import load_fmu
+
+class MyDisplay(Display):
+
+    def _do(self, problem, evaluator, algorithm):
+        super()._do(problem, evaluator, algorithm)
+        fmin = algorithm.es.gi_frame.f_locals
+        cma = fmin["es"]
+
+        self.output.append("fopt", algorithm.opt[0].F[0])
+
+        if fmin["restarts"] > 0:
+            self.output.append("run", int(
+                fmin["irun"] - fmin["runs_with_small"]) + 1, width=4)
+            self.output.append("fpop", algorithm.pop.get("F").min())
+            self.output.append("n_pop", int(cma.opts['popsize']), width=5)
+
+        self.output.append("sigma", cma.sigma)
+
+        val = cma.sigma_vec * cma.dC ** 0.5
+        self.output.append("min std", (cma.sigma * min(val)), width=8)
+        self.output.append("max std", (cma.sigma * max(val)), width=8)
+
+        axis = (cma.D.max() / cma.D.min()
+                if not cma.opts['CMA_diagonal'] or cma.countiter > cma.opts['CMA_diagonal']
+                else max(cma.sigma_vec * 1) / min(cma.sigma_vec * 1))
+        self.output.append("axis", axis, width=8)
+
+        # temporarily save the best x found so far
+        np.savetxt('x_opt.txt',algorithm.opt.get("X"))
 
 class PerfectMPC(object):
     def __init__(self, 
@@ -66,7 +98,7 @@ class PerfectMPC(object):
         self.u_ch_prev = self.u_lb
 
         # optimizer settings
-        self.optimizer = "pso"
+        self.optimizer = "cmaes"
 
     def get_fmu_states(self):
         """ Return fmu states as a hash table"""
@@ -161,79 +193,63 @@ class PerfectMPC(object):
         u0 = self.u0 
         lower = self.u_lb*self.PH 
         upper =self.u_ub*self.PH 
-        if self.optimizer == "bobyqa":
-            user_params={}
-            user_params['logging.save_xk'] = False
-            user_params['logging.save_diagnostic_info'] = False 
-            #user_params['init.run_in_parallel'] = True
-            np.random.seed(0)
-            soln = pybobyqa.solve(self.objective, u0, rhoend=1e-04, maxfun=1500, bounds=(
-                lower, upper), user_params=user_params, seek_global_minimum=True, scaling_within_bounds=True,print_progress=True)
-            if user_params['logging.save_diagnostic_info']:
-                soln.diagnostic_info.to_csv("diagnostic_"+str(self.time)+'.csv')
-            opt = (soln.x, soln.f)
-        elif self.optimizer == "pso":
-            # Set-up hyperparameters
-            user_params = {'c1': 0.5, 'c2': 0.3, 'w': 0.9}
-            # Call instance of PSO
-            optimizer = pyswarms.single.GlobalBestPSO(
-                n_particles=min(60, 5*self.PH), 
-                dimensions=self.PH, 
-                options=user_params, 
-                bounds=(np.array(lower), np.array(upper)), 
-                oh_strategy={"w": 'exp_decay', 'c1': 'lin_variation'},
-                ftol = 1e-04,
-                ftol_iter = 10
-                )
-    
-            # Perform optimization
-            cost, pos = optimizer.optimize(self.objective_pso, iters=1500)
-            opt = (pos, cost)
-        return opt
 
-    def objective(self, u):
-        """ return objective values at a prediction horizon
-            
-            1. transfer control variables generated from optimizer to fmu inputs
-            2. call simulate() and return key measurements
-            3. calculate and return MPC objective based on key measurements
+    def optimize(self):
+        """ The optimization follows the following procedures:
 
+            1. initialize fmu model and save initial states
+            2. call optimizer to optimize the objective function and return optimal control inputs
+            3. apply control inputs for next step, and return states and measurements
+            4. recursively do step 2 and step 3 until the end time
         """
-        # fetch simulation settings
-        ts = self.time 
-        te = self.time + self.PH*self.dt
-        
-        # transfer inputs
-        input_object = self._transfer_inputs(u, piecewise_constant=True)
+        u0 = self.u0
+        lower = self.u_lb*self.PH
+        upper = self.u_ub*self.PH
+        if self.optimizer == "cmaes":
+            # Call instance of PSO
+            optimizer = CMAES(
+                x0=np.array(u0),
+                sigma=0.25,
+                normalize=True,
+                parallelize=False,
+                maxfevals=10000,
+                maxiter=100,
+                tolfun=1e-4,
+                tolx=1e-3,
+                restarts=0,
+                restart_from_best=False,
+                verb_log=1,
+            )
 
-        # call simulation
-        if self.fmu_generator == "jmodelica":
-            self.reset_fmu()
-            self.initialize_fmu() # this might be a bottleneck for complex system
-        elif self.fmu_generator == "dymola":
-            pass
+            obj = [self.objective_pymoo]
+            c_ieq = []
+            n_var = self.PH
 
-        _, outputs = self.simulate(ts, te, input=input_object, states=self._states_)
-        
-        # interpolate outputs as 1 min data and 15-min average
-        t_intp = np.arange(ts, te+1, 60)
-        outputs = self._sample(self._interpolate(outputs, t_intp), self.dt)
-        # post processing the results to calculate objective terms
-        energy_cost = self._calculate_energy_cost(outputs)
-        temp_violations = self._calculate_temperature_violation(outputs)
-        action_changes = self._calculate_action_changes(u)
+            prob = FunctionalProblem(
+                n_var,
+                obj,
+                constr_ieq=c_ieq,
+                xl=lower,
+                xu=upper)
 
-        objective = [self.weights[0]*energy_cost[i] + \
-                     self.weights[1]*temp_violations[i]*temp_violations[i] +
-                     self.weights[2]*action_changes[i]*action_changes[i] for i in range(self.PH)]
-        
-        print(sum(objective))
+            # Perform optimization
+            out = minimize(
+                prob,
+                optimizer,
+                iters=5000,
+                seed=10,
+                verbose=True,
+                display=MyDisplay(),
+                #save_history=True,
+            )
+            print(out.X, out.F)
+            # save as checkpoint in case
+            np.save("checkpoint", optimizer)
 
-        return sum(objective)
+        return out
 
-    def objective_pso(self, u):
-        """ return objective values at a prediction horizon
-            u is array with n_particles: n-by-PH dimension
+    def objective_pymoo(self, u):
+        """ return objective values at a prediction horizon for using pymoo
             
             1. transfer control variables generated from optimizer to fmu inputs
             2. call simulate() and return key measurements
@@ -243,37 +259,31 @@ class PerfectMPC(object):
         # fetch simulation settings
         ts = self.time
         te = self.time + self.PH*self.dt
-        u = u.tolist()
-        objective = []
-        for ui in u:
-            # transfer inputs
-            input_object = self._transfer_inputs(ui, piecewise_constant=True)
 
-            # call simulation
-            if self.fmu_generator == "jmodelica":
-                self.reset_fmu()
-                self.initialize_fmu()  # this might be a bottleneck for complex system
-            elif self.fmu_generator == "dymola":
-                pass
+        # transfer inputs
+        input_object = self._transfer_inputs(u, piecewise_constant=True)
 
-            _, outputs = self.simulate(
-                ts, te, input=input_object, states=self._states_)
+        # call simulation
+        self.reset_fmu()
+        self.initialize_fmu()  # this might be a bottleneck for complex system
+        _, outputs = self.simulate(
+            ts, te, input=input_object, states=self._states_)
 
-            # interpolate outputs as 1 min data and 15-min average
-            t_intp = np.arange(ts, te+1, 60)
-            outputs = self._sample(self._interpolate(outputs, t_intp), self.dt)
-            # post processing the results to calculate objective terms
-            energy_cost = self._calculate_energy_cost(outputs)
-            temp_violations = self._calculate_temperature_violation(outputs)
-            action_changes = self._calculate_action_changes(ui)
+        # interpolate outputs as 1 min data and 15-min average
+        t_intp = np.arange(ts, te+1, self.dt)
+        outputs = self._sample(self._interpolate(outputs, t_intp), self.dt)
+        # post processing the results to calculate objective terms
+        energy_cost = self._calculate_energy_cost(outputs)
+        temp_violations = self._calculate_temperature_violation(outputs)
+        action_changes = self._calculate_action_changes(u)
 
-            objective_ph = [self.weights[0]*energy_cost[i] +
-                        self.weights[1]*temp_violations[i]*temp_violations[i] +
-                        self.weights[2]*action_changes[i]*action_changes[i] for i in range(self.PH)]
+        objective = [self.weights[0]*energy_cost[i] +
+                     self.weights[1]*temp_violations[i]*temp_violations[i] +
+                     self.weights[2]*action_changes[i]*action_changes[i] for i in range(self.PH)]
 
-            objective += [sum(objective_ph)]
+        print(sum(objective))
 
-        return objective
+        return sum(objective)
 
     def _interpolate(self, df, new_index):
         """Interpolate a dataframe along its index based on a new index
@@ -458,9 +468,9 @@ def tune_mpc(args):
         mpc.set_time(t)
         mpc.set_mpc_states(states)
         
-        (x, f) = mpc.optimize()
-        u_opt_ph = x 
-        f_opt_ph = f
+        opt = mpc.optimize()
+        u_opt_ph = opt.X 
+        f_opt_ph = opt.F
         u_opt_ch = u_opt_ph[:mpc.ni]
         
         # need revisit u0 design
@@ -492,15 +502,6 @@ def tune_mpc(args):
     with open('u_opt.json', 'w') as outfile:
         json.dump(final, outfile) 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--PH', type=int, default=2)
-parser.add_argument('--weight-energy', type=float, default=1.)
-parser.add_argument('--weight-temp', type=float, default=1.)
-parser.add_argument('--weight-action', type=float, default=1.)
-args = parser.parse_args()
-tune_mpc(args)
-
-"""
 def trainable_function(config, reporter):
     while True:
         args.weight_energy = config['weight_energy']
@@ -543,4 +544,4 @@ if __name__ == "__main__":
             "local_dir": "/mnt/shared",
         }
     })
-"""
+
