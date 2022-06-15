@@ -10,6 +10,6 @@ RUN cd $HOME/github/testcases/gym-environments/single-zone && pip install -e .
 
 # install pybobyqa as an optimizer for perfect MPC
 WORKDIR $HOME
-RUN pip install Py-BOBYQA pyswarms
+RUN pip install Py-BOBYQA pymoo
 
 USER developer
