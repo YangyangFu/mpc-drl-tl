@@ -46,7 +46,7 @@ class MyDisplay(Display):
         self.output.append("axis", axis, width=8)
 
         # temporarily save the best x found so far
-        np.savetxt('x_opt.txt',algorithm.opt.get("X"))
+        #np.savetxt('x_opt.txt',algorithm.opt.get("X"))
 
 class PerfectMPC(object):
     def __init__(self, 
@@ -212,8 +212,8 @@ class PerfectMPC(object):
                 sigma=0.25,
                 normalize=True,
                 parallelize=False,
-                maxfevals=10000,
-                maxiter=100,
+                maxfevals=50000,
+                maxiter=1000,
                 tolfun=1e-4,
                 tolx=1e-3,
                 restarts=0,
@@ -536,10 +536,10 @@ if __name__ == "__main__":
             "run": "mpc",
             "stop": {"timesteps_total": 672},
             "config": {
-                "PH": tune.grid_search([2]),
-                "weight_energy": tune.grid_search([1.]),
+                "PH": tune.grid_search([16, 32, 48, 96]),
+                "weight_energy": tune.grid_search([100.]),
                 "weight_temp": tune.grid_search([1.]),
-                "weight_action": tune.grid_search([1.])
+                "weight_action": tune.grid_search([10.])
             },
             "local_dir": "/mnt/shared",
         }
