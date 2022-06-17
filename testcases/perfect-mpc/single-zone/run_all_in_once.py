@@ -222,19 +222,31 @@ class PerfectMPC(object):
                 xl = lower, 
                 xu = upper)
 
+            if self.resume_from_checkpoint:
+                checkpoint, = np.load("checkpoint.npy", allow_pickle=True).flatten()
+                print("Loaded Checkpoint:", checkpoint)
+                # only necessary if for the checkpoint the termination criterion has been met
+                checkpoint.has_terminated = False
+                out = minimize(prob,
+                            checkpoint,
+                            iters = 10000,
+                            seed=1,
+                            copy_algorithm=False,
+                            verbose=True)
+            else:
             # Perform optimization
-            out = minimize(
-                prob, 
-                optimizer, 
-                iters=5000, 
-                seed=10,
-                verbose=True,
-                display=MyDisplay(),
-                #save_history=True,
-                )
-            print(out.X, out.F)
-            # save as checkpoint in case
-            np.save("checkpoint", optimizer)
+                out = minimize(
+                    prob, 
+                    optimizer, 
+                    iters=5000, 
+                    seed=10,
+                    verbose=True,
+                    display=MyDisplay(),
+                    #save_history=True,
+                    )
+                print(out.X, out.F)
+                # save as checkpoint in case
+                np.save("checkpoint", optimizer)
 
         return out
 
