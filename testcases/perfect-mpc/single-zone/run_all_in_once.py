@@ -101,6 +101,8 @@ class PerfectMPC(object):
 
         # optimizer settings
         self.optimizer = "cmaes"
+        self.resume_from_checkpoint = False
+        self.checkpoint = "checkpoint.npy"
 
     def get_fmu_states(self):
         """ Return fmu states as a hash table"""
@@ -223,16 +225,17 @@ class PerfectMPC(object):
                 xu = upper)
 
             if self.resume_from_checkpoint:
-                checkpoint, = np.load("checkpoint.npy", allow_pickle=True).flatten()
+                checkpoint, = np.load(self.checkpoint, allow_pickle=True).flatten()
                 print("Loaded Checkpoint:", checkpoint)
                 # only necessary if for the checkpoint the termination criterion has been met
                 checkpoint.has_terminated = False
                 out = minimize(prob,
                             checkpoint,
-                            iters = 10000,
-                            seed=1,
-                            copy_algorithm=False,
-                            verbose=True)
+                            ('n_iter', 10000),
+                            seed = 10,
+                            copy_algorithm = False,
+                            verbose = True)
+                print(out.X, out.F)
             else:
             # Perform optimization
                 out = minimize(
@@ -465,6 +468,10 @@ def tune_mpc():
     u0 = [i[0] for i in u0]
     mpc.u0 = u0[:PH]
     
+    # resume optimiztion from checkpoint if needed
+    mpc.resume_from_checkpoint = True
+    mpc.checkpoint = "checkpoint.npy"
+
     # reset fmu
     mpc.reset_fmu()
     mpc.initialize_fmu()
