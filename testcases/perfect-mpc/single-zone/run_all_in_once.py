@@ -102,6 +102,8 @@ class PerfectMPC(object):
 
         # optimizer settings
         self.optimizer = "cmaes"
+        self.resume_from_checkpoint = False
+        self.checkpoint = "checkpoint.npy"
 
     def get_fmu_states(self):
         """ Return fmu states as a hash table"""
@@ -215,7 +217,7 @@ class PerfectMPC(object):
            # Call instance of ga
             optimizer = GA(
                 x0=np.array(u0),
-                pop_size=1000,
+                pop_size=min(100, self.PH*8),
                 verb_log=1,
             )
         # forumulate problem
@@ -238,7 +240,7 @@ class PerfectMPC(object):
             out = minimize(prob,
                         checkpoint,
                         ('n_iter', 10000),
-                        seed = 10,
+                        seed=10,
                         copy_algorithm=False,
                         verbose=True)
         else:
@@ -249,6 +251,7 @@ class PerfectMPC(object):
                 iters=5000, 
                 seed=10,
                 verbose=True,
+                copy_algorithm=False,
                 display=MyDisplay(),
                 #save_history=True,
                 )
@@ -473,6 +476,10 @@ def tune_mpc():
     u0 = [i[0] for i in u0]
     mpc.u0 = u0[:PH]
     
+    # resume optimiztion from checkpoint if needed
+    mpc.resume_from_checkpoint = True
+    mpc.checkpoint = "checkpoint.npy"
+
     # reset fmu
     mpc.reset_fmu()
     mpc.initialize_fmu()
