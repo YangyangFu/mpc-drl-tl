@@ -408,7 +408,7 @@ def tune_mpc():
     if fmu_generator == "jmodelica":
         model = load_fmu(os.path.join(fmu_path, "SingleZoneFCU.fmu"))
     elif fmu_generator == "dymola":
-        model = load_fmu(os.path.join(fmu_path, "SingleZoneFCU.fmu"))
+        model = load_fmu(os.path.join(fmu_path, "SingleZoneFCUDymola.fmu"))
 
     PH = 672
     CH = 1
