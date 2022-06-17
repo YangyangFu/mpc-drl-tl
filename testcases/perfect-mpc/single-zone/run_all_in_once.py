@@ -3,6 +3,7 @@
 
 # import global optimizer
 from pymoo.algorithms.soo.nonconvex.cmaes import CMAES
+from pymoo.algorithms.soo.nonconvex.ga import GA
 from pymoo.optimize import minimize
 from pymoo.problems.functional import FunctionalProblem
 from pymoo.util.display import Display
@@ -196,7 +197,7 @@ class PerfectMPC(object):
         lower = self.u_lb*self.PH 
         upper =self.u_ub*self.PH 
         if self.optimizer == "cmaes":
-            # Call instance of PSO
+            # Call instance of cmaes
             optimizer = CMAES(
                 x0 = np.array(u0),
                 sigma = 0.25,
@@ -210,43 +211,50 @@ class PerfectMPC(object):
                 restart_from_best=False,
                 verb_log = 1,
             )
+        elif self.optimizer == "ga":
+           # Call instance of ga
+            optimizer = GA(
+                x0=np.array(u0),
+                pop_size=1000,
+                verb_log=1,
+            )
+        # forumulate problem
+        obj = [self.objective_pymoo]
+        c_ieq = []
+        n_var = self.PH 
 
-            obj = [self.objective_pymoo]
-            c_ieq = []
-            n_var = self.PH 
+        prob = FunctionalProblem(
+            n_var,
+            obj,
+            constr_ieq = c_ieq,
+            xl = lower, 
+            xu = upper)
 
-            prob = FunctionalProblem(
-                n_var,
-                obj,
-                constr_ieq = c_ieq,
-                xl = lower, 
-                xu = upper)
-
-            if self.resume_from_checkpoint:
-                checkpoint, = np.load("checkpoint.npy", allow_pickle=True).flatten()
-                print("Loaded Checkpoint:", checkpoint)
-                # only necessary if for the checkpoint the termination criterion has been met
-                checkpoint.has_terminated = False
-                out = minimize(prob,
-                            checkpoint,
-                            iters = 10000,
-                            seed=1,
-                            copy_algorithm=False,
-                            verbose=True)
-            else:
-            # Perform optimization
-                out = minimize(
-                    prob, 
-                    optimizer, 
-                    iters=5000, 
-                    seed=10,
-                    verbose=True,
-                    display=MyDisplay(),
-                    #save_history=True,
-                    )
-                print(out.X, out.F)
-                # save as checkpoint in case
-                np.save("checkpoint", optimizer)
+        if self.resume_from_checkpoint:
+            checkpoint, = np.load("checkpoint.npy", allow_pickle=True).flatten()
+            print("Loaded Checkpoint:", checkpoint)
+            # only necessary if for the checkpoint the termination criterion has been met
+            checkpoint.has_terminated = False
+            out = minimize(prob,
+                        checkpoint,
+                        ('n_iter', 10000),
+                        seed = 10,
+                        copy_algorithm=False,
+                        verbose=True)
+        else:
+        # Perform optimization
+            out = minimize(
+                prob, 
+                optimizer, 
+                iters=5000, 
+                seed=10,
+                verbose=True,
+                display=MyDisplay(),
+                #save_history=True,
+                )
+            print(out.X, out.F)
+            # save as checkpoint in case
+            np.save("checkpoint", optimizer)
 
         return out
 
