@@ -3,6 +3,7 @@
 
 # import global optimizer
 from pymoo.algorithms.soo.nonconvex.cmaes import CMAES
+from pymoo.algorithms.soo.nonconvex.ga import GA
 from pymoo.optimize import minimize
 from pymoo.problems.functional import FunctionalProblem
 from pymoo.util.display import Display
@@ -101,6 +102,8 @@ class PerfectMPC(object):
 
         # optimizer settings
         self.optimizer = "cmaes"
+        self.resume_from_checkpoint = False
+        self.checkpoint = "checkpoint.npy"
 
     def get_fmu_states(self):
         """ Return fmu states as a hash table"""
@@ -196,7 +199,7 @@ class PerfectMPC(object):
         lower = self.u_lb*self.PH 
         upper =self.u_ub*self.PH 
         if self.optimizer == "cmaes":
-            # Call instance of PSO
+            # Call instance of cmaes
             optimizer = CMAES(
                 x0 = np.array(u0),
                 sigma = 0.25,
@@ -210,25 +213,45 @@ class PerfectMPC(object):
                 restart_from_best=False,
                 verb_log = 1,
             )
+        elif self.optimizer == "ga":
+           # Call instance of ga
+            optimizer = GA(
+                x0=np.array(u0),
+                pop_size=min(100, self.PH*8),
+                verb_log=1,
+            )
+        # forumulate problem
+        obj = [self.objective_pymoo]
+        c_ieq = []
+        n_var = self.PH 
 
-            obj = [self.objective_pymoo]
-            c_ieq = []
-            n_var = self.PH 
+        prob = FunctionalProblem(
+            n_var,
+            obj,
+            constr_ieq = c_ieq,
+            xl = lower, 
+            xu = upper)
 
-            prob = FunctionalProblem(
-                n_var,
-                obj,
-                constr_ieq = c_ieq,
-                xl = lower, 
-                xu = upper)
-
-            # Perform optimization
+        if self.resume_from_checkpoint:
+            checkpoint, = np.load("checkpoint.npy", allow_pickle=True).flatten()
+            print("Loaded Checkpoint:", checkpoint)
+            # only necessary if for the checkpoint the termination criterion has been met
+            checkpoint.has_terminated = False
+            out = minimize(prob,
+                        checkpoint,
+                        ('n_iter', 10000),
+                        seed=10,
+                        copy_algorithm=False,
+                        verbose=True)
+        else:
+        # Perform optimization
             out = minimize(
                 prob, 
                 optimizer, 
                 iters=5000, 
                 seed=10,
                 verbose=True,
+                copy_algorithm=False,
                 display=MyDisplay(),
                 #save_history=True,
                 )
@@ -408,7 +431,7 @@ def tune_mpc():
     if fmu_generator == "jmodelica":
         model = load_fmu(os.path.join(fmu_path, "SingleZoneFCU.fmu"))
     elif fmu_generator == "dymola":
-        model = load_fmu(os.path.join(fmu_path, "SingleZoneFCU.fmu"))
+        model = load_fmu(os.path.join(fmu_path, "SingleZoneFCUDymola.fmu"))
 
     PH = 672
     CH = 1
@@ -453,6 +476,10 @@ def tune_mpc():
     u0 = [i[0] for i in u0]
     mpc.u0 = u0[:PH]
     
+    # resume optimiztion from checkpoint if needed
+    mpc.resume_from_checkpoint = True
+    mpc.checkpoint = "checkpoint.npy"
+
     # reset fmu
     mpc.reset_fmu()
     mpc.initialize_fmu()
