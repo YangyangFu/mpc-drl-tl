@@ -10,6 +10,12 @@ import json
 # load testbed
 from pyfmi import load_fmu
 
+# pot sytle
+import seaborn as sns
+sns.set_theme()
+sns.set(font_scale=1.2)
+sns.set_style("whitegrid", {'grid.linestyle': '--'})
+
 COLORS = (
     [
         # personal color
