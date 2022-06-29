@@ -301,6 +301,47 @@ while t < te:
     i += 1
     options['initialize'] = False
 
+
+################################################
+##           MPC PH=672
+## =============================================
+
+# read optimal control inputs
+with open('./mpc/R2/PH=672/u_opt.json') as f:
+  opt = json.load(f)
+
+t_opt = opt['t_opt']
+u_opt = opt['u_opt']
+
+print(len(t_opt))
+print(len(u_opt))
+
+### 1- Load virtual building model
+hvac = load_fmu('SingleZoneFCU.fmu')
+
+## fmu settings
+options = hvac.simulate_options()
+options['ncp'] = 15
+options['initialize'] = True
+options['result_handling'] = 'memory'
+options['filter'] = measurement_names
+res_mpc672 = []
+hvac.set("zon.roo.T_start", 273.15+25)
+# main loop - do step
+t = ts
+i = 0
+while t < te:
+    u = u_opt[i]
+    hvac.set('uFan', u[0])
+    ires = hvac.simulate(start_time=t,
+                         final_time=t+dt,
+                         options=options)
+    res_mpc672.append(ires)
+
+    t += dt
+    i += 1
+    options['initialize'] = False
+
 ################################################################
 ##           Compare MPC/DRL with Baseline
 ## =============================================================
@@ -312,6 +353,7 @@ measurement_mpc16 = {}
 measurement_mpc32 = {}
 measurement_mpc48 = {}
 measurement_mpc96 = {}
+measurement_mpc672 = {}
 measurement_base = {}
 
 for name in measurement_names:
@@ -341,6 +383,10 @@ for name in measurement_names:
     for ires in res_mpc96:
       value_name_mpc96 += list(ires[name])
     measurement_mpc96[name] = np.array(value_name_mpc96)
+    value_name_mpc672 = []
+    for ires in res_mpc672:
+      value_name_mpc672 += list(ires[name])
+    measurement_mpc672[name] = np.array(value_name_mpc672)
 
 ## simulate baseline
 occ_start = 8
@@ -382,10 +428,11 @@ plt.subplot(412)
 plt.plot(measurement_base['time'], measurement_base['fcu.uFan'], c=COLORS[0], label='RBC')
 #plt.plot(measurement_mpc4['time'], measurement_mpc4['fcu.uFan'],c=COLORS[1], label='MPC:PH=4')
 #plt.plot(measurement_mpc8['time'], measurement_mpc8['fcu.uFan'],c=COLORS[2], label='MPC:PH=8')
-plt.plot(measurement_mpc16['time'], measurement_mpc16['fcu.uFan'],c=COLORS[1], label='MPC:H=16')
-plt.plot(measurement_mpc32['time'], measurement_mpc32['fcu.uFan'],c=COLORS[2], label='MPC:H=32')
-plt.plot(measurement_mpc48['time'], measurement_mpc48['fcu.uFan'],c=COLORS[3], label='MPC:H=48')
-plt.plot(measurement_mpc96['time'], measurement_mpc96['fcu.uFan'],c=COLORS[4], label='MPC:H=96')
+plt.plot(measurement_mpc16['time'], measurement_mpc16['fcu.uFan'],c=COLORS[1], label='MPC(H=16)')
+plt.plot(measurement_mpc32['time'], measurement_mpc32['fcu.uFan'],c=COLORS[2], label='MPC(H=32)')
+plt.plot(measurement_mpc48['time'], measurement_mpc48['fcu.uFan'],c=COLORS[3], label='MPC(H=48)')
+plt.plot(measurement_mpc96['time'], measurement_mpc96['fcu.uFan'],c=COLORS[4], label='MPC(H=96)')
+plt.plot(measurement_mpc672['time'], measurement_mpc672['fcu.uFan'],c=COLORS[7], lw=2, label='OPT')
 plt.grid(True)
 plt.xticks(xticks,[])
 plt.legend(fancybox=True, framealpha=0.3, loc=2)
@@ -395,10 +442,11 @@ plt.subplot(413)
 plt.plot(measurement_base['time'], measurement_base['TRoo']-273.15,c=COLORS[0], label='RBC')
 #plt.plot(measurement_mpc4['time'], measurement_mpc4['TRoo']-273.15,c=COLORS[1], label='MPC:PH=4')
 #plt.plot(measurement_mpc8['time'], measurement_mpc8['TRoo']-273.15,c=COLORS[2], label='MPC:PH=8')
-plt.plot(measurement_mpc16['time'], measurement_mpc16['TRoo']-273.15,c=COLORS[1], label='MPC:H=16')
-plt.plot(measurement_mpc32['time'], measurement_mpc32['TRoo']-273.15,c=COLORS[2], label='MPC:H=32')
-plt.plot(measurement_mpc48['time'], measurement_mpc48['TRoo']-273.15,c=COLORS[3], label='MPC:H=48')
-plt.plot(measurement_mpc96['time'], measurement_mpc96['TRoo']-273.15,c=COLORS[4], label='MPC:H=96')
+plt.plot(measurement_mpc16['time'], measurement_mpc16['TRoo']-273.15,c=COLORS[1], label='MPC(H=16)')
+plt.plot(measurement_mpc32['time'], measurement_mpc32['TRoo']-273.15,c=COLORS[2], label='MPC(H=32)')
+plt.plot(measurement_mpc48['time'], measurement_mpc48['TRoo']-273.15,c=COLORS[3], label='MPC(H=48)')
+plt.plot(measurement_mpc96['time'], measurement_mpc96['TRoo']-273.15,c=COLORS[4], label='MPC(H=96)')
+plt.plot(measurement_mpc672['time'], measurement_mpc96['TRoo']-273.15,c=COLORS[7], lw=2, label='OPT')
 plt.plot(tim,T_upper, 'k-.', lw=1,label='Bounds')
 plt.plot(tim,T_lower, 'k-.', lw=1)
 plt.grid(True)
@@ -410,10 +458,11 @@ plt.subplot(414)
 plt.plot(measurement_base['time'], measurement_base['PTot'], c=COLORS[0], label='RBC')
 #plt.plot(measurement_mpc4['time'], measurement_mpc4['PTot'],c=COLORS[1], label='MPC:PH=4')
 #plt.plot(measurement_mpc8['time'], measurement_mpc8['PTot'],c=COLORS[2], label='MPC:PH=8')
-plt.plot(measurement_mpc16['time'], measurement_mpc16['PTot'], c=COLORS[1], label='MPC:H=16')
-plt.plot(measurement_mpc32['time'], measurement_mpc32['PTot'],c=COLORS[2], label='MPC:H=32')
-plt.plot(measurement_mpc48['time'], measurement_mpc48['PTot'],c=COLORS[3], label='MPC:H=48')
-plt.plot(measurement_mpc96['time'], measurement_mpc96['PTot'],c=COLORS[4], label='MPC:H=96')
+plt.plot(measurement_mpc16['time'], measurement_mpc16['PTot'], c=COLORS[1], label='MPC(H=16)')
+plt.plot(measurement_mpc32['time'], measurement_mpc32['PTot'],c=COLORS[2], label='MPC(H=32)')
+plt.plot(measurement_mpc48['time'], measurement_mpc48['PTot'],c=COLORS[3], label='MPC(H=48)')
+plt.plot(measurement_mpc96['time'], measurement_mpc96['PTot'],c=COLORS[4], label='MPC(H=96)')
+plt.plot(measurement_mpc672['time'], measurement_mpc672['PTot'],c=COLORS[7], lw=2, label='OPT')
 plt.grid(True)
 plt.xticks(xticks,xticks_label)
 plt.legend(fancybox=True, framealpha=0.3, loc=2)
