@@ -10,6 +10,12 @@ import json
 # load testbed
 from pyfmi import load_fmu
 
+# pot sytle
+import seaborn as sns
+sns.set_theme()
+sns.set(font_scale=1.2)
+sns.set_style("whitegrid", {'grid.linestyle': '--'})
+
 COLORS = (
     [
         # personal color
@@ -95,6 +101,45 @@ while t < te:
     i += 1
     options['initialize'] = False
 
+################################################
+##           MPC PH=672
+## =============================================
+
+# read optimal control inputs
+with open('./mpc/R2/PH=672/u_opt.json') as f:
+  opt = json.load(f)
+
+t_opt = opt['t_opt']
+u_opt = opt['u_opt']
+
+print(len(t_opt))
+print(len(u_opt))
+
+### 1- Load virtual building model
+hvac = load_fmu('SingleZoneFCU.fmu')
+
+## fmu settings
+options = hvac.simulate_options()
+options['ncp'] = 15
+options['initialize'] = True
+options['result_handling'] = 'memory'
+options['filter'] = measurement_names
+res_mpc672 = []
+hvac.set("zon.roo.T_start", 273.15+25)
+# main loop - do step
+t = ts
+i = 0
+while t < te:
+    u = u_opt[i]
+    hvac.set('uFan', u[0])
+    ires = hvac.simulate(start_time=t,
+                         final_time=t+dt,
+                         options=options)
+    res_mpc672.append(ires)
+
+    t += dt
+    i += 1
+    options['initialize'] = False
 
 ###############################################################
 ##              DRL final run: ddqn-seed5
@@ -233,6 +278,7 @@ while t < te:
 
 # read measurements
 measurement_mpc = {}
+measurement_mpc672 = {}
 measurement_base = {}
 measurement_ddqn = {}
 measurement_sac = {}
@@ -246,6 +292,11 @@ for name in measurement_names:
     for ires in res_mpc:
       value_name_mpc += list(ires[name])
     measurement_mpc[name] = np.array(value_name_mpc)
+    # get optimal true
+    value_name_mpc672 = []
+    for ires in res_mpc672:
+      value_name_mpc672 += list(ires[name])
+    measurement_mpc672[name] = np.array(value_name_mpc672)
     # get ddqn results
     value_name_ddqn=[]
     for ires in res_ddqn:
@@ -303,20 +354,22 @@ plt.xticks(xticks,[])
 #ax2.set_ylabel('Outdoor Temperature ($^\circ$C)')
 
 plt.subplot(412)
+plt.plot(measurement_mpc672['time'], measurement_mpc672['fcu.uFan'],c=COLORS[7], lw=2, label='OPT')
 plt.plot(measurement_base['time'], measurement_base['fcu.uFan'], c=COLORS[0], label='RBC')
-plt.plot(measurement_mpc['time'], measurement_mpc['fcu.uFan'],c=COLORS[1], label='MPC')
+plt.plot(measurement_mpc['time'], measurement_mpc['fcu.uFan'],c=COLORS[1], label='MPC(H=96)')
 plt.plot(measurement_ddqn['time'], measurement_ddqn['fcu.uFan'],c=COLORS[2], label='DDQN')
 plt.plot(measurement_ppo['time'], measurement_ppo['fcu.uFan'],c=COLORS[3], label='PPO')
 plt.plot(measurement_qrdqn['time'], measurement_qrdqn['fcu.uFan'],c=COLORS[4], label='QRDQN')
 plt.plot(measurement_sac['time'], measurement_sac['fcu.uFan'],c=COLORS[5],label='SAC')
 plt.grid(True)
 plt.xticks(xticks,[])
-plt.legend(fancybox=True, framealpha=0.3, loc=1)
+plt.legend(fancybox=True, framealpha=0.3, loc=2)
 plt.ylabel('Fan Speed')
 
 plt.subplot(413)
+plt.plot(measurement_mpc672['time'],  measurement_mpc672['TRoo']-273.15,c=COLORS[7], lw=2, label='OPT')
 plt.plot(measurement_base['time'], measurement_base['TRoo']-273.15,c=COLORS[0], label='RBC')
-plt.plot(measurement_mpc['time'],  measurement_mpc['TRoo']-273.15,c=COLORS[1], label='MPC')
+plt.plot(measurement_mpc['time'],  measurement_mpc['TRoo']-273.15,c=COLORS[1], label='MPC(H=96)')
 plt.plot(measurement_ddqn['time'],  measurement_ddqn['TRoo']-273.15,c=COLORS[2], label='DDQN')
 plt.plot(measurement_ppo['time'],  measurement_ppo['TRoo']-273.15,c=COLORS[3], label='PPO')
 plt.plot(measurement_qrdqn['time'],  measurement_qrdqn['TRoo']-273.15,c=COLORS[4], label='QRDQN')
@@ -325,19 +378,20 @@ plt.plot(tim,T_upper, 'k-.', lw=1,label='Bounds')
 plt.plot(tim,T_lower, 'k-.', lw=1)
 plt.grid(True)
 plt.xticks(xticks,[])
-plt.legend(fancybox=True, framealpha=0.3, loc=1)
+plt.legend(fancybox=True, framealpha=0.3, loc=2)
 plt.ylabel('Room Temperature ($^\circ$C)')
 
 plt.subplot(414)
+plt.plot(measurement_mpc672['time'], measurement_mpc672['PTot'], c=COLORS[7], lw=2, label='OPT')
 plt.plot(measurement_base['time'], measurement_base['PTot'], c=COLORS[0], label='RBC')
-plt.plot(measurement_mpc['time'], measurement_mpc['PTot'], c=COLORS[1], label='MPC')
+plt.plot(measurement_mpc['time'], measurement_mpc['PTot'], c=COLORS[1], label='MPC(H=96)')
 plt.plot(measurement_ddqn['time'], measurement_ddqn['PTot'], c=COLORS[2], label='DDQN')
 plt.plot(measurement_ppo['time'], measurement_ppo['PTot'], c=COLORS[3], label='PPO')
 plt.plot(measurement_qrdqn['time'], measurement_qrdqn['PTot'],c=COLORS[4], label='QRDQN')
 plt.plot(measurement_sac['time'], measurement_sac['PTot'],c=COLORS[5], label='SAC')
 plt.grid(True)
 plt.xticks(xticks,xticks_label)
-plt.legend(fancybox=True, framealpha=0.3, loc=1)
+plt.legend(fancybox=True, framealpha=0.3, loc=2)
 plt.ylabel('Power (W)')
 plt.xlabel('Time (h)')
 plt.savefig('control-response.pdf')
@@ -356,6 +410,7 @@ def interpolate_dataframe(df,new_index):
 
 measurement_base = pd.DataFrame(measurement_base,index=measurement_base['time'])
 measurement_mpc = pd.DataFrame(measurement_mpc,index=measurement_mpc['time'])
+measurement_mpc672 = pd.DataFrame(measurement_mpc672,index=measurement_mpc672['time'])
 measurement_ddqn = pd.DataFrame(measurement_ddqn,index=measurement_ddqn['time'])
 measurement_ppo = pd.DataFrame(measurement_ppo,index=measurement_ppo['time'])
 measurement_qrdqn = pd.DataFrame(measurement_qrdqn,index=measurement_qrdqn['time'])
@@ -364,6 +419,7 @@ measurement_sac = pd.DataFrame(measurement_sac,index=measurement_sac['time'])
 tim_intp = np.arange(ts,te+1,dt)
 measurement_base = interpolate_dataframe(measurement_base[['PTot','TRoo', 'fcu.uFan']],tim_intp)
 measurement_mpc = interpolate_dataframe(measurement_mpc[['PTot','TRoo', 'fcu.uFan']],tim_intp)
+measurement_mpc672 = interpolate_dataframe(measurement_mpc672[['PTot','TRoo', 'fcu.uFan']],tim_intp)
 measurement_ddqn = interpolate_dataframe(measurement_ddqn[['PTot','TRoo', 'fcu.uFan']],tim_intp)
 measurement_ppo = interpolate_dataframe(measurement_ppo[['PTot','TRoo', 'fcu.uFan']],tim_intp)
 measurement_qrdqn = interpolate_dataframe(measurement_qrdqn[['PTot','TRoo', 'fcu.uFan']],tim_intp)
@@ -429,6 +485,7 @@ def get_rewards(u, Ptot,TZone,price_tou):
 #================================================================================
 rewards_base = get_rewards(measurement_base['fcu.uFan'].values, measurement_base['PTot'].values,measurement_base['TRoo'].values,price_tou)
 rewards_mpc = get_rewards(measurement_mpc['fcu.uFan'].values, measurement_mpc['PTot'].values,measurement_mpc['TRoo'].values,price_tou)
+rewards_mpc672 = get_rewards(measurement_mpc672['fcu.uFan'].values, measurement_mpc672['PTot'].values,measurement_mpc672['TRoo'].values,price_tou)
 rewards_ddqn = get_rewards(measurement_ddqn['fcu.uFan'].values, measurement_ddqn['PTot'].values,measurement_ddqn['TRoo'].values,price_tou)
 rewards_ppo = get_rewards(measurement_ppo['fcu.uFan'].values, measurement_ppo['PTot'].values,measurement_ppo['TRoo'].values,price_tou)
 rewards_qrdqn = get_rewards(measurement_qrdqn['fcu.uFan'].values, measurement_qrdqn['PTot'].values,measurement_qrdqn['TRoo'].values,price_tou)
@@ -436,6 +493,7 @@ rewards_sac = get_rewards(measurement_sac['fcu.uFan'].values, measurement_sac['P
 
 rewards_base = pd.DataFrame(rewards_base,columns=[['energy','ene_cost','penalty', 'delta_action', 'rewards']])
 rewards_mpc = pd.DataFrame(rewards_mpc,columns=[['energy','ene_cost','penalty','delta_action', 'rewards']])
+rewards_mpc672 = pd.DataFrame(rewards_mpc672,columns=[['energy','ene_cost','penalty','delta_action', 'rewards']])
 rewards_ddqn = pd.DataFrame(rewards_ddqn,columns=[['energy','ene_cost','penalty','delta_action', 'rewards']])
 rewards_ppo = pd.DataFrame(rewards_ppo,columns=[['energy','ene_cost','penalty','delta_action', 'rewards']])
 rewards_qrdqn = pd.DataFrame(rewards_qrdqn,columns=[['energy','ene_cost','penalty','delta_action', 'rewards']])
@@ -460,6 +518,14 @@ mpc_drl_kpis = {'base': {'rewards': float(rewards_base['rewards'].sum()),
                         'delta_action': float(rewards_mpc['delta_action'].sum()/4),
                         'temp_violation_squared': float((rewards_mpc['penalty']**2).sum()),
                         'delta_action_sqaured': float((rewards_mpc['delta_action']**2).sum())},
+                'opt': {'rewards': float(rewards_mpc672['rewards'].sum()),
+                        'energy': float(rewards_mpc672['energy'].sum()),
+                        'ene_cost': float(rewards_mpc672['ene_cost'].sum()),
+                        'total_temp_violation': float(rewards_mpc672['penalty'].sum()/4),
+                        'max_temp_violation': float(rewards_mpc672['penalty'].max()),
+                        'delta_action': float(rewards_mpc672['delta_action'].sum()/4),
+                        'temp_violation_squared': float((rewards_mpc672['penalty']**2).sum()),
+                        'delta_action_sqaured': float((rewards_mpc672['delta_action']**2).sum())},
                 'ddqn': {'rewards': float(rewards_ddqn['rewards'].sum()),
                          'energy': float(rewards_ddqn['energy'].sum()),
                          'ene_cost': float(rewards_ddqn['ene_cost'].sum()),
@@ -504,12 +570,14 @@ pd.DataFrame(mpc_drl_kpis).transpose().to_csv('control-response-kpis.csv')
 ##       calculate the shifted load
 ## ====================================================
 shift_mpc = (measurement_mpc['PTot'] - measurement_base['PTot']).abs().sum()/4/1000/2 # kwH
+shift_mpc672 = (measurement_mpc672['PTot'] - measurement_base['PTot']).abs().sum()/4/1000/2 # kwH
 shift_ddqn = (measurement_ddqn['PTot'] - measurement_base['PTot']).abs().sum()/4/1000/2 # kwH
 shift_qrdqn = (measurement_qrdqn['PTot'] - measurement_base['PTot']).abs().sum()/4/1000/2 # kwH
 shift_ppo = (measurement_ppo['PTot'] - measurement_base['PTot']).abs().sum()/4/1000/2 # kwH
 shift_sac = (measurement_sac['PTot'] - measurement_base['PTot']).abs().sum()/4/1000/2 # kwH
 
 shift_energy = {'mpc': shift_mpc,
+                'opt':shift_mpc672,
                 'ddqn': shift_ddqn,
                 'qrdqn': shift_qrdqn,
                 'ppo': shift_ppo,

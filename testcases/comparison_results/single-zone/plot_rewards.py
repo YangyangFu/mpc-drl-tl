@@ -112,12 +112,16 @@ if __name__ == "__main__":
     root_dir = args.root_dir
     mpc_dir = os.path.dirname(root_dir)
 
-    ## load mpc/rbc rewards
+    ## load mpc/rbc rewards - best
     with open(os.path.join(mpc_dir,'mpc','R2','PH=96','mpc_rewards.json')) as f:
-        mpc_rewards = json.load(f)
+        mpc_rewards96 = json.load(f)
 
-    mpc = mpc_rewards['mpc']['rewards'][0]
-    rbc = mpc_rewards['base']['rewards'][0]
+    with open(os.path.join(mpc_dir,'mpc','R2','PH=672','mpc_rewards.json')) as f:
+        mpc_rewards672 = json.load(f)
+
+    mpc96 = mpc_rewards96['mpc']['rewards']
+    mpc672 = mpc_rewards672['mpc']['rewards']
+    rbc = mpc_rewards672['base']['rewards']
 
     ## read DRL resultsß
     algors = find_all_algorithms(root_dir)
@@ -137,10 +141,13 @@ if __name__ == "__main__":
     #xticks = [drl_all.index[i] for i in range(0, len(drl_all.index), 100)]
     #xticklabels = [int(drl_all.index[i]/672) for i in range(0, len(drl_all.index), 100)]
     fig, ax = plt.subplots(figsize=(16, 12))
+    ax.plot(drl_all.index, [mpc672]*len(drl_all.index),
+            lw=2, c=COLORS[7], label='OPT: '+str(round(mpc672, 2))+'± 0.00')
     ax.plot(drl_all.index, [rbc]*len(drl_all.index),
             lw=1, c=COLORS[0], label='RBC: '+str(round(rbc,2))+'± 0.00')
-    ax.plot(drl_all.index, [mpc]*len(drl_all.index),
-            lw=1, c=COLORS[1], label='MPC: '+str(round(mpc,2))+'± 0.00')
+    ax.plot(drl_all.index, [mpc96]*len(drl_all.index),
+            lw=1, c=COLORS[1], label='MPC(H=96): '+str(round(mpc96,2))+'± 0.00')
+    avg_rewards = {}
     for i, algor in enumerate(algors):
         drl = drl_all[algor]
         drl.dropna(inplace=True)
@@ -148,6 +155,7 @@ if __name__ == "__main__":
         mean = float(drl['mean'].dropna().iloc[-1])
         std = float(drl['std'].dropna().iloc[-1])
         label = '{name}: {mean} ± {std}'.format(name=name, mean=round(mean,2), std=round(std,2))
+        avg_rewards[algor] = mean
         ax.plot(drl.index, drl['mean'], lw=0.5, c=COLORS[i+2], label=label)
         ax.fill_between(drl.index,
                         drl['mean']+drl['std'],
@@ -172,10 +180,12 @@ if __name__ == "__main__":
     #xticklabels = [int(drl_all.index[i]/672) for i in range(0, len(drl_all.index), 100)]
     drl_500 = drl_all.loc[drl_all.index<=500*672,:]
     fig, ax = plt.subplots(figsize=(16, 12))
+    ax.plot(drl_500.index, [mpc672]*len(drl_500.index),
+            lw=2, c=COLORS[7], label='OPT: '+str(round(mpc672, 2))+'± 0.00')
     ax.plot(drl_500.index, [rbc]*len(drl_500.index),
             lw=1, c=COLORS[0], label='RBC: '+str(round(rbc,2))+'± 0.00')
-    ax.plot(drl_500.index, [mpc]*len(drl_500.index),
-            lw=1, c=COLORS[1], label='MPC: '+str(round(mpc,2))+'± 0.00')
+    ax.plot(drl_500.index, [mpc96]*len(drl_500.index),
+            lw=1, c=COLORS[1], label='MPC(H=96): '+str(round(mpc96,2))+'± 0.00')
 
     for i, algor in enumerate(algors):
         drl = drl_500[algor]
@@ -203,23 +213,23 @@ if __name__ == "__main__":
     plt.savefig(os.path.join(root_dir, 'rewards_500.png'))
     plt.savefig(os.path.join(root_dir, 'rewards_500.pdf'))
 
-# calculate normalized score
+# calculate best normalized score
 rew_max = drl_all.xs('max', axis=1, level=1, drop_level=False).max()
-rew_max[('mpc','max')] = mpc
+rew_max[('mpc96','max')] = mpc96
+rew_max[('opt','max')] = mpc672
 rew_max[('rbc','max')] = rbc
+# add average
+for algor in algors:
+    rew_max[(algor, 'mean')] = avg_rewards[algor]
+rew_max[('mpc96', 'mean')] = mpc96
+rew_max[('opt', 'mean')] = mpc672
+rew_max[('rbc', 'mean')] = rbc
 print(rew_max)
 
-norm_rew_max = (-rew_max/rew_max.min()+2)*100
-index = norm_rew_max.index
-index = [i[0].upper() for i in index]
-norm_rew_max.index = index
+norm_rew_max = (-rew_max/rew_max.max()+2)*100
+#index = norm_rew_max.index
+#index = [i[0].upper() for i in index]
+#norm_rew_max.index = index
 norm_rew_max.to_csv('best-rewards.csv')
+print(norm_rew_max)
 
-sns.set(font_scale=0.8)
-fig, ax = plt.subplots(figsize=(8, 4))
-nAlgors = len(index)
-plt.barh(range(nAlgors), norm_rew_max, height=1.0, fill=True, ec='k')
-plt.yticks(range(nAlgors), index)
-plt.xlabel("Normalized score [%]")
-plt.savefig('normalized-best-score.png')
-plt.savefig('normalized-best-score.pdf')

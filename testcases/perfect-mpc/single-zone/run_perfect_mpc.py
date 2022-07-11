@@ -212,8 +212,8 @@ class PerfectMPC(object):
                 sigma=0.25,
                 normalize=True,
                 parallelize=False,
-                maxfevals=50000,
-                maxiter=1000,
+                maxfevals=5000,
+                maxiter=100,
                 tolfun=1e-4,
                 tolx=1e-3,
                 restarts=0,
@@ -422,7 +422,7 @@ def tune_mpc(args):
     CH = 1
     dt = 900.
     ts = 201*24*3600.
-    period = 3600.
+    period = 7*24*3600.
     te = ts + period
 
     price = [0.02987, 0.02987, 0.02987, 0.02987,
