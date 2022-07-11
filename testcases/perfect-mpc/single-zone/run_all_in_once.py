@@ -6,7 +6,7 @@ from pymoo.algorithms.soo.nonconvex.cmaes import CMAES
 from pymoo.algorithms.soo.nonconvex.ga import GA
 from pymoo.optimize import minimize
 from pymoo.problems.functional import FunctionalProblem
-from pymoo.util.display import Display
+from pymoo.util.display import Display, SingleObjectiveDisplay
 # Import numerical libraries
 import numpy as np
 import numpy.matlib
@@ -48,6 +48,15 @@ class MyDisplay(Display):
                 else max(cma.sigma_vec * 1) / min(cma.sigma_vec * 1))
         self.output.append("axis", axis, width=8)
 
+        # temporarily save the best x found so far
+        np.savetxt('x_opt.txt',algorithm.opt.get("X"))
+
+
+class MyDisplayGA(Display):
+    def _do(self, problem, evaluator, algorithm):
+        super()._do(problem, evaluator, algorithm)
+        self.output.append("mean_f", np.mean(algorithm.pop.get("F")))
+        self.output.append("best_f", np.mean(algorithm.opt.get("F")))
         # temporarily save the best x found so far
         np.savetxt('x_opt.txt',algorithm.opt.get("X"))
 
@@ -101,7 +110,7 @@ class PerfectMPC(object):
         self.u_ch_prev = self.u_lb
 
         # optimizer settings
-        self.optimizer = "cmaes"
+        self.optimizer = "ga"
         self.resume_from_checkpoint = False
         self.checkpoint = "checkpoint.npy"
 
@@ -213,13 +222,18 @@ class PerfectMPC(object):
                 restart_from_best=False,
                 verb_log = 1,
             )
+            display = MyDisplay()
+
         elif self.optimizer == "ga":
            # Call instance of ga
+            x0 = 0.1*np.random.rand() + np.array([u0])
+            x0[0,:] = np.array(u0)
             optimizer = GA(
-                x0=np.array(u0),
                 pop_size=min(100, self.PH*8),
+                sampling=x0,
                 verb_log=1,
             )
+            display = MyDisplayGA()
         # forumulate problem
         obj = [self.objective_pymoo]
         c_ieq = []
@@ -248,12 +262,12 @@ class PerfectMPC(object):
             out = minimize(
                 prob, 
                 optimizer, 
-                iters=5000, 
+                ('n_gen', 2000),
                 seed=10,
                 verbose=True,
                 copy_algorithm=False,
-                display=MyDisplay(),
-                #save_history=True,
+                display=display,
+                save_history=False,
                 )
             print(out.X, out.F)
             # save as checkpoint in case
@@ -477,7 +491,7 @@ def tune_mpc():
     mpc.u0 = u0[:PH]
     
     # resume optimiztion from checkpoint if needed
-    mpc.resume_from_checkpoint = True
+    mpc.resume_from_checkpoint = False
     mpc.checkpoint = "checkpoint.npy"
 
     # reset fmu
