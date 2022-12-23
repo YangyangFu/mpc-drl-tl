@@ -1,0 +1,76 @@
+<mxfile host="65bd71144e">
+    <diagram id="kwZggCLEdN2TeRmPQcKf" name="Page-1">
+        <mxGraphModel dx="932" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;gradientColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="400" width="790" height="290" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="Approximate Dynamic Programming or Reinforcement Learning" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;labelBorderColor=none;fontSize=18;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="150" y="400" width="570" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="" style="ellipse;whiteSpace=wrap;html=1;labelBorderColor=none;fontSize=16;fillColor=#ffe6cc;strokeColor=#d79b00;gradientColor=#ffffff;opacity=60;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="430" width="570" height="250" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="" style="ellipse;whiteSpace=wrap;html=1;labelBorderColor=none;fontSize=16;fillColor=#ffe6cc;strokeColor=#d79b00;gradientColor=#ffffff;opacity=60;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="490" y="440" width="340" height="230" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" value="" style="edgeStyle=none;html=1;fontSize=16;" parent="1" source="8" target="31" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="Policy&amp;nbsp; Approximation" style="text;html=1;strokeColor=none;fillColor=#ffe6cc;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;labelBorderColor=none;fontSize=16;opacity=80;fontStyle=1;gradientColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="660" y="510" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="Value&amp;nbsp; Approximation" style="whiteSpace=wrap;html=1;labelBorderColor=none;fontSize=16;opacity=80;fillColor=#ffe6cc;strokeColor=none;fontStyle=1;gradientColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="250" y="453" width="99" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="28" value="" style="edgeStyle=none;html=1;fontSize=14;" parent="1" source="16" target="27" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="Online Approximate Optimization" style="whiteSpace=wrap;html=1;labelBorderColor=none;fontSize=14;gradientColor=#ffffff;opacity=80;" parent="1" vertex="1">
+                    <mxGeometry x="84" y="533" width="130" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;rounded=0;fontSize=14;" parent="1" source="15" target="16" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" value="" style="edgeStyle=none;html=1;fontSize=16;" parent="1" source="18" target="29" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="Parametric Cost Approximation" style="whiteSpace=wrap;html=1;labelBorderColor=none;fontSize=14;gradientColor=#ffffff;opacity=80;" parent="1" vertex="1">
+                    <mxGeometry x="244" y="533" width="110" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;rounded=0;fontSize=14;" parent="1" source="15" target="18" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="Problem Approximation" style="whiteSpace=wrap;html=1;labelBorderColor=none;fontSize=14;gradientColor=#ffffff;opacity=80;" parent="1" vertex="1">
+                    <mxGeometry x="384" y="533" width="100" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" value="" style="edgeStyle=elbowEdgeStyle;elbow=vertical;html=1;rounded=0;fontSize=14;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="15" target="22" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="324" y="493" as="sourcePoint"/>
+                        <mxPoint x="369" y="533" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="27" value="Model Predictive Control, etc" style="whiteSpace=wrap;html=1;fontSize=14;labelBorderColor=none;gradientColor=#ffffff;opacity=80;" parent="1" vertex="1">
+                    <mxGeometry x="84" y="604" width="126" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" value="DDQN, QRDQN, etc" style="whiteSpace=wrap;html=1;fontSize=14;labelBorderColor=none;gradientColor=#ffffff;opacity=80;" parent="1" vertex="1">
+                    <mxGeometry x="244.5" y="604" width="105.5" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="PPO, etc" style="whiteSpace=wrap;html=1;labelBorderColor=none;fontSize=16;strokeColor=#000000;gradientColor=#ffffff;opacity=80;" parent="1" vertex="1">
+                    <mxGeometry x="680" y="570" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="35" value="SAC, etc" style="whiteSpace=wrap;html=1;fontSize=14;labelBorderColor=none;gradientColor=#ffffff;opacity=80;" parent="1" vertex="1">
+                    <mxGeometry x="520" y="570" width="80" height="34" as="geometry"/>
+                </mxCell>
+                <mxCell id="37" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=18;" parent="1" source="36" target="35" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="36" value="Combined&amp;nbsp; Approximation" style="text;html=1;strokeColor=none;fillColor=#ffe6cc;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;labelBorderColor=none;fontSize=16;opacity=80;fontStyle=1;gradientColor=#ffffff;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="500" width="120" height="40" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

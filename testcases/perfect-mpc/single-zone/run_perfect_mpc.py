@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import pybobyqa
+# import global optimizer
+from pymoo.algorithms.soo.nonconvex.cmaes import CMAES
+from pymoo.optimize import minimize
+from pymoo.problems.functional import FunctionalProblem
+from pymoo.util.display import Display
 
 # Import numerical libraries
 import numpy as np
@@ -10,9 +13,40 @@ import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import json
+import argparse
+import os
 
 # Import the needed JModelica.org Python methods
 from pyfmi import load_fmu
+
+class MyDisplay(Display):
+
+    def _do(self, problem, evaluator, algorithm):
+        super()._do(problem, evaluator, algorithm)
+        fmin = algorithm.es.gi_frame.f_locals
+        cma = fmin["es"]
+
+        self.output.append("fopt", algorithm.opt[0].F[0])
+
+        if fmin["restarts"] > 0:
+            self.output.append("run", int(
+                fmin["irun"] - fmin["runs_with_small"]) + 1, width=4)
+            self.output.append("fpop", algorithm.pop.get("F").min())
+            self.output.append("n_pop", int(cma.opts['popsize']), width=5)
+
+        self.output.append("sigma", cma.sigma)
+
+        val = cma.sigma_vec * cma.dC ** 0.5
+        self.output.append("min std", (cma.sigma * min(val)), width=8)
+        self.output.append("max std", (cma.sigma * max(val)), width=8)
+
+        axis = (cma.D.max() / cma.D.min()
+                if not cma.opts['CMA_diagonal'] or cma.countiter > cma.opts['CMA_diagonal']
+                else max(cma.sigma_vec * 1) / min(cma.sigma_vec * 1))
+        self.output.append("axis", axis, width=8)
+
+        # temporarily save the best x found so far
+        #np.savetxt('x_opt.txt',algorithm.opt.get("X"))
 
 class PerfectMPC(object):
     def __init__(self, 
@@ -41,7 +75,7 @@ class PerfectMPC(object):
         self.fmu_options = self.fmu_model.simulate_options()
         self.fmu_options["result_handling"] = "memory"
         self.fmu_options["filter"] = self.fmu_output_names
-        self.fmu_options["ncp"] = int(self.dt/60.)
+        self.fmu_options["ncp"] = min(1000, int(self.dt/60.)*PH)
 
         # define fmu model inputs for optimization: here we assume we only optimize control inputs (time-varying variabels in Modelica instead of parameter)
         self.fmu_input_names = control_names
@@ -59,13 +93,12 @@ class PerfectMPC(object):
         self.u_ub = u_ub
 
         # mpc tuning
-        self.weights = [100., 1.0, 0.]
+        self.weights = [100., 10.0, 5.0]
         self.u0 = [1.0]*self.PH
         self.u_ch_prev = self.u_lb
 
         # optimizer settings
-        self.global_solution = False # require global solution if tru. usually need more running time.
-
+        self.optimizer = "cmaes"
 
     def get_fmu_states(self):
         """ Return fmu states as a hash table"""
@@ -78,6 +111,10 @@ class PerfectMPC(object):
             names = self.fmu_model.get_states_list()
             for name in names:
                 states[name] = float(self.fmu_model.get(name))
+        elif self.fmu_generator == "dymola":
+            states = self.fmu_model.get_fmu_state()
+        else:
+            ValueError("FMU Generator not supported")
 
         return states
 
@@ -93,7 +130,9 @@ class PerfectMPC(object):
             for name in states.keys():
                 self.fmu_model.set(name, states[name])
         elif self.fmu_generator == "dymola":
-            pass 
+            self.fmu_model.set_fmu_state(states)
+        else:
+            pass
 
     def set_time(self, time):
         self.set_fmu_time(time)
@@ -155,13 +194,62 @@ class PerfectMPC(object):
         lower = self.u_lb*self.PH 
         upper =self.u_ub*self.PH 
 
-        soln = pybobyqa.solve(self.objective, u0, maxfun=1000, bounds=(
-            lower, upper), seek_global_minimum=False, print_progress=True)
+    def optimize(self):
+        """ The optimization follows the following procedures:
 
-        return soln
+            1. initialize fmu model and save initial states
+            2. call optimizer to optimize the objective function and return optimal control inputs
+            3. apply control inputs for next step, and return states and measurements
+            4. recursively do step 2 and step 3 until the end time
+        """
+        u0 = self.u0
+        lower = self.u_lb*self.PH
+        upper = self.u_ub*self.PH
+        if self.optimizer == "cmaes":
+            # Call instance of PSO
+            optimizer = CMAES(
+                x0=np.array(u0),
+                sigma=0.25,
+                normalize=True,
+                parallelize=False,
+                maxfevals=5000,
+                maxiter=100,
+                tolfun=1e-4,
+                tolx=1e-3,
+                restarts=0,
+                restart_from_best=False,
+                verb_log=1,
+            )
 
-    def objective(self, u):
-        """ return objective values at a prediction horizon
+            obj = [self.objective_pymoo]
+            c_ieq = []
+            n_var = self.PH
+
+            prob = FunctionalProblem(
+                n_var,
+                obj,
+                constr_ieq=c_ieq,
+                xl=lower,
+                xu=upper)
+
+            # Perform optimization
+            out = minimize(
+                prob,
+                optimizer,
+                iters=5000,
+                seed=10,
+                verbose=True,
+                display=MyDisplay(),
+                #save_history=True,
+            )
+            print(out.X, out.F)
+            # save as checkpoint in case
+            np.save("checkpoint", optimizer)
+
+        return out
+
+    def objective_pymoo(self, u):
+        """ return objective values at a prediction horizon for using pymoo
             
             1. transfer control variables generated from optimizer to fmu inputs
             2. call simulate() and return key measurements
@@ -169,29 +257,30 @@ class PerfectMPC(object):
 
         """
         # fetch simulation settings
-        ts = self.time 
+        ts = self.time
         te = self.time + self.PH*self.dt
-        
+
         # transfer inputs
         input_object = self._transfer_inputs(u, piecewise_constant=True)
 
         # call simulation
         self.reset_fmu()
-        self.initialize_fmu() # this might be a bottleneck for complex system
-        _, outputs = self.simulate(ts, te, input=input_object, states=self._states_)
-        
+        self.initialize_fmu()  # this might be a bottleneck for complex system
+        _, outputs = self.simulate(
+            ts, te, input=input_object, states=self._states_)
+
         # interpolate outputs as 1 min data and 15-min average
-        t_intp = np.arange(ts, te, 60)
+        t_intp = np.arange(ts, te+1, self.dt)
         outputs = self._sample(self._interpolate(outputs, t_intp), self.dt)
         # post processing the results to calculate objective terms
         energy_cost = self._calculate_energy_cost(outputs)
         temp_violations = self._calculate_temperature_violation(outputs)
         action_changes = self._calculate_action_changes(u)
 
-        objective = [self.weights[0]*energy_cost[i] + \
+        objective = [self.weights[0]*energy_cost[i] +
                      self.weights[1]*temp_violations[i]*temp_violations[i] +
                      self.weights[2]*action_changes[i]*action_changes[i] for i in range(self.PH)]
-        
+
         print(sum(objective))
 
         return sum(objective)
@@ -210,7 +299,7 @@ class PerfectMPC(object):
         """ 
             assume df is interpolated at 1-min interval
         """
-        index_sampled = np.arange(df.index[0], df.index[-1], freq)
+        index_sampled = np.arange(df.index[0], df.index[-1]+1, freq)
         df_sampled = df.groupby(df.index//freq).mean()
         df_sampled.index = index_sampled
 
@@ -277,6 +366,7 @@ class PerfectMPC(object):
         :param u: optimization vectors from optimizer
         :type u: numpy.array or list
         """
+        # conver to list if not
         nu = len(u)
         ni = self.ni
 
@@ -322,15 +412,17 @@ class PerfectMPC(object):
         """save actions at previous step """
         self.u_ch_prev = u_ch_prev
         
-if __name__ == "__main__":
-    model = load_fmu("SingleZoneFCU.fmu")
+def tune_mpc(args):
+    fmu_path = os.path.dirname(os.path.realpath(__file__))
+    print(fmu_path)
+    model = load_fmu(os.path.join(fmu_path, "SingleZoneFCU.fmu"))
     states_names = model.get_states_list()
     states = [float(model.get(state)) for state in states_names]
-    PH = 8
+    PH = args.PH
     CH = 1
     dt = 900.
     ts = 201*24*3600.
-    period = 3600.
+    period = 7*24*3600.
     te = ts + period
 
     price = [0.02987, 0.02987, 0.02987, 0.02987,
@@ -356,28 +448,11 @@ if __name__ == "__main__":
                     price = price,
                     u_lb = u_lb,
                     u_ub = u_ub)
-    
-    """
-    states0 = mpc.get_fmu_states()
-    mpc.set_fmu_time(ts)
-    mpc.set_fmu_states(states0)
-    print(mpc.fmu_model.time)
-    _, out = mpc.simulate(ts, ts+60.)
-    print(mpc.fmu_model.time)
-    print(out.tail())
-    mpc.fmu_options['initialize'] = False 
 
-
-    #mpc.fmu_model.setup_experiment(start_time=ts)
-    #mpc.fmu_model.initialize()
-    mpc.set_fmu_time(ts)
-    mpc.set_fmu_states(states0)
-    print(mpc.fmu_model.time)
-    _, out = mpc.simulate(ts, ts+60.)
-    print(mpc.fmu_model.time)
-    print(out)
-    """
-
+    w_energy = args.weight_energy
+    w_temp = args.weight_temp
+    w_action = args.weight_action
+    mpc.weights = [w_energy, w_temp, w_action]
     # reset fmu
     mpc.reset_fmu()
     mpc.initialize_fmu()
@@ -393,9 +468,9 @@ if __name__ == "__main__":
         mpc.set_time(t)
         mpc.set_mpc_states(states)
         
-        optimum = mpc.optimize()
-        u_opt_ph = optimum.x 
-        f_opt_ph = optimum.f
+        opt = mpc.optimize()
+        u_opt_ph = opt.X 
+        f_opt_ph = opt.F
         u_opt_ch = u_opt_ph[:mpc.ni]
         
         # need revisit u0 design
@@ -426,6 +501,47 @@ if __name__ == "__main__":
 
     with open('u_opt.json', 'w') as outfile:
         json.dump(final, outfile) 
-    
-    results.to_csv('results_opt.csv')
+
+def trainable_function(config, reporter):
+    while True:
+        args.weight_energy = config['weight_energy']
+        args.weight_temp = config['weight_temp']
+        args.weight_action = config['weight_action']
+        args.PH = config['PH']
+        tune_mpc(args)
+
+        # a fake traing score to stop current simulation based on searched parameters
+        reporter(timesteps_total=672)
+if __name__ == "__main__":
+    import ray
+    from ray import tune
+
+    ndays = 7
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--PH', type=int, default=4)
+    parser.add_argument('--weight-energy', type=float, default=100.)
+    parser.add_argument('--weight-temp', type=float, default=1.)
+    parser.add_argument('--weight-action', type=float, default=10.)
+    parser.add_argument('--ndays', type=int, default=ndays)
+    args = parser.parse_args()
+
+    # Define Ray tuning experiments
+    tune.register_trainable("mpc", trainable_function)
+    ray.init()
+
+    # Run tuning
+    tune.run_experiments({
+        'mpc_tuning': {
+            "run": "mpc",
+            "stop": {"timesteps_total": 672},
+            "config": {
+                "PH": tune.grid_search([16, 32, 48, 96]),
+                "weight_energy": tune.grid_search([100.]),
+                "weight_temp": tune.grid_search([1.]),
+                "weight_action": tune.grid_search([10.])
+            },
+            "local_dir": "/mnt/shared",
+        }
+    })
 

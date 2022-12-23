@@ -9,4 +9,4 @@ docker run \
 	-i \
 	-t \
 	mpcdrl_debug /bin/bash -c \
-	"source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/run_perfect_mpc.py"  
+	"export TUNE_DISABLE_AUTO_CALLBACK_SYNCER=1 && source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/run_perfect_mpc.py"  
