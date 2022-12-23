@@ -11,23 +11,25 @@ USER root
 
 ### ====================================================================================
 ## install env for OPC: optimizer, nonlinear system identifier
+# Tianshou will install torch if not installed
 # Downgrade setuptools for pytprch. This is a known bug which has been patched: https://github.com/pytorch/pytorch/pull/69904.
 # Ray: hyperparameter tuning
 RUN conda update conda && \
     conda config --add channels conda-forge && \
     conda install pip \
-         scikit-learn \
-         tianshou=0.4.5 \
-         matplotlib \
-         pvlib-python \
-         joblib \
-         setuptools=59.1.1 \
-         ray-tune && \
+    scikit-learn \
+    tianshou=0.4.5 \
+    matplotlib=3.3.2 \
+    pvlib-python=0.9.1 \
+    setuptools=59.1.1 \
+    numpy=1.22.3 \
+    ray-tune=1.10.0 && \
     conda clean -ya
 
 ## install casadi using pip
 WORKDIR $HOME 
-RUN pip install casadi
+RUN pip install casadi pymoo
+
 ## install fmu-gym
 WORKDIR $HOME
 RUN git config --global url."https://github.com/".insteadOf git://github.com/ && \

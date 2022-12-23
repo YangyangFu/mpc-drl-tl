@@ -1,12 +1,10 @@
 IMA_NAME = mpcdrl
 IMA_NAME_D = mpcdrl_debug
-IMA_NAME_PERFECTMPC = mpcdrl_perfect_mpc
 HOST = yangyangfu
 
 DOCKERFILE_DEBUG = Dockerfile_debug
 DOCKERFILE_CPU_PY3 = Dockerfile_CPU_PY3
 DOCKERFILE_GPU_PY3 = Dockerfile_GPU_PY3
-DOCKERFILE_GPU_PY3_NEW = Dockerfile_GPU_PY3_New
 
 TAG_CPU_PY3 = cpu_py3
 TAG_GPU_PY3 = gpu_py3
@@ -23,9 +21,6 @@ build_cpu_py3:
 
 build_gpu_py3:
 	docker build -f ${DOCKERFILE_GPU_PY3} --no-cache --rm -t ${IMA_NAME} .
-
-build_gpu_py3_new:
-	docker build -f ${DOCKERFILE_GPU_PY3_NEW} --no-cache --rm -t ${IMA_NAME} .
 
 remove_image:
 	docker rmi ${IMA_NAME}
