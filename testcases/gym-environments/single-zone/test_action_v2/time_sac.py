@@ -270,6 +270,9 @@ if __name__ == '__main__':
     parser.add_argument('--buffer-size', type=int, default=100000)
 
     args = parser.parse_args()
+    args.hidden_sizes = [256]*args.n_hidden_layers
+    args.actor_lr = args.lr
+    args.critic_lr = args.lr
 
     # timer
     ts = time.time()
