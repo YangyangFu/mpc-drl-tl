@@ -280,7 +280,8 @@ if __name__ == '__main__':
     parser.add_argument('--step-per-collect', type=int, default=672*4)
 
     args = parser.parse_args()
- 
+    args.hidden_sizes=[256]*args.n_hidden_layers
+    
     # timer
     ts = time.time()
     test_ppo(args)
