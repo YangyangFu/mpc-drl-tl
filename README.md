@@ -19,9 +19,13 @@ After installing the required software, execute the following steps to build and
 
 1. go to folder `MPC-DRL-TL`, and open a terminal. Make sure `Dockerfile_XXX` and `makefile` are in current folder
 2. build a local docker image from the provided `Dockerfile_XXX` by typing in the terminal
-
-            make build_cpu_py3           ------- for CPU version pytorch in Python 3
-            make build_gpu_py3           ------- for GPU version pytorch in Python 3
+  
+```
+          make build_cpu_py3           ------- for CPU version pytorch in Python 3
+          make tag_cpu_py3             
+          make build_gpu_py3           ------- for GPU version pytorch in Python 3
+          make tag_gpu_py3
+```
 3. check if the docker image is successfully built on your local computer. Type
 
             docker image ls
@@ -30,24 +34,25 @@ After installing the required software, execute the following steps to build and
 
 ## Testing
 
-### Test Modelica Opengym interface
-Next step is to test if the docker image can be used for development by running a tutorial example.
+### Test Perfect Model Predictive Control
 
-1. go to the tutoral folder: `gym-tutorial/test` by typing:
+This is to test the perfect MPC which uses the same building model for control as the virtual building model.
 
-            cd gym-tutorial/test
+1. go to the testcase folders
+    ```
+    cd testcase/perfect-mpc
+    ```
+2. run MPC test cases
+   
+   On Linux or MacOS,
+    ```
+    bash test_perfect_mpc.sh
+    ```
 
-2. run example script. This is a classic reinforcement control for a cart-pole system. The cart-pole system is built in Modelica and compiled into a jModelica FMU `ModelicaGym_CartPole.fmu`. The learning algorithm `q_learning` is written in `q_learning.py`
-
-   For Linux or MacOS, type
-
-            bash run.sh 
-
-    For Windows OS, type
-
-            run.bat
-
-    The above shell scripts call the docker environment to run the local reinforcement learning experiments as defined in `test_cart_pole_q_learner.py`. The whole run will last around 60 seconds.
+    On Windows OS,
+    ```
+    test_perfect_mpc.bat
+    ```
 
 ### Test Model Predictive Control
 This is to test the developed model predictive control (MPC) testcases. 
@@ -55,7 +60,7 @@ This is to test the developed model predictive control (MPC) testcases.
 1. go to the testcase folders
     
     ```
-    cd testcases/mpc/single-zone-temperature
+    cd testcases/mpc/single-zone
     ```
 2. run MPC testcase
 
@@ -74,7 +79,7 @@ This is to test the developed deep reinforcment learning (DRL) control testcases
 1. go to the testcase folders
     
     ```
-    cd mpc-drl-tl/testcases/gym-environments/single-zone-temperature/test_v1
+    cd mpc-drl-tl/testcases/gym-environments/single-zone/test_action_v1
     ```
 2. run DRL testcase
 

@@ -50,7 +50,7 @@ class SingleZoneEnv(object):
         ...
         nAction-1   Fan on at full speed
     Reward:
-         Sum of energy costs and zone temperature violations
+         Sum of energy costs, zone temperature violations and action slew rate
 
     """
 

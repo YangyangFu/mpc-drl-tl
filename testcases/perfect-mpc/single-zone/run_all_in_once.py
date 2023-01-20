@@ -6,7 +6,7 @@ from pymoo.algorithms.soo.nonconvex.cmaes import CMAES
 from pymoo.algorithms.soo.nonconvex.ga import GA
 from pymoo.optimize import minimize
 from pymoo.problems.functional import FunctionalProblem
-from pymoo.util.display import Display, SingleObjectiveDisplay
+from pymoo.util.display.display import Display, SingleObjectiveDisplay
 # Import numerical libraries
 import numpy as np
 import numpy.matlib

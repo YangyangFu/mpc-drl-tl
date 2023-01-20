@@ -8,6 +8,6 @@ exec docker run \
 	  -v `pwd`:/mnt/shared \
 	  -i \
       -t \
-	  mpcdrl /bin/bash -c \
+	  yangyangfu/mpcdrl:cpu_py3 /bin/bash -c \
 	  "export TUNE_DISABLE_AUTO_CALLBACK_SYNCER=1 && source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/test_trpo_tianshou.py"  
 exit $

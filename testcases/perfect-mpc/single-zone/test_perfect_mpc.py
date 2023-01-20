@@ -536,7 +536,7 @@ if __name__ == "__main__":
             "run": "mpc",
             "stop": {"timesteps_total": 672},
             "config": {
-                "PH": tune.grid_search([16, 32, 48, 96]),
+                "PH": tune.grid_search([16]),
                 "weight_energy": tune.grid_search([100.]),
                 "weight_temp": tune.grid_search([1.]),
                 "weight_action": tune.grid_search([10.])
