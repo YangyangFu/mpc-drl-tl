@@ -47,7 +47,7 @@ class SingleZoneEnv(object):
         Num    Action           Min         Max
         0      Fan speed        -1           1
     Reward:
-         Sum of energy costs and zone temperature violations
+         Sum of energy costs, zone temperature violations and action slew rate
 
     """
 
