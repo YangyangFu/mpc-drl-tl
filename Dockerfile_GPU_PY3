@@ -46,7 +46,7 @@ ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 
 ## install casadi using pip
 WORKDIR $HOME 
-RUN pip install casadi pymoo
+RUN pip install casadi==3.5.5 pymoo==0.6.0
 
 ## install fmu-gym
 WORKDIR $HOME
