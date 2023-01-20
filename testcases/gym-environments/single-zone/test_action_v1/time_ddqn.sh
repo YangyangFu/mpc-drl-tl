@@ -1,5 +1,4 @@
 exec docker run \
-	  --gpus=all \
       --user=root \
 	  --shm-size=4.0gb \
 	  --detach=false \

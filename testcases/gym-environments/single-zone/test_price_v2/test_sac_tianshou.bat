@@ -8,4 +8,4 @@ docker run^
 	  -v %CD%:/mnt/shared^
 	  -i^
       -t^
-	  mpcdrl_debug /bin/bash -c "source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/test_sac_tianshou.py"
+	  yangyangfu/mpcdrl:cpu_py3 /bin/bash -c "source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/test_sac_tianshou.py"
