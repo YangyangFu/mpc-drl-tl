@@ -1,4 +1,8 @@
-import os
+import sys, os
+# this is needed for simulating fmu in pythong 3 using pyfmi:/opt/conda/lib/python3.8/site-packages
+PYFMI_PY3_CONDA_PATH = os.getenv("PYFMI_PY3_CONDA_PATH")
+sys.path.insert(0, PYFMI_PY3_CONDA_PATH)
+
 import torch
 import pprint
 import argparse
