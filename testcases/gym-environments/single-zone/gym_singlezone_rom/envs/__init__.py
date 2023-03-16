@@ -7,4 +7,4 @@
 # from gym_singlezone_jmodelica.envs import single_zone_price_env_v2
 # from gym_singlezone_jmodelica.envs import single_zone_action_env_v2
 
-from gym_singlezone_rom.envs import single_zone_NN_poly
+from gym_singlezone_rom.envs import single_zone_ann

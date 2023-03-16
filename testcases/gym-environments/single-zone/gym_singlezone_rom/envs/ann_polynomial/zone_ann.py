@@ -430,7 +430,7 @@ if __name__ == "__main__":
     ann = train_NN(x_train, y_train)
 
     # #save
-    torch.save(ann, 'zone_ann.pkl')
+    torch.save(ann, '..//zone_ann.pkl')
     # #load
     # ann = torch.load('zone_ann.pkl')
     

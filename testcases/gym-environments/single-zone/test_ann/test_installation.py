@@ -2,16 +2,17 @@ from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division
 import sys, os
 # this is needed for simulating fmu in pythong 3 using pyfmi:/opt/conda/lib/python3.8/site-packages
-PYFMI_PY3_CONDA_PATH = os.getenv("PYFMI_PY3_CONDA_PATH")
-sys.path.insert(0, PYFMI_PY3_CONDA_PATH)
+#PYFMI_PY3_CONDA_PATH = os.getenv("PYFMI_PY3_CONDA_PATH")
+#sys.path.insert(0, PYFMI_PY3_CONDA_PATH)
+print('%%%%%%%%%%%%%%%%%%%%%%%')
 print(sys.path)
-
+print('***********************')
 import gym
-# import gym_singlezone_jmodelica
-# import tianshou as ts
+import gym_singlezone_rom
+import tianshou as ts
 # print(ts.__version__)
 
-env = gym.make("NN_poly",
+env = gym.make("SingleZoneEnv-ANN",
                 mass_flow_nor=0.55,
                 weather_file='USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw',
                 n_next_steps=4,
@@ -26,7 +27,9 @@ env = gym.make("NN_poly",
                 nActions=11,
                 n_substeps=15,
                 n_prev_steps=4)
-
+print('create env finished')
+env.test_instant
+print('test finished')
 states = env.reset()
 n_outputs = env.observation_space.shape[0]
 print(states)

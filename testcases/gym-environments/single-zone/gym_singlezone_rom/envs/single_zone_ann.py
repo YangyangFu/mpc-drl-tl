@@ -14,21 +14,41 @@ from gym import spaces
 # from modelicagym.environment import FMI2CSEnv, FMI1CSEnv
 import os
 import gym
-
+import json
 logger = logging.getLogger(__name__)
+import torch
 
-class SingleZoneEnv(object):
+def interp(df, new_index):
+    """Return a new DataFrame with all columns values interpolated
+    to the new_index values."""
+    df_out = pd.DataFrame(index=new_index)
+    df_out.index.name = df.index.name
+
+    for colname, col in df.iteritems():
+        df_out[colname] = np.interp(new_index, df.index, col)
+
+    return df_out
+
+class ANNSingleZoneEnv(gym.Env):
     """
-    Class extracting common logic for JModelica and Dymola environments for CartPole experiments.
-    Allows to avoid code duplication.
-    Implements all methods for connection to the OpenAI Gym as an environment.
+    ### Description
 
-    Description:
-        The agent (a fan coil unit system) is controlled to minimize energy cost while maintaining the zone thermal comfort. 
-        For any given state the agent may choose to operate the fan at a different speed.
-    Reference:
-        None
-    Observation:
+    This environmet correspond to the reduced order model of Single Zone.  
+    The zone is represented by an ANN model. The Reduced order model for FCU is polynomial model.  
+    The agent (a fan coil unit system) is controlled to minimize energy cost while maintaining the zone thermal comfort. 
+    For any given state the agent may choose to operate the fan at a different speed (i.e. control variable is the frequency of the fan).
+    
+    ### Action Space
+        Type: Discret(nActions)
+        |Num      |   Action              |
+        |---------|-----------------------|
+        |0        |   Fan off             |
+        |...      |                       |
+        |...      |                       |
+        |nAction-1|   Fan on at full speed| 
+
+
+    ### Observation Space
         Type: Box(5+3*n_next_steps+2*n_prev_steps)
         Num                                     Observation                                     Min            Max
         0                                       Time                                            0              86400
@@ -43,36 +63,181 @@ class SingleZoneEnv(object):
         5+3*n_next_steps+[1,...,n_prev_steps]   Zone temperature from previous m steps          273.15 + 12    273.15 + 35   
         5+3*n_next_steps+n_prev_steps+[1,...,n_prev_steps]   Total power from previous m steps  0              1500
 
-    Actions:
-        Type: Discret(nActions)
-        Num         Action           
-        0           Fan off
-        ...
-        ...
-        nAction-1   Fan on at full speed
-    Reward:
+    
+    ### Rewards
          Sum of energy costs, zone temperature violations and action slew rate
+
+    ### Starting State (Need to revise)
+    All observations are assigned a uniformly random value in `(-0.05, 0.05)`
+
+    ### Episode End (Need to revise)
+    The episode ends if any one of the following occurs:
+    1. Termination: Pole Angle is greater than ±12°
+    2. Termination: Cart Position is greater than ±2.4 (center of the cart reaches the edge of the display)
+    3. Truncation: Episode length is greater than 500 (200 for v0)
+
+
+
+    ### Attributes
+    mass_flow_nor (float): List, norminal mass flow rate of VAV terminals.
+    weather_file (str): Energyplus epw weather file name 
+    n_next_steps (int): number of future prediction steps
+    time_step (float): time difference between simulation steps.
 
     """
 
-    # # modelicagym API implementation
-    # def _is_done(self):
-    #     """
-    #     Internal logic that is utilized by parent classes.
-    #     Checks if system states result in a failure
+    def __init__(self,
+                 mass_flow_nor,
+                 weather_file,
+                 n_next_steps,
+                 simulation_start_time,
+                 simulation_end_time,
+                 time_step,
+                 log_level,
+                 # fmu_result_handling='memory',
+                 # fmu_result_ncp=100.,
+                 filter_flag=True,
+                 alpha=0.01,
+                 nActions=11,
+                 rf=None,
+                 p_g=None,
+                 n_substeps=15,
+                 n_prev_steps=0):
 
-    #     Note in this design, violations in the system states will not terminate the experiment.
-    #     The experiment should be terminated in the training process by exceeding maximum steps.
+        logger.setLevel(log_level)
 
-    #     :return: boolean flag if current state of the environment indicates that experiment has ended.
+        # system parameters
+        self.mass_flow_nor = mass_flow_nor 
+        self.weather_file = weather_file 
+        self.n_next_steps = n_next_steps 
+        self.n_prev_steps = n_prev_steps
 
-    #     """
-    #     done = False
-    #     stop_time = self.stop # get current time after do_step
-    #     if stop_time > self.simulation_end_time-self.tau:
-    #         done = True
+        # virtual environment simulation period
+        self.simulation_end_time = simulation_end_time
+        # state bounds if any
+        
+        # experiment parameters
+        self.alpha = alpha # Positive: penalty coefficients for temperature violation in reward function 
+        self.nActions = nActions # Integer: number of actions for one control variable (level of frequency of fan coil)
 
-    #     return done
+        # customized reward return
+        self.rf = rf # this is an external function        
+        # customized hourly TOU energy price
+        if not p_g:
+            self.p_g = [0.02987, 0.02987, 0.02987, 0.02987, 
+                        0.02987, 0.02987, 0.04667, 0.04667, 
+                        0.04667, 0.04667, 0.04667, 0.04667, 
+                        0.15877, 0.15877, 0.15877, 0.15877,
+                        0.15877, 0.15877, 0.15877, 0.04667, 
+                        0.04667, 0.04667, 0.02987, 0.02987]
+        else:
+            self.p_g = p_g           
+        assert len(self.p_g)==24, "Daily hourly energy price should be provided!!!"
+
+        # number of substeps to output
+        self.n_substeps=n_substeps
+
+        # others
+        self.viewer = None
+        self.display = None
+
+        # conditional
+        self.history = {}
+        if self.n_prev_steps > 0:
+            self.history['TRoo'] = [273.15+25]*self.n_prev_steps
+            self.history['PTot'] = [0.]*self.n_prev_steps
+
+        # configuration of fmugym
+        # config = {
+        #     'model_input_names': ['uFan'],
+        #     'model_output_names': ['time','TRoo','TOut','GHI','PTot'],
+        #     'model_parameters': {},
+        #     'time_step': time_step,
+        #     'fmu_result_handling':fmu_result_handling,
+        #     'fmu_result_ncp':fmu_result_ncp,
+        #     'filter_flag':filter_flag 
+        # }
+
+        # initialize some metadata 
+        self._cost = []
+        self._max_temperature_violation = []
+        self._delta_action = []
+
+        # specify fmu path and model
+        fmu_path = os.path.dirname(os.path.realpath(__file__))
+        #change to NN and polynomial model
+        # super(JModelicaCSSingleZoneEnv, self).__init__(fmu_path+"/SingleZoneFCU.fmu",
+        #                   config, log_level=log_level,
+        #                   simulation_start_time=simulation_start_time)
+       # location of fmu is set to current working directory
+    
+        # OpenAI Gym API implementation
+    
+    def test_instant(self):
+        print("***The instant created***")
+        print('flow rate is {}'.format(mass_flow_nor))
+
+    def step(self, action):
+        """
+        OpenAI Gym API. Executes one step in the environment:
+        in the current state perform given action to move to the next action.
+        Applies force of the defined magnitude in one of two directions, depending on the action parameter sign.
+
+        :param action: alias of an action [0-10] to be performed. 
+        :return: next (resulting) state
+        """
+        # update historical action for reward calculation
+        self.action_curr = action
+
+        # forward action
+        action = np.array(action)
+        action = [action/float(self.nActions-1)]
+        
+        #TODO need to define x
+        #load ann to predict Troom
+        ann = torch.load('zone_ann.pkl')
+        x = []
+        Tz = ann(x).detach().numpy()
+        # polynomial
+        alpha = json.load('power.json')
+        Ts = 273.15 + 14
+        P = alpha[0]+alpha[1]*action+alpha[2]*action**2+alpha[3]*action**3 +(1008./3)*action*(Tz-Ts)#+ beta[0]+ beta[1]*Toa+beta[2]*Toa**2
+        return P
+        # return super(SingleZoneEnv,self).step(action)
+        
+    def reset(self):
+        """
+        Inherit the existing internal reset method and customize for this environment
+        """
+        if self.n_prev_steps > 0:
+            self.history['TRoo'] = [273.15+25]*self.n_prev_steps 
+            self.history['PTot'] = [0.]*self.n_prev_steps
+
+        # reset previous action to calculate rewards in terms of action changes during steps
+        self.action_prev = 0
+        self._delta_action = []
+
+        return super(SingleZoneEnv, self).reset()
+
+    def render(self, mode='human', close=False):
+        """
+        OpenAI Gym API. Determines how current environment state should be rendered.
+        Draws cart-pole with the built-in gym tools.
+
+        :param mode: rendering mode. Read more in Gym docs.
+        :param close: flag if rendering procedure should be finished and resources cleaned.
+        Used, when environment is closed.
+        :return: rendering result
+        """
+        pass       
+        
+    def close(self):
+        """
+        OpenAI Gym API. Closes environment and all related resources.
+        Closes rendering.
+        :return: True if everything worked out.
+        """
+        return self.render(close=True)    
 
     def _get_action_space(self):
         """
@@ -101,24 +266,6 @@ class SingleZoneEnv(object):
                 [273.15+12]*self.n_prev_steps+[0.]*self.n_prev_steps)
                 
         return spaces.Box(low, high)
-
-    # OpenAI Gym API implementation
-    def step(self, action):
-        """
-        OpenAI Gym API. Executes one step in the environment:
-        in the current state perform given action to move to the next action.
-        Applies force of the defined magnitude in one of two directions, depending on the action parameter sign.
-
-        :param action: alias of an action [0-10] to be performed. 
-        :return: next (resulting) state
-        """
-        # update historical action for reward calculation
-        self.action_curr = action
-
-        # forward action
-        action = np.array(action)
-        action = [action/float(self.nActions-1)]
-        return super(SingleZoneEnv,self).step(action)
     
     def _reward_policy(self):
         """
@@ -260,20 +407,6 @@ class SingleZoneEnv(object):
 
         return tuple(state_list+predictor_list+history_list) 
 
-    def reset(self):
-        """
-        Inherit the existing internal reset method and customize for this environment
-        """
-        if self.n_prev_steps > 0:
-            self.history['TRoo'] = [273.15+25]*self.n_prev_steps 
-            self.history['PTot'] = [0.]*self.n_prev_steps
-
-        # reset previous action to calculate rewards in terms of action changes during steps
-        self.action_prev = 0
-        self._delta_action = []
-
-        return super(SingleZoneEnv, self).reset()
-
     #TODO modify it to nn + polynomial
     def predictor(self,n):
         """
@@ -318,25 +451,7 @@ class SingleZoneEnv(object):
 
         return interp(tem_sol_h,index_step)
 
-    def render(self, mode='human', close=False):
-        """
-        OpenAI Gym API. Determines how current environment state should be rendered.
-        Draws cart-pole with the built-in gym tools.
 
-        :param mode: rendering mode. Read more in Gym docs.
-        :param close: flag if rendering procedure should be finished and resources cleaned.
-        Used, when environment is closed.
-        :return: rendering result
-        """
-        pass
-
-    def close(self):
-        """
-        OpenAI Gym API. Closes environment and all related resources.
-        Closes rendering.
-        :return: True if everything worked out.
-        """
-        return self.render(close=True)
 
     # define a method to get sub-step measurements for model outputs. 
     # The outputs are defined by model_output_names and model_input_names.
@@ -382,214 +497,3 @@ class SingleZoneEnv(object):
     def get_action_changes(self):
 
         return self._delta_action
-
-# class JModelicaCSSingleZoneEnv(SingleZoneEnv):
-#     """
-#     Wrapper class for creation of cart-pole environment using JModelica-compiled FMU (FMI standard v.2.0).
-
-#     Attributes:
-#         mass_flow_nor (float): List, norminal mass flow rate of VAV terminals.
-#         weather_file (str): Energyplus epw weather file name 
-#         n_next_steps (int): number of future prediction steps
-#         time_step (float): time difference between simulation steps.
-
-#     """
-
-#     def __init__(self,
-#                  mass_flow_nor,
-#                  weather_file,
-#                  n_next_steps,
-#                  simulation_start_time,
-#                  simulation_end_time,
-#                  time_step,
-#                  log_level,
-#                  fmu_result_handling='memory',
-#                  fmu_result_ncp=100.,
-#                  filter_flag=True,
-#                  alpha=0.01,
-#                  nActions=11,
-#                  rf=None,
-#                  p_g=None,
-#                  n_substeps=15,
-#                  n_prev_steps=0):
-
-#         logger.setLevel(log_level)
-
-#         # system parameters
-#         self.mass_flow_nor = mass_flow_nor 
-#         self.weather_file = weather_file 
-#         self.n_next_steps = n_next_steps 
-#         self.n_prev_steps = n_prev_steps
-
-#         # virtual environment simulation period
-#         self.simulation_end_time = simulation_end_time
-#         # state bounds if any
-        
-#         # experiment parameters
-#         self.alpha = alpha # Positive: penalty coefficients for temperature violation in reward function 
-#         self.nActions = nActions # Integer: number of actions for one control variable (level of damper position)
-
-#         # customized reward return
-#         self.rf = rf # this is an external function        
-#         # customized hourly TOU energy price
-#         if not p_g:
-#             self.p_g = [0.02987, 0.02987, 0.02987, 0.02987, 
-#                         0.02987, 0.02987, 0.04667, 0.04667, 
-#                         0.04667, 0.04667, 0.04667, 0.04667, 
-#                         0.15877, 0.15877, 0.15877, 0.15877,
-#                         0.15877, 0.15877, 0.15877, 0.04667, 
-#                         0.04667, 0.04667, 0.02987, 0.02987]
-#         else:
-#             self.p_g = p_g           
-#         assert len(self.p_g)==24, "Daily hourly energy price should be provided!!!"
-
-#         # number of substeps to output
-#         self.n_substeps=n_substeps
-
-#         # others
-#         self.viewer = None
-#         self.display = None
-
-#         # conditional
-#         self.history = {}
-#         if self.n_prev_steps > 0:
-#             self.history['TRoo'] = [273.15+25]*self.n_prev_steps
-#             self.history['PTot'] = [0.]*self.n_prev_steps
-
-#         # configuration of fmugym
-#         config = {
-#             'model_input_names': ['uFan'],
-#             'model_output_names': ['time','TRoo','TOut','GHI','PTot'],
-#             'model_parameters': {},
-#             'time_step': time_step,
-#             'fmu_result_handling':fmu_result_handling,
-#             'fmu_result_ncp':fmu_result_ncp,
-#             'filter_flag':filter_flag 
-#         }
-
-#         # initialize some metadata 
-#         self._cost = []
-#         self._max_temperature_violation = []
-#         self._delta_action = []
-
-#         # specify fmu path and model
-#         fmu_path = os.path.dirname(os.path.realpath(__file__))
-#         super(JModelicaCSSingleZoneEnv, self).__init__(fmu_path+"/SingleZoneFCU.fmu",
-#                          config, log_level=log_level,
-#                          simulation_start_time=simulation_start_time)
-#        # location of fmu is set to current working directory
-
-def interp(df, new_index):
-    """Return a new DataFrame with all columns values interpolated
-    to the new_index values."""
-    df_out = pd.DataFrame(index=new_index)
-    df_out.index.name = df.index.name
-
-    for colname, col in df.iteritems():
-        df_out[colname] = np.interp(new_index, df.index, col)
-
-    return df_out
-
-
-class NNPolynomialEnv(SingleZoneEnv, gym.Env):
-    """
-    Wrapper class for creation of cart-pole environment using JModelica-compiled FMU (FMI standard v.2.0).
-
-    Attributes:
-        mass_flow_nor (float): List, norminal mass flow rate of VAV terminals.
-        weather_file (str): Energyplus epw weather file name 
-        n_next_steps (int): number of future prediction steps
-        time_step (float): time difference between simulation steps.
-
-    """
-
-    def __init__(self,
-                 mass_flow_nor,
-                 weather_file,
-                 n_next_steps,
-                 simulation_start_time,
-                 simulation_end_time,
-                 time_step,
-                 log_level,
-                 # fmu_result_handling='memory',
-                 # fmu_result_ncp=100.,
-                 filter_flag=True,
-                 alpha=0.01,
-                 nActions=11,
-                 rf=None,
-                 p_g=None,
-                 n_substeps=15,
-                 n_prev_steps=0):
-
-        logger.setLevel(log_level)
-
-        # system parameters
-        self.mass_flow_nor = mass_flow_nor 
-        self.weather_file = weather_file 
-        self.n_next_steps = n_next_steps 
-        self.n_prev_steps = n_prev_steps
-
-        # virtual environment simulation period
-        self.simulation_end_time = simulation_end_time
-        # state bounds if any
-        
-        # experiment parameters
-        self.alpha = alpha # Positive: penalty coefficients for temperature violation in reward function 
-        self.nActions = nActions # Integer: number of actions for one control variable (level of frequency of fan coil)
-
-        # customized reward return
-        self.rf = rf # this is an external function        
-        # customized hourly TOU energy price
-        if not p_g:
-            self.p_g = [0.02987, 0.02987, 0.02987, 0.02987, 
-                        0.02987, 0.02987, 0.04667, 0.04667, 
-                        0.04667, 0.04667, 0.04667, 0.04667, 
-                        0.15877, 0.15877, 0.15877, 0.15877,
-                        0.15877, 0.15877, 0.15877, 0.04667, 
-                        0.04667, 0.04667, 0.02987, 0.02987]
-        else:
-            self.p_g = p_g           
-        assert len(self.p_g)==24, "Daily hourly energy price should be provided!!!"
-
-        # number of substeps to output
-        self.n_substeps=n_substeps
-
-        # others
-        self.viewer = None
-        self.display = None
-
-        # conditional
-        self.history = {}
-        if self.n_prev_steps > 0:
-            self.history['TRoo'] = [273.15+25]*self.n_prev_steps
-            self.history['PTot'] = [0.]*self.n_prev_steps
-
-        # configuration of fmugym
-        # config = {
-        #     'model_input_names': ['uFan'],
-        #     'model_output_names': ['time','TRoo','TOut','GHI','PTot'],
-        #     'model_parameters': {},
-        #     'time_step': time_step,
-        #     'fmu_result_handling':fmu_result_handling,
-        #     'fmu_result_ncp':fmu_result_ncp,
-        #     'filter_flag':filter_flag 
-        # }
-
-        # initialize some metadata 
-        self._cost = []
-        self._max_temperature_violation = []
-        self._delta_action = []
-
-        # specify fmu path and model
-        fmu_path = os.path.dirname(os.path.realpath(__file__))
-        #change to NN and polynomial model
-        # super(JModelicaCSSingleZoneEnv, self).__init__(fmu_path+"/SingleZoneFCU.fmu",
-        #                   config, log_level=log_level,
-        #                   simulation_start_time=simulation_start_time)
-       # location of fmu is set to current working directory
-        
-        
-        
-        
-    
-    

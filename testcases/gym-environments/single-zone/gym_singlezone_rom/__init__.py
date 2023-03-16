@@ -17,7 +17,7 @@ config = {
 # )
 # new enviornment
 register(
-    id='NN_poly',
-    entry_point='gym_singlezone_rom.envs.single_zone_NN_poly:NNPolynomialEnv',
+    id='SingleZoneEnv-ANN',
+    entry_point='gym_singlezone_rom.envs.single_zone_ann:ANNSingleZoneEnv',
     kwargs=config
 )

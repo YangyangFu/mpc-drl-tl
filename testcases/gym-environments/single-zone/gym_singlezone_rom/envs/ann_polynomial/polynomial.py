@@ -102,7 +102,7 @@ def identify_paras(x_train, x_test, y_train, y_test):
     ### export model parameter
     popt_zone = {'alpha':list(popt)}
     
-    with open('power.json', 'w') as fp:
+    with open('..\\power.json', 'w') as fp:
         json.dump(popt_zone, fp)
     
     # Look at the accuracy
