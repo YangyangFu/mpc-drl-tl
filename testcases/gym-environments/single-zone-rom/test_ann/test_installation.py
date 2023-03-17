@@ -42,6 +42,7 @@ temp = env.predictor(4)
 
 # observation, reward, done, _ = env.step(2)
 p =env.step(4)
+print('predicted power is: {}'.format(p))
 history_data = env.history_data
 # substep_measurement_names, substep_measurement=env.get_substep_measurement()
 # print("current step is evenly divided into "+str(env.n_substeps) + " sub-steps!!!")

@@ -1,1 +1,10 @@
 FROM yangyangfu/mpcdrl:cpu_py3
+
+# install single zone temperature control environment for rom
+USER root
+WORKDIR $HOME  
+COPY ./testcases/gym-environments/single-zone-rom/gym_singlezone_rom $HOME/github/testcases/gym-environments/single-zone-rom/gym_singlezone_rom
+COPY ./testcases/gym-environments/single-zone-rom/setup.py $HOME/github/testcases/gym-environments/single-zone-rom/setup.py
+RUN cd $HOME/github/testcases/gym-environments/single-zone-rom && pip install -e .
+
+USER developer

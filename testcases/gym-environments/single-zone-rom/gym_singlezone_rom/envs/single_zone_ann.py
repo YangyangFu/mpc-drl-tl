@@ -102,7 +102,7 @@ class ANNSingleZoneEnv(gym.Env):
         # virtual environment simulation period
         self.simulation_start_time = simulation_start_time
         self.simulation_end_time = simulation_end_time
-        # self.tau = 900 # perhaps no need for reduced order model
+        self.tau = 900 # seconds between state updates
         # state bounds if any
         
         # experiment parameters
@@ -128,21 +128,42 @@ class ANNSingleZoneEnv(gym.Env):
 
         self.action_space = spaces.Discrete(self.nActions)
         self.observation_space = self._get_observation_space()
+        self.state = None
 
-        # others
-        self.viewer = None
-        self.display = None
+        # # others
+        # self.viewer = None
+        # self.display = None
 
         # conditional
-        self.history = {}
-        if self.n_prev_steps > 0:
-            self.history['TRoo'] = [273.15+25]*self.n_prev_steps
-            self.history['PTot'] = [0.]*self.n_prev_steps
+        self.history = None
+        # if self.n_prev_steps > 0:
+        #     self.history['TRoo'] = [273.15+25]*self.n_prev_steps
+        #     self.history['PTot'] = [0.]*self.n_prev_steps
 
         # initialize some metadata 
         self._cost = []
         self._max_temperature_violation = []
         self._delta_action = []
+        
+    def _get_hour_price(self,time):
+        """
+        Parameters
+        ----------
+        time : int
+            time in seconds.
+
+        Returns
+        -------
+        price : double
+            price at that hour.
+
+        """
+        pri = []
+        for i in time:
+            hour = math.ceil(3601/3600)
+            pri.append(self.p_g[hour-1])
+        return pri
+        
 
     def step(self, action):
         """
@@ -153,6 +174,10 @@ class ANNSingleZoneEnv(gym.Env):
         :param action: alias of an action [0-10] to be performed. 
         :return: next (resulting) state
         """
+        err_msg = f"{action!r} ({type(action)}) invalid"
+        assert self.action_space.contains(action), err_msg
+        assert self.state is not None, "Call reset before using step method."
+        
         # update historical action for reward calculation
         self.action_curr = action
         # forward action
@@ -177,13 +202,14 @@ class ANNSingleZoneEnv(gym.Env):
         ann = torch.load('zone_ann.pt')
         x_data = torch.tensor(x, dtype=torch.float)
         Tz = ann(x_data).detach().numpy()
-        self.Tz = Tz
+        # update state
+        
         # polynomial
         with open('power.json', 'r') as fcc_file:
             alpha = json.load(fcc_file)
         alpha = list(alpha.values())[0]
         Ts = 273.15 + 14
-        P = alpha[0]+alpha[1]*m+alpha[2]*m**2+alpha[3]*m**3 +(1008./3)*m*(Tz-Ts)#+ beta[0]+ beta[1]*Toa+beta[2]*Toa**2
+        P = alpha[0]+alpha[1]*m+alpha[2]*m**2+alpha[3]*m**3 +(1008./3)*m*(Tz[0][0]-Ts)#+ beta[0]+ beta[1]*Toa+beta[2]*Toa**2
         return P
         # return super(SingleZoneEnv,self).step(action)
         
@@ -201,7 +227,18 @@ class ANNSingleZoneEnv(gym.Env):
         # return np.array([0., 273.15+12, 273.15+(-10.),0., 0., 0.]+\
         #         [273.15+(-10)]*self.n_next_steps+[0.]*self.n_next_steps+[0.]*self.n_next_steps+\
         #         [273.15+12]*self.n_prev_steps+[0.]*self.n_prev_steps)
-        history_data = pd.read_csv('ann_polynomial\\train_data.csv')
+        tim = (self.simulation_start_time)
+        history_data = pd.read_csv('train_data.csv')
+        zon_tem_s = (history_data['T_roo'].values[-self.n_prev_steps-1:])  #n+1
+        our_wea_sol_mk = (history_data['T_oa'].values[-self.n_prev_steps-1:])  # outdoor air temperature and GHI for previos and now, (m+1)*2
+        our_wea_sol_n = tuple(self.predictor(self.n_next_steps))  # outdoor air temperature for next, n * 2
+        tims = [tim]
+        for i in range(self.n_next_steps):
+            tims.append(tim[-1] + self.tau)
+        ene_pri = tuple(self._get_hour_price(tims))
+        
+        
+        
         self.history = pd.DataFrame()
         self.history = history_data[['mass_flow', 'T_oa', 'T_roo', 'P_tot','GHI']] # is GHI needed?
         self.action_prev = int(history_data['mass_flow'].values[-1] / 0.55)  # previous one or multipy
