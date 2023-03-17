@@ -18,7 +18,6 @@ import seaborn as sns
 from torch.autograd import Variable
 #%%
 def load_data():
-    #path = 'G:\我的云端硬盘\MPCvsDRL\generate_data'
     data = pd.read_csv( 'train_data.csv')
     data.rename(columns = {'Unnamed: 0':'TimeIndex'}, inplace = True)
     return data
@@ -45,7 +44,7 @@ def feature_engneering(data):
     df_pre['T_oa'] -= 273.15
     df_pre['T_sa'] -= 273.15
 
-    lz=12
+    lz=4
     lo=4
     zone_temp_name = "T_roo"
     Tz_his = pd.DataFrame(df_pre[['TimeIndex',zone_temp_name]])
@@ -61,13 +60,21 @@ def feature_engneering(data):
     ph = 4
     oa_name = 'T_oa'
     To_his = pd.DataFrame(df_pre[['TimeIndex', oa_name]])
-    for i in range(ph):
-        To_his['To_'+str(i+1)] = To_his[oa_name].values
-        shift = To_his['To_'+str(i+1)].shift(periods=-(i+1))
-        To_his['To_'+str(i+1)]=shift.values
+    for i in range(lo):
+        To_his['To_'+str(-(i+1))] = To_his[oa_name].values
+        shift = To_his['To_'+str(-(i+1))].shift(periods=(i+1))
+        To_his['To_'+str(-(i+1))]=shift.values
     To_his=To_his.drop(columns=[oa_name])
     df_pre = pd.merge(df_pre, To_his, on='TimeIndex')
     
+    To_fut = pd.DataFrame(df_pre[['TimeIndex', oa_name]])
+    for i in range(lo):
+        To_fut['To_'+str(i+1)] = To_fut[oa_name].values
+        shift = To_fut['To_'+str(i+1)].shift(periods=-(i+1))
+        To_fut['To_'+str(i+1)]=shift.values
+    To_fut=To_fut.drop(columns=[oa_name])
+    df_pre = pd.merge(df_pre, To_fut, on='TimeIndex')
+
     df_pre = lag_feature(df_pre)
     df_pre.dropna(how = 'any', inplace = True)
     
@@ -81,30 +88,34 @@ def feature_engneering(data):
     T_fut.dropna(how = 'any', inplace = True)
     
     df_pre = df_pre[:T_fut.shape[0]]
+    
+    # TODO solar radiation previous and future values
 
     return df_pre, T_fut
 
 
 def split_data(df_pre, T_fur):
     x_cos = [
-                'T_oa',
-                'mass_flow',
+                   'To_-4', 'To_-3', 'To_-2','To_-1',
+                    'T_oa',
+                    'Tz_4', 'Tz_3', 'Tz_2', 'Tz_1',
+                    'T_roo',
+                    'mass_flow',
                # 'GHI',  'Qint1', 'Qint2', 'Qint3',
                #     'Mret', 'Hinfi', 'Hinfo', 'Minf',
-                   'GHI'
-                   , 'Qint1', 'Qint2', 'Qint3'
-                   , 'Mret', 'Hsup', 'Hret', 'Hinfi',
-                   'Hinfo', 'Minf',
+                   # 'Qint1', 'Qint2', 'Qint3',
+                   # 'Mret', 'Hsup', 'Hret', 'Hinfi',
+                   # 'Hinfo', 'Minf',
                    'To_1', 'To_2', 'To_3', 'To_4',
-                'Tz_1', 'Tz_2', 'Tz_3', 'Tz_4',
-                'T_roo',
-                # 'Tz_7', 'Tz_8', 'Tz_9', 'Tz_10', 'Tz_11', 'Tz_12',
-             #  'To_1', 'To_2', 'To_3',
-             # 'To_4'
-               'T_oa_mean_lag4', 'T_oa_max_lag4', 'T_oa_min_lag4',
-               'T_oa_std_lag4'
+                   'GHI',
+                 #  'To_1', 'To_2', 'To_3',
+                 # 'To_4'
+               # 'T_oa_mean_lag4', 'T_oa_max_lag4', 'T_oa_min_lag4',
+               # 'T_oa_std_lag4'
                # , 'T_roo_mean_lag4', 'T_roo_max_lag4', 'T_roo_min_lag4',
                # 'T_roo_std_lag4'
+                   # 'To_1', 'To_2', 'To_3', 'To_4',
+
              ]
     # y_co = ['T_roo']
     df_train = df_pre[:int(df_pre.shape[0] * 0.8)]
@@ -430,9 +441,9 @@ if __name__ == "__main__":
     ann = train_NN(x_train, y_train)
 
     # #save
-    torch.save(ann, '..//zone_ann.pkl')
+    torch.save(ann, '..//zone_ann.pt')
     # #load
-    # ann = torch.load('zone_ann.pkl')
+    # ann = torch.load('..//zone_ann.pt')
     
     
     # # #predcit

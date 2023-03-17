@@ -11,23 +11,12 @@ import math
 import numpy as np
 import pandas as pd
 from gym import spaces
-# from modelicagym.environment import FMI2CSEnv, FMI1CSEnv
 import os
 import gym
 import json
 logger = logging.getLogger(__name__)
 import torch
-
-def interp(df, new_index):
-    """Return a new DataFrame with all columns values interpolated
-    to the new_index values."""
-    df_out = pd.DataFrame(index=new_index)
-    df_out.index.name = df.index.name
-
-    for colname, col in df.iteritems():
-        df_out[colname] = np.interp(new_index, df.index, col)
-
-    return df_out
+import torch.nn as nn
 
 class ANNSingleZoneEnv(gym.Env):
     """
@@ -53,7 +42,7 @@ class ANNSingleZoneEnv(gym.Env):
         Num                                     Observation                                     Min            Max
         0                                       Time                                            0              86400
         1                                       Zone temperature                                273.15 + 12    273.15 + 35
-        2                                       Outdoor temperature                             273.15 + 0     273.15 + 40
+        2                                       Outdoor temperature                             273.15 + -10     273.15 + 40
         3                                       Solar radiation                                 0              1000
         4                                       Total power                                     0              1500
         5                                       Energy price                                    0              1
@@ -62,6 +51,7 @@ class ANNSingleZoneEnv(gym.Env):
         5+2*n_next_steps+[1,...,n_next_steps]   Energy price at next n step                     0              1
         5+3*n_next_steps+[1,...,n_prev_steps]   Zone temperature from previous m steps          273.15 + 12    273.15 + 35   
         5+3*n_next_steps+n_prev_steps+[1,...,n_prev_steps]   Total power from previous m steps  0              1500
+        #??? previous outdoor temperature
 
     
     ### Rewards
@@ -94,14 +84,11 @@ class ANNSingleZoneEnv(gym.Env):
                  simulation_end_time,
                  time_step,
                  log_level,
-                 # fmu_result_handling='memory',
-                 # fmu_result_ncp=100.,
-                 filter_flag=True,
-                 alpha=0.01,
+                 alpha=0.01, # penalty coefficients for temperature violation in reward function 
                  nActions=11,
                  rf=None,
                  p_g=None,
-                 n_substeps=15,
+                 # n_substeps=15,
                  n_prev_steps=0):
 
         logger.setLevel(log_level)
@@ -113,7 +100,9 @@ class ANNSingleZoneEnv(gym.Env):
         self.n_prev_steps = n_prev_steps
 
         # virtual environment simulation period
+        self.simulation_start_time = simulation_start_time
         self.simulation_end_time = simulation_end_time
+        # self.tau = 900 # perhaps no need for reduced order model
         # state bounds if any
         
         # experiment parameters
@@ -134,8 +123,11 @@ class ANNSingleZoneEnv(gym.Env):
             self.p_g = p_g           
         assert len(self.p_g)==24, "Daily hourly energy price should be provided!!!"
 
-        # number of substeps to output
-        self.n_substeps=n_substeps
+        # # number of substeps to output
+        # self.n_substeps=n_substeps
+
+        self.action_space = spaces.Discrete(self.nActions)
+        self.observation_space = self._get_observation_space()
 
         # others
         self.viewer = None
@@ -147,35 +139,10 @@ class ANNSingleZoneEnv(gym.Env):
             self.history['TRoo'] = [273.15+25]*self.n_prev_steps
             self.history['PTot'] = [0.]*self.n_prev_steps
 
-        # configuration of fmugym
-        # config = {
-        #     'model_input_names': ['uFan'],
-        #     'model_output_names': ['time','TRoo','TOut','GHI','PTot'],
-        #     'model_parameters': {},
-        #     'time_step': time_step,
-        #     'fmu_result_handling':fmu_result_handling,
-        #     'fmu_result_ncp':fmu_result_ncp,
-        #     'filter_flag':filter_flag 
-        # }
-
         # initialize some metadata 
         self._cost = []
         self._max_temperature_violation = []
         self._delta_action = []
-
-        # specify fmu path and model
-        fmu_path = os.path.dirname(os.path.realpath(__file__))
-        #change to NN and polynomial model
-        # super(JModelicaCSSingleZoneEnv, self).__init__(fmu_path+"/SingleZoneFCU.fmu",
-        #                   config, log_level=log_level,
-        #                   simulation_start_time=simulation_start_time)
-       # location of fmu is set to current working directory
-    
-        # OpenAI Gym API implementation
-    
-    def test_instant(self):
-        print("***The instant created***")
-        print('flow rate is {}'.format(mass_flow_nor))
 
     def step(self, action):
         """
@@ -188,20 +155,35 @@ class ANNSingleZoneEnv(gym.Env):
         """
         # update historical action for reward calculation
         self.action_curr = action
-
         # forward action
-        action = np.array(action)
-        action = [action/float(self.nActions-1)]
+        # action = np.array(action)
+        # action = [action/float(self.nActions-1)]
+        action = action/float(self.nActions-1) # can only be single
         
-        #TODO need to define x
+        # action is ufan, ufan need to convert to mass flowrate
+        # m = [i * 0.55 for i in action]
+        m = 0.55 * action
+        
+        #TODO how to get history
+        x = np.empty([1,16], dtype = float, order = 'C')
+        x[0,0:5] = self.history['T_oa'].values[-self.n_prev_steps-1:]
+        x[0,5:10] = self.history['T_roo'].values[-self.n_prev_steps-1:]
+        x[0,10] = m
+        x[0,11:16] = self.predictor(self.n_next_steps)[:-3] #TODO add future GHI as well
+        
         #load ann to predict Troom
-        ann = torch.load('zone_ann.pkl')
-        x = []
-        Tz = ann(x).detach().numpy()
+        # 17 inputs
+        net = Net(features=x.shape[1])
+        ann = torch.load('zone_ann.pt')
+        x_data = torch.tensor(x, dtype=torch.float)
+        Tz = ann(x_data).detach().numpy()
+        self.Tz = Tz
         # polynomial
-        alpha = json.load('power.json')
+        with open('power.json', 'r') as fcc_file:
+            alpha = json.load(fcc_file)
+        alpha = list(alpha.values())[0]
         Ts = 273.15 + 14
-        P = alpha[0]+alpha[1]*action+alpha[2]*action**2+alpha[3]*action**3 +(1008./3)*action*(Tz-Ts)#+ beta[0]+ beta[1]*Toa+beta[2]*Toa**2
+        P = alpha[0]+alpha[1]*m+alpha[2]*m**2+alpha[3]*m**3 +(1008./3)*m*(Tz-Ts)#+ beta[0]+ beta[1]*Toa+beta[2]*Toa**2
         return P
         # return super(SingleZoneEnv,self).step(action)
         
@@ -209,15 +191,22 @@ class ANNSingleZoneEnv(gym.Env):
         """
         Inherit the existing internal reset method and customize for this environment
         """
-        if self.n_prev_steps > 0:
-            self.history['TRoo'] = [273.15+25]*self.n_prev_steps 
-            self.history['PTot'] = [0.]*self.n_prev_steps
+        # if self.n_prev_steps > 0:
+        #     self.history['TRoo'] = [273.15+25]*self.n_prev_steps 
+        #     self.history['PTot'] = [0.]*self.n_prev_steps
 
-        # reset previous action to calculate rewards in terms of action changes during steps
-        self.action_prev = 0
-        self._delta_action = []
-
-        return super(SingleZoneEnv, self).reset()
+        # # reset previous action to calculate rewards in terms of action changes during steps
+        
+        # TODO the purpose of reset? now set to low boundary, think about it after step, consider to use the history data
+        # return np.array([0., 273.15+12, 273.15+(-10.),0., 0., 0.]+\
+        #         [273.15+(-10)]*self.n_next_steps+[0.]*self.n_next_steps+[0.]*self.n_next_steps+\
+        #         [273.15+12]*self.n_prev_steps+[0.]*self.n_prev_steps)
+        history_data = pd.read_csv('ann_polynomial\\train_data.csv')
+        self.history = pd.DataFrame()
+        self.history = history_data[['mass_flow', 'T_oa', 'T_roo', 'P_tot','GHI']] # is GHI needed?
+        self.action_prev = int(history_data['mass_flow'].values[-1] / 0.55)  # previous one or multipy
+        # TODO need to add price
+        return history_data
 
     def render(self, mode='human', close=False):
         """
@@ -246,23 +235,25 @@ class ANNSingleZoneEnv(gym.Env):
 
         :return: Discrete action space of size n, n-levels of mass flowrate from [0,1] with an increment of 1/(n-1)
         """
-        return spaces.Discrete(self.nActions)
+        self.action_space = spaces.Discrete(self.nActions)
+        # return spaces.Discrete(self.nActions)
 
     def _get_observation_space(self):
         """
         Internal logic that is utilized by parent classes.
         Returns observation space according to OpenAI Gym API requirements
+        The number of observation number = 6 (current) + n*3 (future) + m*2 (previous)
                  
         :return: Box state space with specified lower and upper bounds for state variables.
         """
         # open gym requires an observation space during initialization
-
+        #TODO why the upper limit of time is 86400 = 24h
         high = np.array([86400.,273.15+35, 273.15+40,1000., 1500., 1.0]+\
                 [273.15+40]*self.n_next_steps+[1000.]*self.n_next_steps+[1.]*self.n_next_steps+\
                 [273.15+35]*self.n_prev_steps+[1500.]*self.n_prev_steps)
         
-        low = np.array([0., 273.15+12, 273.15+0.,0., 0., 0.]+\
-                [273.15+0]*self.n_next_steps+[0.]*self.n_next_steps+[0.]*self.n_next_steps+\
+        low = np.array([0., 273.15+12, 273.15+(-10.),0., 0., 0.]+\
+                [273.15+(-10)]*self.n_next_steps+[0.]*self.n_next_steps+[0.]*self.n_next_steps+\
                 [273.15+12]*self.n_prev_steps+[0.]*self.n_prev_steps)
                 
         return spaces.Box(low, high)
@@ -407,7 +398,6 @@ class ANNSingleZoneEnv(gym.Env):
 
         return tuple(state_list+predictor_list+history_list) 
 
-    #TODO modify it to nn + polynomial
     def predictor(self,n):
         """
         Predict weather conditions over a period
@@ -424,7 +414,7 @@ class ANNSingleZoneEnv(gym.Env):
         tem_sol_step = self.read_temperature_solar()
         
         #time = self.state[0]
-        time = self.start
+        time = self.simulation_start_time
         # return future n steps
         tem = list(tem_sol_step[time+self.tau:time+n*self.tau]['temp_air']+273.15)
         sol = list(tem_sol_step[time+self.tau:time+n*self.tau]['ghi'])
@@ -447,33 +437,34 @@ class ANNSingleZoneEnv(gym.Env):
         tem_sol_h.index = index_h
 
         # interpolate temperature into simulation steps
+        self.tau = 15*60
         index_step = np.arange(0,3600.*len(tem_sol_h),self.tau)
 
         return interp(tem_sol_h,index_step)
 
 
 
-    # define a method to get sub-step measurements for model outputs. 
-    # The outputs are defined by model_output_names and model_input_names.
-    def get_substep_measurement(self):
-        """
-        Get outputs in a smaller step than the control step.
-        The number of substeps are defined as n_substeps. 
-        The step-wise simulation results are interpolated into n_substeps.
-        :return: Tuple of List
-        """
-        # following the order as defined in model_output_names
-        substep_measurement_names = self.model_output_names + self.model_input_names
+    # # define a method to get sub-step measurements for model outputs. 
+    # # The outputs are defined by model_output_names and model_input_names.
+    # def get_substep_measurement(self):
+    #     """
+    #     Get outputs in a smaller step than the control step.
+    #     The number of substeps are defined as n_substeps. 
+    #     The step-wise simulation results are interpolated into n_substeps.
+    #     :return: Tuple of List
+    #     """
+    #     # following the order as defined in model_output_names
+    #     substep_measurement_names = self.model_output_names + self.model_input_names
 
-        time = self.result['time'] # get a list of raw time point from modelica simulation results for [t-dt, t].
-        dt = (time[-1]-time[0])/self.n_substeps
-        time_intp = np.arange(time[0], time[-1]+dt, dt)
+    #     time = self.result['time'] # get a list of raw time point from modelica simulation results for [t-dt, t].
+    #     dt = (time[-1]-time[0])/self.n_substeps
+    #     time_intp = np.arange(time[0], time[-1]+dt, dt)
 
-        substep_measurement=[]
-        for var_name in substep_measurement_names:
-            substep_measurement.append(list(np.interp(time_intp, time, self.result[var_name])))
+    #     substep_measurement=[]
+    #     for var_name in substep_measurement_names:
+    #         substep_measurement.append(list(np.interp(time_intp, time, self.result[var_name])))
         
-        return (substep_measurement_names,substep_measurement)
+    #     return (substep_measurement_names,substep_measurement)
 
     # get cost 
     def get_cost(self):
@@ -497,3 +488,61 @@ class ANNSingleZoneEnv(gym.Env):
     def get_action_changes(self):
 
         return self._delta_action
+
+def interp(df, new_index):
+    """Return a new DataFrame with all columns values interpolated
+    to the new_index values."""
+    df_out = pd.DataFrame(index=new_index)
+    df_out.index.name = df.index.name
+
+    for colname, col in df.iteritems():
+        df_out[colname] = np.interp(new_index, df.index, col)
+
+    return df_out
+
+class Net(nn.Module):
+    def __init__(self, features):
+        super(Net, self).__init__()
+        # self.fc1 = nn.Linear(features, 10)
+        # self.fc2 = nn.Linear(10, 1)
+        self.linear_relu1 = nn.Linear(features, 256)
+        self.linear_relu2 = nn.Linear(256, 256)
+        self.linear_relu3 = nn.Linear(256, 256)
+        self.linear_relu4 = nn.Linear(256, 256)
+        self.linear_relu5 = nn.Linear(256, 256)
+        self.linear_relu6 = nn.Linear(256, 256)
+
+        self.linear7 = nn.Linear(256, 4)
+        # self.activation = nn.ReLU()
+
+    def forward(self, x):
+        y_pred = self.linear_relu1(x)
+        y_pred = nn.functional.relu(y_pred)
+
+        y_pred = self.linear_relu2(y_pred)
+        y_pred = nn.functional.relu(y_pred)
+
+        y_pred = self.linear_relu3(y_pred)
+        y_pred = nn.functional.relu(y_pred)
+
+        y_pred = self.linear_relu4(y_pred)
+        y_pred = nn.functional.relu(y_pred)
+        
+        y_pred = self.linear_relu5(y_pred)
+        y_pred = nn.functional.relu(y_pred)
+        y_pred = self.linear_relu6(y_pred)
+        y_pred = nn.functional.relu(y_pred)
+
+        y_pred = self.linear7(y_pred)
+        
+        
+        
+        # x = self.activation(self.linear_relu1(x))
+        # x = self.activation(self.linear_relu2(x))
+        # x = self.activation(self.linear_relu3(x))
+        # x = self.activation(self.linear_relu4(x))
+        # x = self.activation(self.linear_relu5(x))
+        # x = self.activation(self.linear6(x))
+        
+        return y_pred
+
