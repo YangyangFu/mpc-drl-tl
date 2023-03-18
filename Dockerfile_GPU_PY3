@@ -61,12 +61,6 @@ COPY ./testcases/gym-environments/single-zone/gym_singlezone_jmodelica $HOME/git
 COPY ./testcases/gym-environments/single-zone/setup.py $HOME/github/testcases/gym-environments/single-zone/setup.py
 RUN cd $HOME/github/testcases/gym-environments/single-zone && pip install -e .
 
-# install single zone temperature control environment
-WORKDIR $HOME
-COPY ./testcases/gym-environments/single-zone-temperature/gym_singlezone_temperature $HOME/github/testcases/gym-environments/single-zone-temperature/gym_singlezone_temperature
-COPY ./testcases/gym-environments/single-zone-temperature/setup.py $HOME/github/testcases/gym-environments/single-zone-temperature/setup.py
-RUN cd $HOME/github/testcases/gym-environments/single-zone-temperature && pip install -e .
-
 # install five zone air system supervisory control environment
 WORKDIR $HOME
 COPY ./testcases/gym-environments/five-zones-air/gym_fivezoneair_jmodelica $HOME/github/testcases/gym-environments/five-zones-air/gym_fivezoneair_jmodelica
