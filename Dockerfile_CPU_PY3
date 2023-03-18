@@ -35,6 +35,10 @@ WORKDIR $HOME
 RUN git config --global url."https://github.com/".insteadOf git://github.com/ && \
     pip install git+git://github.com/YangyangFu/modelicagym.git@master 
 
+## BuildingSpy
+WORKDIR $HOME
+RUN pip install buildingspy
+
 ### =======================================================================================
 ### intall customized gym environment into docker: install a building control environment
 # install single zone damper control environment
@@ -44,11 +48,18 @@ COPY ./testcases/gym-environments/single-zone/gym_singlezone_jmodelica $HOME/git
 COPY ./testcases/gym-environments/single-zone/setup.py $HOME/github/testcases/gym-environments/single-zone/setup.py
 RUN cd $HOME/github/testcases/gym-environments/single-zone && pip install -e .
 
-# install single zone temperature control environment
+# install five zone air system supervisory control environment
 WORKDIR $HOME
-COPY ./testcases/gym-environments/single-zone-temperature/gym_singlezone_temperature $HOME/github/testcases/gym-environments/single-zone-temperature/gym_singlezone_temperature
-COPY ./testcases/gym-environments/single-zone-temperature/setup.py $HOME/github/testcases/gym-environments/single-zone-temperature/setup.py
-RUN cd $HOME/github/testcases/gym-environments/single-zone-temperature && pip install -e .
+COPY ./testcases/gym-environments/five-zones-air/gym_fivezoneair_jmodelica $HOME/github/testcases/gym-environments/five-zones-air/gym_fivezoneair_jmodelica
+COPY ./testcases/gym-environments/five-zones-air/setup.py $HOME/github/testcases/gym-environments/five-zones-air/setup.py
+RUN cd $HOME/github/testcases/gym-environments/five-zones-air && pip install -e .
+
+# install five zone plant system supervisory control environment
+WORKDIR $HOME
+COPY ./testcases/gym-environments/five-zones-plant/gym_fivezoneplant_jmodelica $HOME/github/testcases/gym-environments/five-zones-plant/gym_fivezoneplant_jmodelica
+COPY ./testcases/gym-environments/five-zones-plant/setup.py $HOME/github/testcases/gym-environments/five-zones-plant/setup.py
+RUN cd $HOME/github/testcases/gym-environments/five-zones-plant && pip install -e .
+
 
 ### ===========================================================================================
 ### install testcase dependency
