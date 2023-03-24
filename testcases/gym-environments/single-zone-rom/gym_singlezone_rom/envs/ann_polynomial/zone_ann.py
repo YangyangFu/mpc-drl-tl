@@ -96,18 +96,20 @@ def feature_engneering(data):
 
 def split_data(df_pre, T_fur):
     x_cos = [
-                   'To_-4', 'To_-3', 'To_-2','To_-1',
-                    'T_oa',
-                    'Tz_4', 'Tz_3', 'Tz_2', 'Tz_1',
+
                     'T_roo',
+                    'T_oa',
+                    'GHI',
                     'mass_flow',
                # 'GHI',  'Qint1', 'Qint2', 'Qint3',
                #     'Mret', 'Hinfi', 'Hinfo', 'Minf',
                    # 'Qint1', 'Qint2', 'Qint3',
                    # 'Mret', 'Hsup', 'Hret', 'Hinfi',
                    # 'Hinfo', 'Minf',
+                    'Tz_4', 'Tz_3', 'Tz_2', 'Tz_1',
+                   'To_-4', 'To_-3', 'To_-2','To_-1',
                    'To_1', 'To_2', 'To_3', 'To_4',
-                   'GHI',
+                   
                  #  'To_1', 'To_2', 'To_3',
                  # 'To_4'
                # 'T_oa_mean_lag4', 'T_oa_max_lag4', 'T_oa_min_lag4',
@@ -441,7 +443,8 @@ if __name__ == "__main__":
     ann = train_NN(x_train, y_train)
 
     # #save
-    torch.save(ann, '..//zone_ann.pt')
+    torch.save(ann.state_dict(), '..//zone_ann.pt')
+    # torch.save(ann, '..//zone_ann.pt')
     # #load
     # ann = torch.load('..//zone_ann.pt')
     

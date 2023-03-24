@@ -22,28 +22,34 @@ env = gym.make("SingleZoneEnv-ANN-v1",
                 alpha=200,
                 nActions=11,
                 # n_substeps=15,
-                n_prev_steps=4)
+                m_prev_steps=4)
 
-history = env.reset()
-n_outputs = env.observation_space.shape[0]
-print(history.columns)
-print(n_outputs)
-# print(env.tau, env.simulation_start_time, env.simulation_end_time)
-print(env.simulation_start_time, env.simulation_end_time)
-print(env.action_space,env.nActions)
+# basic information
+print('The interval in seconds is {}.\nThe start time is {}. \nThe end time is {}'.format(env.tau, env.simulation_start_time, env.simulation_end_time))
 print(env.alpha)
 
+#test action and obsevation space
+action_space = env.action_space
+print('The action space is {}'.format(action_space))
+observation_space = env.observation_space
+print('The shape of observation space is {}'.format(observation_space.shape))
+
+reset = env.reset()
+print('Reset state is {}'.format(reset[0]))
+print('Previous action is {}'.format(reset[1]))
+
 # test action changes
-print(env.action_prev)
+step = env.step(6)
+print('Predicted Tz is {}  \nState is {}\nReward is {}'.format(step[0],step[1],step[2]))
 
-# test weather forecast
-temp = env.predictor(4)
-# steps
+# # test weather forecast
+# temp = env.predictor(4)
+# # steps
 
-# observation, reward, done, _ = env.step(2)
-p =env.step(4)
-print('predicted power is: {}'.format(p))
-history_data = env.history_data
+# # observation, reward, done, _ = env.step(2)
+# p =env.step(4)
+# print('predicted power is: {}'.format(p))
+# history_data = env.history_data
 # substep_measurement_names, substep_measurement=env.get_substep_measurement()
 # print("current step is evenly divided into "+str(env.n_substeps) + " sub-steps!!!")
 # print(substep_measurement_names)

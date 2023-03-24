@@ -38,7 +38,7 @@ class ANNSingleZoneEnv(gym.Env):
 
 
     ### Observation Space
-        Type: Box(5+3*n_next_steps+2*n_prev_steps)
+        Type: Box(5+3*n_next_steps+2*m_prev_steps)
         Num                                     Observation                                     Min            Max
         0                                       Time                                            0              86400
         1                                       Zone temperature                                273.15 + 12    273.15 + 35
@@ -49,9 +49,10 @@ class ANNSingleZoneEnv(gym.Env):
         5+[1...,n_next_steps]                   Outdoor temperature prediction at next n step   273.15 + 0     273.15 + 40
         5+n_next_steps+[1,...,n_next_steps]     Solar radiation prediction at next n step       0              1000
         5+2*n_next_steps+[1,...,n_next_steps]   Energy price at next n step                     0              1
-        5+3*n_next_steps+[1,...,n_prev_steps]   Zone temperature from previous m steps          273.15 + 12    273.15 + 35   
-        5+3*n_next_steps+n_prev_steps+[1,...,n_prev_steps]   Total power from previous m steps  0              1500
-        #??? previous outdoor temperature
+        5+3*n_next_steps+[1,...,m_prev_steps]   Zone temperature from previous m steps          273.15 + 12    273.15 + 35   
+        5+3*n_next_steps+m_prev_steps+[1,...,m_prev_steps]   Total power from previous m steps  0              1500
+        #total power is replaced with previous outdoor temperature
+        #TODO to confirm if the previous tatal power needed and modify the obsevation space
 
     
     ### Rewards
@@ -89,7 +90,7 @@ class ANNSingleZoneEnv(gym.Env):
                  rf=None,
                  p_g=None,
                  # n_substeps=15,
-                 n_prev_steps=0):
+                 m_prev_steps=0):
 
         logger.setLevel(log_level)
 
@@ -97,12 +98,12 @@ class ANNSingleZoneEnv(gym.Env):
         self.mass_flow_nor = mass_flow_nor 
         self.weather_file = weather_file 
         self.n_next_steps = n_next_steps 
-        self.n_prev_steps = n_prev_steps
+        self.m_prev_steps = m_prev_steps
 
         # virtual environment simulation period
         self.simulation_start_time = simulation_start_time
         self.simulation_end_time = simulation_end_time
-        self.tau = 900 # seconds between state updates
+        self.tau = time_step # seconds between state updates
         # state bounds if any
         
         # experiment parameters
@@ -136,9 +137,9 @@ class ANNSingleZoneEnv(gym.Env):
 
         # conditional
         self.history = None
-        # if self.n_prev_steps > 0:
-        #     self.history['TRoo'] = [273.15+25]*self.n_prev_steps
-        #     self.history['PTot'] = [0.]*self.n_prev_steps
+        # if self.m_prev_steps > 0:
+        #     self.history['TRoo'] = [273.15+25]*self.m_prev_steps
+        #     self.history['PTot'] = [0.]*self.m_prev_steps
 
         # initialize some metadata 
         self._cost = []
@@ -149,18 +150,18 @@ class ANNSingleZoneEnv(gym.Env):
         """
         Parameters
         ----------
-        time : int
+        time : list of int
             time in seconds.
 
         Returns
         -------
-        price : double
+        price : list of double
             price at that hour.
 
         """
         pri = []
         for i in time:
-            hour = math.ceil(3601/3600)
+            hour = math.ceil(i/3600) % 24
             pri.append(self.p_g[hour-1])
         return pri
         
@@ -184,66 +185,128 @@ class ANNSingleZoneEnv(gym.Env):
         # action = np.array(action)
         # action = [action/float(self.nActions-1)]
         action = action/float(self.nActions-1) # can only be single
+        # predict future Tz and P with ROM
+        Tz, P = self._rom_model(action)
+        # update state
+        print("State before update \n{}".format(self.state))
+        self._get_observation(Tz, P)
+        print("State after update \n{}".format(self.state))
+        # reward policy
+        rewards = self._reward_policy()
+        # update action
+        self.action_prev = self.action_curr
+        return Tz, self.state, rewards, {}
         
-        # action is ufan, ufan need to convert to mass flowrate
-        # m = [i * 0.55 for i in action]
-        m = 0.55 * action
-        
-        #TODO how to get history
-        x = np.empty([1,16], dtype = float, order = 'C')
-        x[0,0:5] = self.history['T_oa'].values[-self.n_prev_steps-1:]
-        x[0,5:10] = self.history['T_roo'].values[-self.n_prev_steps-1:]
-        x[0,10] = m
-        x[0,11:16] = self.predictor(self.n_next_steps)[:-3] #TODO add future GHI as well
-        
+        # return P
+        # return super(SingleZoneEnv,self).step(action)
+    
+    def _rom_model(self, action):
+        x = self._get_model_state(action)
         #load ann to predict Troom
-        # 17 inputs
-        net = Net(features=x.shape[1])
-        ann = torch.load('zone_ann.pt')
+        ann = Net(features=x.shape[1])
+        cur_path = os.path.dirname(os.path.realpath(__file__))
+        # ann = torch.load(cur_path + '/zone_ann.pt')
+        state_dic = torch.load(cur_path + '/zone_ann.pt')
+        ann.load_state_dict(state_dic)
         x_data = torch.tensor(x, dtype=torch.float)
         Tz = ann(x_data).detach().numpy()
-        # update state
-        
         # polynomial
-        with open('power.json', 'r') as fcc_file:
+        # action is ufan, ufan need to convert to mass flowrate
+        # m = [i * 0.55 for i in action]
+        m = 0.55 * action #0.55 is the capacity, change to air flow
+        with open(cur_path + '/power.json', 'r') as fcc_file:
             alpha = json.load(fcc_file)
         alpha = list(alpha.values())[0]
         Ts = 273.15 + 14
         P = alpha[0]+alpha[1]*m+alpha[2]*m**2+alpha[3]*m**3 +(1008./3)*m*(Tz[0][0]-Ts)#+ beta[0]+ beta[1]*Toa+beta[2]*Toa**2
-        return P
-        # return super(SingleZoneEnv,self).step(action)
+        return Tz, P
+
+    def _get_model_state(self, action):
+        # can also use self.current_state etc.
+        x = np.empty([1,4+1*self.n_next_steps+2*self.m_prev_steps], dtype = float)
+        x[0,0:3] = self.state[1:4]
+        m = 0.55 * action #0.55 is the capacity, change to air flow
+        x[0,3] = m
+        x[0,4:4+self.n_next_steps] = self.state[6:6+self.n_next_steps]
+        x[0,4+self.n_next_steps:4+self.n_next_steps+2*self.m_prev_steps] = self.state[-2*self.m_prev_steps:]
+        return x
+
+    # get states of gym ENV
+    def _get_observation(self,Tz, P):
+        tim = self.simulation_start_time + self.tau
+        # current states
+        self.current_state = [tim, Tz[0][0], self.future_state[0], self.future_state[self.n_next_steps], P
+                         , self.future_state[self.n_next_steps*2]]
+        # get price in this time period
+        tims = []
+        for i in range(self.m_prev_steps):
+            tims.append(tim - self.tau * (i+1))
+        tims = tims[::-1]
+        tims.append(tim)
+        for i in range(self.n_next_steps):
+            tims.append(tims[-1] + self.tau)
+        ene_pri = self._get_hour_price(tims)        
+        # future states
+        out_tem_sol_n = self.predictor(self.n_next_steps)  # outdoor air temperature for next, n * 2, temperature first, solar in the end
+        self.future_state = list(out_tem_sol_n) + list(ene_pri[-self.n_next_steps:])
         
+        # history states
+        self.history_state[0:self.m_prev_steps-1] = self.history_state[1:self.m_prev_steps]
+        self.history_state[self.m_prev_steps-1] = self.state[1]
+        self.history_state[self.m_prev_steps:self.m_prev_steps*2-1] = self.history_state[self.m_prev_steps+1:self.m_prev_steps*2]
+        self.history_state[self.m_prev_steps*2-1] = self.state[2]
+        
+        self.state = tuple(self.current_state + self.future_state + self.history_state)
+        # (tim, zon_tem_mk[-1], out_tem_mk[-1], ghi_mk[-1], power
+        #               , ene_pri[self.m_prev_steps], out_tem_sol_n)
+        assert len(self.state)==self.observation_space.shape[0], "The size of state is not consistent with observation space"
+
     def reset(self):
         """
         Inherit the existing internal reset method and customize for this environment
         """
-        # if self.n_prev_steps > 0:
-        #     self.history['TRoo'] = [273.15+25]*self.n_prev_steps 
-        #     self.history['PTot'] = [0.]*self.n_prev_steps
-
+        # if self.m_prev_steps > 0:
+        #     self.history['TRoo'] = [273.15+25]*self.m_prev_steps 
+        #     self.history['PTot'] = [0.]*self.m_prev_steps
         # # reset previous action to calculate rewards in terms of action changes during steps
         
-        # TODO the purpose of reset? now set to low boundary, think about it after step, consider to use the history data
-        # return np.array([0., 273.15+12, 273.15+(-10.),0., 0., 0.]+\
-        #         [273.15+(-10)]*self.n_next_steps+[0.]*self.n_next_steps+[0.]*self.n_next_steps+\
-        #         [273.15+12]*self.n_prev_steps+[0.]*self.n_prev_steps)
-        tim = (self.simulation_start_time)
-        history_data = pd.read_csv('train_data.csv')
-        zon_tem_s = (history_data['T_roo'].values[-self.n_prev_steps-1:])  #n+1
-        our_wea_sol_mk = (history_data['T_oa'].values[-self.n_prev_steps-1:])  # outdoor air temperature and GHI for previos and now, (m+1)*2
-        our_wea_sol_n = tuple(self.predictor(self.n_next_steps))  # outdoor air temperature for next, n * 2
-        tims = [tim]
+        # time, zone_tem_mk (history and current zone temperature), out_wea_sol_mk (history and current outdoor temperature),
+        # out_wea_sol_n (future outdoor temperature)
+        tim = self.simulation_start_time
+        his_data_path = os.path.dirname(os.path.realpath(__file__))
+        history_data = pd.read_csv(his_data_path+"/ann_polynomial/train_data.csv") #TODO: use join instead later
+        zon_tem_mk = history_data['T_roo'].values[-self.m_prev_steps-1:]  #m+1
+        out_tem_mk = history_data['T_oa'].values[-self.m_prev_steps-1:]  # zone air temperature for previos and now, (m+1)*2
+        ghi_mk = history_data['GHI'].values[-self.m_prev_steps-1:]  # outdoor air temperature for previos and now, (m+1)*2
+        # get energy price in this period
+        tims = []
+        for i in range(self.m_prev_steps):
+            tims.append(tim - self.tau * (i+1))
+        tims = tims[::-1]
+        tims.append(tim)
         for i in range(self.n_next_steps):
-            tims.append(tim[-1] + self.tau)
-        ene_pri = tuple(self._get_hour_price(tims))
-        
-        
-        
-        self.history = pd.DataFrame()
-        self.history = history_data[['mass_flow', 'T_oa', 'T_roo', 'P_tot','GHI']] # is GHI needed?
-        self.action_prev = int(history_data['mass_flow'].values[-1] / 0.55)  # previous one or multipy
-        # TODO need to add price
-        return history_data
+            tims.append(tims[-1] + self.tau)
+        ene_pri = self._get_hour_price(tims)
+        # current state
+        power = history_data['P_tot'].values[-1]
+        self.current_state = [tim, zon_tem_mk[-1], out_tem_mk[-1], ghi_mk[-1], power
+                         , ene_pri[self.m_prev_steps]]
+        # future state
+        out_tem_sol_n = self.predictor(self.n_next_steps)  # outdoor air temperature for next, n * 2, temperature first, solar in the end
+        self.future_state = list(out_tem_sol_n) + list(ene_pri[-self.n_next_steps:])
+        # history state
+        self.history_state = list(zon_tem_mk[:self.m_prev_steps]) + list(out_tem_mk[:self.m_prev_steps])
+        self.state = tuple(self.current_state + self.future_state + self.history_state)
+        # (tim, zon_tem_mk[-1], out_tem_mk[-1], ghi_mk[-1], power
+        #               , ene_pri[self.m_prev_steps], out_tem_sol_n)
+        assert len(self.state)==self.observation_space.shape[0], "The size of state is not consistent with observation space"
+
+        # self.history = pd.DataFrame()
+        # self.history = history_data[['mass_flow', 'T_oa', 'T_roo', 'P_tot','GHI']] # is GHI needed?
+        # self.history = self.history_state + self.current_state
+        self.action_prev = int(history_data['mass_flow'].values[-1] / 0.55)  # previous one or multipy, can be found in history
+
+        return np.array(self.state, dtype=np.float32), self.action_prev, history_data, {} # why {}
 
     def render(self, mode='human', close=False):
         """
@@ -255,7 +318,7 @@ class ANNSingleZoneEnv(gym.Env):
         Used, when environment is closed.
         :return: rendering result
         """
-        pass       
+        pass
         
     def close(self):
         """
@@ -287,11 +350,11 @@ class ANNSingleZoneEnv(gym.Env):
         #TODO why the upper limit of time is 86400 = 24h
         high = np.array([86400.,273.15+35, 273.15+40,1000., 1500., 1.0]+\
                 [273.15+40]*self.n_next_steps+[1000.]*self.n_next_steps+[1.]*self.n_next_steps+\
-                [273.15+35]*self.n_prev_steps+[1500.]*self.n_prev_steps)
+                [273.15+35]*self.m_prev_steps+[1500.]*self.m_prev_steps)
         
         low = np.array([0., 273.15+12, 273.15+(-10.),0., 0., 0.]+\
                 [273.15+(-10)]*self.n_next_steps+[0.]*self.n_next_steps+[0.]*self.n_next_steps+\
-                [273.15+12]*self.n_prev_steps+[0.]*self.n_prev_steps)
+                [273.15+12]*self.m_prev_steps+[0.]*self.m_prev_steps)
                 
         return spaces.Box(low, high)
     
@@ -420,7 +483,7 @@ class ANNSingleZoneEnv(gym.Env):
         # ================================================
         # historical measurement list
         history_list=[]
-        if self.n_prev_steps>0:
+        if self.m_prev_steps>0:
             TRoo_t = result.final('TRoo')
             pow_t = result.final('PTot')
             TRoo_his= self.history['TRoo']
@@ -450,8 +513,9 @@ class ANNSingleZoneEnv(gym.Env):
         # temperature and solar in a dataframe
         tem_sol_step = self.read_temperature_solar()
         
-        #time = self.state[0]
-        time = self.simulation_start_time
+        # time = self.state[0]
+        # time = self.simulation_start_time
+        time = self.current_state[0]
         # return future n steps
         tem = list(tem_sol_step[time+self.tau:time+n*self.tau]['temp_air']+273.15)
         sol = list(tem_sol_step[time+self.tau:time+n*self.tau]['ghi'])
