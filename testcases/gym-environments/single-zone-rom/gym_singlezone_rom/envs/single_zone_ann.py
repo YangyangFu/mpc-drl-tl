@@ -195,10 +195,9 @@ class ANNSingleZoneEnv(gym.Env):
         rewards = self._reward_policy()
         # update action
         self.action_prev = self.action_curr
-        return Tz, self.state, rewards, {}
-        
-        # return P
-        # return super(SingleZoneEnv,self).step(action)
+        terminated = bool(self.simulation_end_time <= self.simulation_start_time + self.tau) 
+        return np.array(self.state,dtype=np.float32), rewards, terminated, {}
+
     
     def _rom_model(self, action):
         x = self._get_model_state(action)
@@ -306,7 +305,8 @@ class ANNSingleZoneEnv(gym.Env):
         # self.history = self.history_state + self.current_state
         self.action_prev = int(history_data['mass_flow'].values[-1] / 0.55)  # previous one or multipy, can be found in history
 
-        return np.array(self.state, dtype=np.float32), self.action_prev, history_data, {} # why {}
+        return np.array(self.state, dtype=np.float32) #,  {} 
+
 
     def render(self, mode='human', close=False):
         """
@@ -596,7 +596,7 @@ def interp(df, new_index):
     df_out = pd.DataFrame(index=new_index)
     df_out.index.name = df.index.name
 
-    for colname, col in df.iteritems():
+    for colname, col in df.items():
         df_out[colname] = np.interp(new_index, df.index, col)
 
     return df_out

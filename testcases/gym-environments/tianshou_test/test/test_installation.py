@@ -6,27 +6,15 @@ PYFMI_PY3_CONDA_PATH = os.getenv("PYFMI_PY3_CONDA_PATH")
 sys.path.insert(0, PYFMI_PY3_CONDA_PATH)
 print(sys.path)
 import gym
-import gym_singlezone_rom
+import env_example
 #os.path.abspath(os.path.join(os.path.dirname('settings.py'),os.path.pardir))
 # import tianshou as ts
 # print(ts.__version__)
 
-env = gym.make("SingleZoneEnv-ANN-v1",
-                mass_flow_nor=0.55,
-                weather_file='USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw',
-                n_next_steps=4,
-                simulation_start_time=3600*24,
-                simulation_end_time=3600*24*7,  # for the next week?
-                time_step=15*60,
-                log_level=7,
-                alpha=200,
-                nActions=11,
-                # n_substeps=15,
-                m_prev_steps=4)
+env = gym.make("Example-v1",
+                )
 
-# basic information
-print('The interval in seconds is {}.\nThe start time is {}. \nThe end time is {}'.format(env.tau, env.simulation_start_time, env.simulation_end_time))
-print(env.alpha)
+
 
 #test action and obsevation space
 action_space = env.action_space
@@ -40,12 +28,12 @@ print(type(reset))
 print('Reset state is {}'.format(reset[0]))
 
 # test action changes
-step = env.step(6)
+step = env.step(0)
 print('**************')
 print(type(step))
 print('State is {}  \nReward is {}\nTerminated is {}'.format(step[0],step[1],step[2]))
 
-# # test weather forecast
+# # # test weather forecast
 # temp = env.predictor(4)
 # # steps
 
