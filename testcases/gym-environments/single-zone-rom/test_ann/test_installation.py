@@ -7,6 +7,10 @@ sys.path.insert(0, PYFMI_PY3_CONDA_PATH)
 print(sys.path)
 import gym
 import gym_singlezone_rom
+import time
+
+import random
+import matplotlib.pyplot as plt
 #os.path.abspath(os.path.join(os.path.dirname('settings.py'),os.path.pardir))
 # import tianshou as ts
 # print(ts.__version__)
@@ -40,10 +44,25 @@ print(type(reset))
 print('Reset state is {}'.format(reset[0]))
 
 # test action changes
-step = env.step(6)
+step = env.step(10)
 print('**************')
 print(type(step))
 print('State is {}  \nReward is {}\nTerminated is {}'.format(step[0],step[1],step[2]))
+
+simulation_start_time=3600*24
+simulation_end_time=3600*24*2
+i = simulation_start_time
+rewards = []
+while i<simulation_end_time:
+    step = env.step(random.randint(0,10))
+    print('**************')
+    print('State is {}  \nReward is {}\nTerminated is {}'.format(step[0],step[1],step[2]))
+    rewards.append(step[1])
+    i += 900
+fig, ax = plt.figure()
+plt.plot(rewards)
+plt.ylabel('reward')
+plt.savefig('rewards.png', bbox_inches = 'tight', dpi = 300)
 
 # # test weather forecast
 # temp = env.predictor(4)

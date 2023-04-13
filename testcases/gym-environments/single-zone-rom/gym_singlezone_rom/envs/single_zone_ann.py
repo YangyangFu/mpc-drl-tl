@@ -52,7 +52,7 @@ class ANNSingleZoneEnv(gym.Env):
         5+3*n_next_steps+[1,...,m_prev_steps]   Zone temperature from previous m steps          273.15 + 12    273.15 + 35   
         5+3*n_next_steps+m_prev_steps+[1,...,m_prev_steps]   Total power from previous m steps  0              1500
         #total power is replaced with previous outdoor temperature
-        #TODO to confirm if the previous tatal power needed and modify the obsevation space
+        #TODO to confirm if the previous total power needed and modify the observation space
 
     
     ### Rewards
@@ -189,13 +189,13 @@ class ANNSingleZoneEnv(gym.Env):
         Tz, P = self._rom_model(action)
         # update state
         print("State before update \n{}".format(self.state))
-        self._get_observation(Tz, P)
+        self.state = self._get_observation(Tz, P)
         print("State after update \n{}".format(self.state))
         # reward policy
         rewards = self._reward_policy()
         # update action
         self.action_prev = self.action_curr
-        terminated = bool(self.simulation_end_time <= self.simulation_start_time + self.tau) 
+        terminated = bool(self.simulation_end_time <= self.state[0] + self.tau) 
         return np.array(self.state,dtype=np.float32), rewards, terminated, {}
 
     
@@ -232,7 +232,7 @@ class ANNSingleZoneEnv(gym.Env):
 
     # get states of gym ENV
     def _get_observation(self,Tz, P):
-        tim = self.simulation_start_time + self.tau
+        tim = self.state[0] + self.tau
         # current states
         self.current_state = [tim, Tz[0][0], self.future_state[0], self.future_state[self.n_next_steps], P
                          , self.future_state[self.n_next_steps*2]]
@@ -259,6 +259,7 @@ class ANNSingleZoneEnv(gym.Env):
         # (tim, zon_tem_mk[-1], out_tem_mk[-1], ghi_mk[-1], power
         #               , ene_pri[self.m_prev_steps], out_tem_sol_n)
         assert len(self.state)==self.observation_space.shape[0], "The size of state is not consistent with observation space"
+        return self.state
 
     def reset(self):
         """

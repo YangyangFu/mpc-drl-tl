@@ -7,9 +7,4 @@ COPY ./testcases/gym-environments/single-zone-rom/gym_singlezone_rom $HOME/githu
 COPY ./testcases/gym-environments/single-zone-rom/setup.py $HOME/github/testcases/gym-environments/single-zone-rom/setup.py
 RUN cd $HOME/github/testcases/gym-environments/single-zone-rom && pip install -e .
 
-
-COPY ./testcases/gym-environments/tianshou_test/env_example $HOME/github/testcases/gym-environments/tianshou_test/env_example
-COPY ./testcases/gym-environments/tianshou_test/setup.py $HOME/github/testcases/gym-environments/tianshou_test/setup.py
-RUN cd $HOME/github/testcases/gym-environments/tianshou_test && pip install -e .
-
 USER developer
