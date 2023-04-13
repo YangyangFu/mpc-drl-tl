@@ -11,6 +11,8 @@ import time
 
 import random
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('agg')
 #os.path.abspath(os.path.join(os.path.dirname('settings.py'),os.path.pardir))
 # import tianshou as ts
 # print(ts.__version__)
@@ -20,7 +22,7 @@ env = gym.make("SingleZoneEnv-ANN-v1",
                 weather_file='USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw',
                 n_next_steps=4,
                 simulation_start_time=3600*24,
-                simulation_end_time=3600*24*7,  # for the next week?
+                simulation_end_time=3600*24*2,  # for the next week?
                 time_step=15*60,
                 log_level=7,
                 alpha=200,
@@ -59,7 +61,7 @@ while i<simulation_end_time:
     print('State is {}  \nReward is {}\nTerminated is {}'.format(step[0],step[1],step[2]))
     rewards.append(step[1])
     i += 900
-fig, ax = plt.figure()
+
 plt.plot(rewards)
 plt.ylabel('reward')
 plt.savefig('rewards.png', bbox_inches = 'tight', dpi = 300)
