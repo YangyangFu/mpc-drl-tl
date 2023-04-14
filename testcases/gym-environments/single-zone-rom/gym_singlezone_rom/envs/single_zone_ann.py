@@ -188,9 +188,9 @@ class ANNSingleZoneEnv(gym.Env):
         # predict future Tz and P with ROM
         Tz, P = self._rom_model(action)
         # update state
-        print("State before update \n{}".format(self.state))
+        # print("State before update \n{}".format(self.state))
         self.state = self._get_observation(Tz, P)
-        print("State after update \n{}".format(self.state))
+        # print("State after update \n{}".format(self.state))
         # reward policy
         rewards = self._reward_policy()
         # update action
@@ -249,13 +249,13 @@ class ANNSingleZoneEnv(gym.Env):
         out_tem_sol_n = self.predictor(self.n_next_steps)  # outdoor air temperature for next, n * 2, temperature first, solar in the end
         self.future_state = list(out_tem_sol_n) + list(ene_pri[-self.n_next_steps:])
         
-        # history states
-        self.history_state[0:self.m_prev_steps-1] = self.history_state[1:self.m_prev_steps]
-        self.history_state[self.m_prev_steps-1] = self.state[1]
-        self.history_state[self.m_prev_steps:self.m_prev_steps*2-1] = self.history_state[self.m_prev_steps+1:self.m_prev_steps*2]
-        self.history_state[self.m_prev_steps*2-1] = self.state[2]
+        # history states : Zone temperature and outdoor temperature
+        self.history[0:self.m_prev_steps-1] = self.history[1:self.m_prev_steps]
+        self.history[self.m_prev_steps-1] = self.state[1]
+        self.history[self.m_prev_steps:self.m_prev_steps*2-1] = self.history[self.m_prev_steps+1:self.m_prev_steps*2]
+        self.history[self.m_prev_steps*2-1] = self.state[2]
         
-        self.state = tuple(self.current_state + self.future_state + self.history_state)
+        self.state = tuple(self.current_state + self.future_state + self.history)
         # (tim, zon_tem_mk[-1], out_tem_mk[-1], ghi_mk[-1], power
         #               , ene_pri[self.m_prev_steps], out_tem_sol_n)
         assert len(self.state)==self.observation_space.shape[0], "The size of state is not consistent with observation space"
@@ -295,15 +295,15 @@ class ANNSingleZoneEnv(gym.Env):
         out_tem_sol_n = self.predictor(self.n_next_steps)  # outdoor air temperature for next, n * 2, temperature first, solar in the end
         self.future_state = list(out_tem_sol_n) + list(ene_pri[-self.n_next_steps:])
         # history state
-        self.history_state = list(zon_tem_mk[:self.m_prev_steps]) + list(out_tem_mk[:self.m_prev_steps])
-        self.state = tuple(self.current_state + self.future_state + self.history_state)
+        self.history = list(zon_tem_mk[:self.m_prev_steps]) + list(out_tem_mk[:self.m_prev_steps])
+        self.state = tuple(self.current_state + self.future_state + self.history)
         # (tim, zon_tem_mk[-1], out_tem_mk[-1], ghi_mk[-1], power
         #               , ene_pri[self.m_prev_steps], out_tem_sol_n)
         assert len(self.state)==self.observation_space.shape[0], "The size of state is not consistent with observation space"
 
         # self.history = pd.DataFrame()
         # self.history = history_data[['mass_flow', 'T_oa', 'T_roo', 'P_tot','GHI']] # is GHI needed?
-        # self.history = self.history_state + self.current_state
+        # self.history = self.history + self.current_state
         self.action_prev = int(history_data['mass_flow'].values[-1] / 0.55)  # previous one or multipy, can be found in history
 
         return np.array(self.state, dtype=np.float32) #,  {} 
@@ -434,70 +434,7 @@ class ANNSingleZoneEnv(gym.Env):
 
         return rewards
         
-    def get_state(self, result):
-        """
-        Extracts the values of model outputs at the end of modeling time interval from simulation result 
-        and predicted weather data from future time step
 
-        :return: Values of model outputs as tuple in order specified in `model_outputs` attribute and 
-        predicted weather data from existing weather file
-
-        This module is used to override defaulted "get_state" function that 
-        only gets states from simulation results.
-        """
-        # 1. get states that could be measured
-        #   model_outputs
-        # 2. get states that should be predicted from external predictor
-        #   predictor_outputs
-        # 3. get states for historical measurement
-
-        model_outputs = self.model_output_names
-        
-        state_list = [result.final(k) for k in model_outputs]
-        
-        # get prices at current hour
-        time = state_list[0]
-        t = int(time)
-        t = int((t%86400)/3600) # hour index 0~23
-        energy_price = [self.p_g[t]]
-
-        # append price to state list
-        state_list += energy_price
-
-        # ============================================
-        # get oa predictors for next n_next_steps
-        predictor_list = self.predictor(self.n_next_steps)
-        # get price for next n_next_steps
-        energy_price_next = []
-        for i in range(self.n_next_steps):
-            time += self.tau 
-            t = int(time)
-            t = int((t%86400)/3600) # hour index 0~23
-            energy_price_next += [self.p_g[t]]
-        # append price to predictor list
-        predictor_list += energy_price_next
-
-        # =================================================
-        # reconstruct time for learning agent
-        state_list[0] = int(state_list[0]) % 86400
-
-        # ================================================
-        # historical measurement list
-        history_list=[]
-        if self.m_prev_steps>0:
-            TRoo_t = result.final('TRoo')
-            pow_t = result.final('PTot')
-            TRoo_his= self.history['TRoo']
-            pow_his = self.history['PTot']
-            TRoo_his.append(TRoo_t)
-
-            pow_his.append(pow_t)
-
-            history_list = TRoo_his[:-1] + pow_his[:-1]
-            self.history['TRoo'] = TRoo_his[1:]
-            self.history['PTot'] = pow_his[1:]
-
-        return tuple(state_list+predictor_list+history_list) 
 
     def predictor(self,n):
         """

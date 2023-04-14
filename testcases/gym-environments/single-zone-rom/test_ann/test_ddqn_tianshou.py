@@ -128,7 +128,6 @@ def test_dqn(args):
         print("Loaded agent from: ", os.path.join(log_path, 'policy.pth'))
 
     # collector
-    print("***********bug*******")
     buffer = VectorReplayBuffer(
             args.buffer_size, 
             buffer_num=len(train_envs), 
@@ -285,40 +284,24 @@ if __name__ == '__main__':
     #print(args)
     #Namespace(batch_size=128, buffer_size=50000, device='cpu', epoch=2, eps_test=0.005, eps_train=1.0, eps_train_final=0.05, frames_stack=1, gamma=0.99, logdir='log_ddqn', lr=0.0003, n_hidden_layers=3, n_step=1, resume_path=None, seed=0, step_per_collect=1, step_per_epoch=672, target_update_freq=96, task='SingleZoneEnv-ANN-v1', test_num=1, test_only=False, time_step=900.0, training_num=1, update_per_step=1, weight_action=0.1, weight_energy=100.0, weight_temp=1.0)
     
-    # #test action and obsevation space
-    # env = make_building_env(args)
-    # action_space = env.action_space
-    # print('The action space is {}'.format(action_space))
-    # observation_space = env.observation_space
-    # print('The shape of observation space is {}'.format(observation_space.shape))
+    # Define Ray tuning experiments
+    tune.register_trainable("ddqn", trainable_function)
+    ray.init()
 
-    # reset = env.reset()
-    # print('Reset state is {}'.format(reset[0]))
-    # print('Previous action is {}'.format(reset[1]))
-
-    # # test action changes
-    # step = env.step(6)
-    # print('Predicted Tz is {}  \nState is {}\nReward is {}'.format(step[0],step[1],step[2]))
-
-    test_dqn(args)
-    # # Define Ray tuning experiments
-    # tune.register_trainable("ddqn", trainable_function)
-    # ray.init()
-
-    # # Run tuning
-    # tune.run_experiments({
-    #     'ddqn_tuning': {
-    #         "run": "ddqn",
-    #         "stop": {"timesteps_total": args.step_per_epoch},
-    #         "config": {
-    #             "epoch": tune.grid_search([500]),
-    #             "weight_action": tune.grid_search([10]),
-    #             "lr": tune.grid_search([1e-04]),
-    #             "batch_size": tune.grid_search([256]),
-    #             "n_hidden_layers": tune.grid_search([3]),
-    #             "buffer_size": tune.grid_search([4096*3]),
-    #             "seed":tune.grid_search([0, 1, 2, 3, 4, 5])
-    #         },
-    #         "local_dir": "/mnt/shared",
-    #     }
-    # })
+    # Run tuning
+    tune.run_experiments({
+        'ddqn_tuning': {
+            "run": "ddqn",
+            "stop": {"timesteps_total": args.step_per_epoch},
+            "config": {
+                "epoch": tune.grid_search([500]),
+                "weight_action": tune.grid_search([10]),
+                "lr": tune.grid_search([1e-04]),
+                "batch_size": tune.grid_search([256]),
+                "n_hidden_layers": tune.grid_search([3]),
+                "buffer_size": tune.grid_search([4096*3]),
+                "seed":tune.grid_search([0, 1, 2, 3, 4, 5])
+            },
+            "local_dir": "/mnt/shared",
+        }
+    })
