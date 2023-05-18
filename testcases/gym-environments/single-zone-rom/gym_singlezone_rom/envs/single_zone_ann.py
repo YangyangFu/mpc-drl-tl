@@ -436,6 +436,7 @@ class ANNSingleZoneEnv(gym.Env):
         self.his_wea[self.n_prev_steps*2-1] = self.state[2]
         return x
 
+
     def predictor(self,n):
         """
         Predict weather conditions over a period

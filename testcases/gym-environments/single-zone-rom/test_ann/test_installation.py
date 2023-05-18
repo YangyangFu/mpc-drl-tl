@@ -57,7 +57,7 @@ simulation_start_time=3600*24
 simulation_end_time=3600*24*2
 i = simulation_start_time
 rewards = []
-while i<simulation_end_time:
+while i<=simulation_end_time:
     step = env.step(random.randint(0,10))
     print('******while loop********')
     print('State is {}  \nReward is {}\nTerminated is {}'.format(step[0],step[1],step[2]))
@@ -70,44 +70,39 @@ plt.savefig('rewards.png', bbox_inches = 'tight', dpi = 300)
 
 # test weather forecast
 temp = env.predictor(4)
+print('******temp: {}**********'.format(temp))
 # steps
-
 # observation, reward, done, _ = env.step(2)
 p =env.step(4)
 print('predicted power is: {}'.format(p))
-history_data = env.history_data
-substep_measurement_names, substep_measurement=env.get_substep_measurement()
-print("current step is evenly divided into "+str(env.n_substeps) + " sub-steps!!!")
-print(substep_measurement_names)
-print(substep_measurement)
-print (len(substep_measurement[0]))
 
-# test cost and penalty
-print("============================")
-print("Cost at current step is "+str(env.get_cost()))
-print("Maximum temperature violation at current step is "+str(env.get_temperature_violation()))
-print("Action change at current step is "+str(env.get_action_changes()))
 
-# test historical states
-print("===========================")
-states=env.reset()
-print("t=0, Historical measurement is: ", env.history)
-print("t=0, States are: ", states)
-print("t=0, Action change is "+str(env.get_action_changes()))
-print()
-observation, reward, done, _ = env.step(2)
-print("t=1, Historical measurement is: ", env.history)
-print("t=1, States are: ", observation)
-print("t=1, Action change is "+str(env.get_action_changes()))
-print()
-observation, reward, done, _ = env.step(3)
-print("t=2, Historical measurement is: ", env.history)
-print("t=2, States are: ", observation)
-print("t=2, Action change is "+str(env.get_action_changes()))
-print("===========================\n")
-states=env.reset()
-print("t=0 after reset, Historical measurement is: ", env.history)
-print("t=0 after reset, States are: ", states)
-print("t=0 after reset, Action change is "+str(env.get_action_changes()))
+# # test cost and penalty
+# print("============================")
+# print("Cost at current step is "+str(env.get_cost()))
+# print("Maximum temperature violation at current step is "+str(env.get_temperature_violation()))
+# print("Action change at current step is "+str(env.get_action_changes()))
 
-print("\nJModelicaCSSingleZoneEnv-action-v1 is successfully installed!!")
+# # test historical states
+# print("===========================")
+# states=env.reset()
+# print("t=0, Historical measurement is: ", env.history)
+# print("t=0, States are: ", states)
+# print("t=0, Action change is "+str(env.get_action_changes()))
+# print()
+# observation, reward, done, _ = env.step(2)
+# print("t=1, Historical measurement is: ", env.history)
+# print("t=1, States are: ", observation)
+# print("t=1, Action change is "+str(env.get_action_changes()))
+# print()
+# observation, reward, done, _ = env.step(3)
+# print("t=2, Historical measurement is: ", env.history)
+# print("t=2, States are: ", observation)
+# print("t=2, Action change is "+str(env.get_action_changes()))
+# print("===========================\n")
+# states=env.reset()
+# print("t=0 after reset, Historical measurement is: ", env.history)
+# print("t=0 after reset, States are: ", states)
+# print("t=0 after reset, Action change is "+str(env.get_action_changes()))
+
+print("\nSingleZoneEnv-ANN-v1 is successfully installed!!")
