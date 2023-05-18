@@ -40,11 +40,15 @@ print(env.action_prev)
 
 # test substeps
 observation, reward, done, _ = env.step(2)
+print('length of observation ', len(observation))
 substep_measurement_names, substep_measurement=env.get_substep_measurement()
 print("current step is evenly divided into "+str(env.n_substeps) + " sub-steps!!!")
 print(substep_measurement_names)
 print(substep_measurement)
 print (len(substep_measurement[0]))
+
+print("*********observation**********")
+print(observation)
 
 # test cost and penalty
 print("============================")

@@ -27,8 +27,8 @@ env = gym.make("SingleZoneEnv-ANN-v1",
                 log_level=7,
                 alpha=200,
                 nActions=11,
-                # n_substeps=15,
-                m_prev_steps=4)
+                n_substeps=15,
+                n_prev_steps=4)
 
 # basic information
 print('The interval in seconds is {}.\nThe start time is {}. \nThe end time is {}'.format(env.tau, env.simulation_start_time, env.simulation_end_time))
@@ -39,11 +39,12 @@ action_space = env.action_space
 print('The action space is {}'.format(action_space))
 observation_space = env.observation_space
 print('The shape of observation space is {}'.format(observation_space.shape))
+print('The observation space is {}'.format(observation_space))
 
 reset = env.reset()
 print('>>>>>>>>>>')
 print(type(reset))
-print('Reset state is {}'.format(reset[0]))
+print('Reset state is {}'.format(reset))
 
 # test action changes
 step = env.step(10)
@@ -51,13 +52,14 @@ print('**************')
 print(type(step))
 print('State is {}  \nReward is {}\nTerminated is {}'.format(step[0],step[1],step[2]))
 
+
 simulation_start_time=3600*24
 simulation_end_time=3600*24*2
 i = simulation_start_time
 rewards = []
 while i<simulation_end_time:
     step = env.step(random.randint(0,10))
-    print('**************')
+    print('******while loop********')
     print('State is {}  \nReward is {}\nTerminated is {}'.format(step[0],step[1],step[2]))
     rewards.append(step[1])
     i += 900
@@ -66,46 +68,46 @@ plt.plot(rewards)
 plt.ylabel('reward')
 plt.savefig('rewards.png', bbox_inches = 'tight', dpi = 300)
 
-# # test weather forecast
-# temp = env.predictor(4)
-# # steps
+# test weather forecast
+temp = env.predictor(4)
+# steps
 
-# # observation, reward, done, _ = env.step(2)
-# p =env.step(4)
-# print('predicted power is: {}'.format(p))
-# history_data = env.history_data
-# substep_measurement_names, substep_measurement=env.get_substep_measurement()
-# print("current step is evenly divided into "+str(env.n_substeps) + " sub-steps!!!")
-# print(substep_measurement_names)
-# print(substep_measurement)
-# print (len(substep_measurement[0]))
-
-# # test cost and penalty
-# print("============================")
-# print("Cost at current step is "+str(env.get_cost()))
-# print("Maximum temperature violation at current step is "+str(env.get_temperature_violation()))
-# print("Action change at current step is "+str(env.get_action_changes()))
-
-# # test historical states
-# print("===========================")
-# states=env.reset()
-# print("t=0, Historical measurement is: ", env.history)
-# print("t=0, States are: ", states)
-# print("t=0, Action change is "+str(env.get_action_changes()))
-# print()
 # observation, reward, done, _ = env.step(2)
-# print("t=1, Historical measurement is: ", env.history)
-# print("t=1, States are: ", observation)
-# print("t=1, Action change is "+str(env.get_action_changes()))
-# print()
-# observation, reward, done, _ = env.step(3)
-# print("t=2, Historical measurement is: ", env.history)
-# print("t=2, States are: ", observation)
-# print("t=2, Action change is "+str(env.get_action_changes()))
-# print("===========================\n")
-# states=env.reset()
-# print("t=0 after reset, Historical measurement is: ", env.history)
-# print("t=0 after reset, States are: ", states)
-# print("t=0 after reset, Action change is "+str(env.get_action_changes()))
+p =env.step(4)
+print('predicted power is: {}'.format(p))
+history_data = env.history_data
+substep_measurement_names, substep_measurement=env.get_substep_measurement()
+print("current step is evenly divided into "+str(env.n_substeps) + " sub-steps!!!")
+print(substep_measurement_names)
+print(substep_measurement)
+print (len(substep_measurement[0]))
 
-# print("\nJModelicaCSSingleZoneEnv-action-v1 is successfully installed!!")
+# test cost and penalty
+print("============================")
+print("Cost at current step is "+str(env.get_cost()))
+print("Maximum temperature violation at current step is "+str(env.get_temperature_violation()))
+print("Action change at current step is "+str(env.get_action_changes()))
+
+# test historical states
+print("===========================")
+states=env.reset()
+print("t=0, Historical measurement is: ", env.history)
+print("t=0, States are: ", states)
+print("t=0, Action change is "+str(env.get_action_changes()))
+print()
+observation, reward, done, _ = env.step(2)
+print("t=1, Historical measurement is: ", env.history)
+print("t=1, States are: ", observation)
+print("t=1, Action change is "+str(env.get_action_changes()))
+print()
+observation, reward, done, _ = env.step(3)
+print("t=2, Historical measurement is: ", env.history)
+print("t=2, States are: ", observation)
+print("t=2, Action change is "+str(env.get_action_changes()))
+print("===========================\n")
+states=env.reset()
+print("t=0 after reset, Historical measurement is: ", env.history)
+print("t=0 after reset, States are: ", states)
+print("t=0 after reset, Action change is "+str(env.get_action_changes()))
+
+print("\nJModelicaCSSingleZoneEnv-action-v1 is successfully installed!!")

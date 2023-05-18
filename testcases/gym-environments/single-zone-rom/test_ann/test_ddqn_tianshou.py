@@ -300,7 +300,10 @@ if __name__ == '__main__':
     # step = env.step(6)
     # print('Predicted Tz is {}  \nState is {}\nReward is {}'.format(step[0],step[1],step[2]))
 
-    test_dqn(args)
+    ####################
+    # test_dqn(args)
+    ####################
+
     # # Define Ray tuning experiments
     # tune.register_trainable("ddqn", trainable_function)
     # ray.init()
@@ -322,3 +325,50 @@ if __name__ == '__main__':
     #         "local_dir": "/mnt/shared",
     #     }
     # })
+
+
+    import gym_singlezone_jmodelica
+    print('import env successfully!')
+    weather_file_path = "USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
+    mass_flow_nor = 0.55 #[0.55]
+    n_next_steps = 4
+    n_prev_steps = 4
+    simulation_start_time = 201*24*3600.0
+    simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
+    log_level = 7
+    alpha = 1
+    nActions = 51
+    weight_energy = args.weight_energy #5.e4
+    weight_temp = args.weight_temp #500.
+    weight_action = args.weight_action
+
+    def rw_func(cost, penalty, delta_action):
+        if ( not hasattr(rw_func,'x')  ):
+            rw_func.x = 0
+            rw_func.y = 0
+
+        cost = cost[0]
+        penalty = penalty[0]
+        delta_action = delta_action[0]
+        if rw_func.x > cost:
+            rw_func.x = cost
+        if rw_func.y > penalty:
+            rw_func.y = penalty
+
+        print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
+        res = -penalty*penalty * weight_temp + cost*weight_energy - delta_action*delta_action*weight_action
+        
+        return res
+
+    env = gym.make("JModelicaCSSingleZoneEnv-action-v1",
+                   mass_flow_nor = mass_flow_nor,
+                   weather_file = weather_file_path,
+                   n_next_steps = n_next_steps,
+                   simulation_start_time = simulation_start_time,
+                   simulation_end_time = simulation_end_time,
+                   time_step = args.time_step,
+                   log_level = log_level,
+                   alpha = alpha,
+                   nActions = nActions,
+                   rf = rw_func,
+                   m_prev_steps = n_prev_steps)
