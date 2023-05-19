@@ -228,11 +228,7 @@ class ANNSingleZoneEnv(gym.Env):
 
         # update clock
         self.t += self.tau
-        
-        # terminal conditions: simulation over time, state over bounds
-        self._is_done()
-
-
+        print("debug", self.t)
         # predict future Tz and P with ROM
         Tz, P = self._rom_model(frequency)
         # update state
@@ -242,8 +238,9 @@ class ANNSingleZoneEnv(gym.Env):
         # reward policy
         rewards = self._reward_policy()
 
-        terminated = self._is_done()
-        return np.array(self.state,dtype=np.float32), rewards, terminated, {}
+        self._is_done()
+        print("debug",self.done)
+        return np.array(self.state,dtype=np.float32), rewards, self.done, {}
 
     def render(self, mode='human', close=False):
         """
