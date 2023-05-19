@@ -12,6 +12,7 @@ from tianshou.trainer import offpolicy_trainer
 from tianshou.data import Collector, VectorReplayBuffer
 import torch.nn as nn
 import gym
+import time
 
 def make_building_env(args):
     import gym_singlezone_rom
@@ -58,7 +59,7 @@ def make_building_env(args):
                    alpha = alpha,
                    nActions = nActions,
                    rf = rw_func,
-                   m_prev_steps = n_prev_steps)
+                   n_prev_steps = n_prev_steps)
     return env
 
 class Net(nn.Module):
@@ -147,7 +148,7 @@ def test_dqn(args):
     def train_fn(epoch, env_step):
         # nature DQN setting, linear decay in the first 1M steps
         #max_eps_steps = int(args.epoch * args.step_per_epoch * 0.9) # this will not help speedup learning with large epoch
-        max_eps_steps =200#200*96*7 # linear decay in the first about 100000 steps. 
+        max_eps_steps =200*96*7 # linear decay in the first about 100000 steps. 
         #print("observe eps:  max_eps_steps, total_epoch_pass ", max_eps_steps, total_epoch_pass)
         if env_step <= max_eps_steps:
             eps = args.eps_train - env_step * (args.eps_train - args.eps_train_final) / max_eps_steps
@@ -235,7 +236,7 @@ def trainable_function(config, reporter):
         reporter(timesteps_total=args.step_per_epoch)
 
 if __name__ == '__main__':
-
+    tic = time.process_time()
     import ray 
     from ray import tune
 
@@ -283,7 +284,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     #print(args)
     #Namespace(batch_size=128, buffer_size=50000, device='cpu', epoch=2, eps_test=0.005, eps_train=1.0, eps_train_final=0.05, frames_stack=1, gamma=0.99, logdir='log_ddqn', lr=0.0003, n_hidden_layers=3, n_step=1, resume_path=None, seed=0, step_per_collect=1, step_per_epoch=672, target_update_freq=96, task='SingleZoneEnv-ANN-v1', test_num=1, test_only=False, time_step=900.0, training_num=1, update_per_step=1, weight_action=0.1, weight_energy=100.0, weight_temp=1.0)
-    
+    # args.set_defaults(epoch=200)
+
+    # # run one experiment
+    # test_dqn(args)
+
     # Define Ray tuning experiments
     tune.register_trainable("ddqn", trainable_function)
     ray.init()
@@ -294,14 +299,18 @@ if __name__ == '__main__':
             "run": "ddqn",
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
-                "epoch": tune.grid_search([500]),
+                "epoch": tune.grid_search([50]),
                 "weight_action": tune.grid_search([10]),
-                "lr": tune.grid_search([1e-04]),
+                "lr": tune.grid_search([1e-3]),
                 "batch_size": tune.grid_search([256]),
                 "n_hidden_layers": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([4096*3]),
-                "seed":tune.grid_search([0, 1, 2, 3, 4, 5])
+                # "seed":tune.grid_search([0, 1, 2, 3, 4, 5])
+                "seed":tune.grid_search([0])
+
             },
             "local_dir": "/mnt/shared",
         }
     })
+    toc = time.process_time()
+    print ('======Finish in:' + str(toc-tic)+" second(s)==========")
