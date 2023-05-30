@@ -8,7 +8,7 @@ print(sys.path)
 import gym
 import gym_singlezone_rom
 import time
-
+import numpy as np
 import random
 import matplotlib.pyplot as plt
 import matplotlib
@@ -16,13 +16,14 @@ matplotlib.use('agg')
 #os.path.abspath(os.path.join(os.path.dirname('settings.py'),os.path.pardir))
 # import tianshou as ts
 # print(ts.__version__)
-
+simulation_start_time=201*3600*24
+simulation_end_time = simulation_start_time+3600*24*1
 env = gym.make("SingleZoneEnv-ANN-v1",
                 mass_flow_nor=0.55,
                 weather_file='USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw',
                 n_next_steps=4,
-                simulation_start_time=3600*24,
-                simulation_end_time=3600*24*2,  # for the next week?
+                simulation_start_time=simulation_start_time,
+                simulation_end_time=simulation_end_time, 
                 time_step=15*60,
                 log_level=7,
                 alpha=200,
@@ -52,57 +53,61 @@ print('**************')
 print(type(step))
 print('State is {}  \nReward is {}\nTerminated is {}'.format(step[0],step[1],step[2]))
 
-
-simulation_start_time=3600*24
-simulation_end_time=3600*24*2
-i = simulation_start_time
 rewards = []
-while i<=simulation_end_time:
-    step = env.step(random.randint(0,10))
+while env.t<simulation_end_time:
     print('******while loop********')
+    step = env.step(random.randint(0,10))
     print('State is {}  \nReward is {}\nTerminated is {}'.format(step[0],step[1],step[2]))
+    print('I is ', env.t)
     rewards.append(step[1])
-    i += 900
-
 plt.plot(rewards)
 plt.ylabel('reward')
 plt.savefig('rewards.png', bbox_inches = 'tight', dpi = 300)
 
 # test weather forecast
-temp = env.predictor(4)
-print('******temp: {}**********'.format(temp))
+
+temp = env.predictor(3600*24*1)
+print('******temperature: {}**********'.format(np.max(temp)))
 # steps
 # observation, reward, done, _ = env.step(2)
 p =env.step(4)
-print('predicted power is: {}'.format(p))
+print('predicted power is: {}'.format(p[0][4]))
 
 
-# # test cost and penalty
-# print("============================")
-# print("Cost at current step is "+str(env.get_cost()))
-# print("Maximum temperature violation at current step is "+str(env.get_temperature_violation()))
-# print("Action change at current step is "+str(env.get_action_changes()))
+# test cost and penalty
+print("============================")
+print("Cost at current step is "+str(env.get_cost()))
+print("Maximum temperature violation at current step is "+str(env.get_temperature_violation()))
+print("Action change at current step is "+str(env.get_action_changes()))
 
-# # test historical states
-# print("===========================")
-# states=env.reset()
-# print("t=0, Historical measurement is: ", env.history)
-# print("t=0, States are: ", states)
-# print("t=0, Action change is "+str(env.get_action_changes()))
-# print()
-# observation, reward, done, _ = env.step(2)
-# print("t=1, Historical measurement is: ", env.history)
-# print("t=1, States are: ", observation)
-# print("t=1, Action change is "+str(env.get_action_changes()))
-# print()
-# observation, reward, done, _ = env.step(3)
-# print("t=2, Historical measurement is: ", env.history)
-# print("t=2, States are: ", observation)
-# print("t=2, Action change is "+str(env.get_action_changes()))
-# print("===========================\n")
-# states=env.reset()
-# print("t=0 after reset, Historical measurement is: ", env.history)
-# print("t=0 after reset, States are: ", states)
-# print("t=0 after reset, Action change is "+str(env.get_action_changes()))
+# test historical states
+print("===========================")
+states=env.reset()
+print("t=0, Historical measurement is: ", env.history_state)
+print("t=0, Current measurement is: ", env.current_state)
+print("t=0, Future measurement is: ", env.future_state)
+print("t=0, States are: ", states)
+print("t=0, Action change is "+str(env.get_action_changes()))
+print()
+observation, reward, done, _ = env.step(2)
+print("t=1, Historical measurement is: ", env.history_state)
+print("t=1, Current measurement is: ", env.current_state)
+print("t=1, Future measurement is: ", env.future_state)
+print("t=1, States are: ", observation)
+print("t=1, Action change is "+str(env.get_action_changes()))
+print()
+observation, reward, done, _ = env.step(3)
+print("t=2, Historical measurement is: ", env.history_state)
+print("t=2, Current measurement is: ", env.current_state)
+print("t=2, Future measurement is: ", env.future_state)
+print("t=2, States are: ", observation)
+print("t=2, Action change is "+str(env.get_action_changes()))
+print("===========================\n")
+states=env.reset()
+print("t=0 after reset, Historical measurement is: ", env.history_state)
+print("t=0, Current measurement is: ", env.current_state)
+print("t=0, Future measurement is: ", env.future_state)
+print("t=0 after reset, States are: ", states)
+print("t=0 after reset, Action change is "+str(env.get_action_changes()))
 
 print("\nSingleZoneEnv-ANN-v1 is successfully installed!!")

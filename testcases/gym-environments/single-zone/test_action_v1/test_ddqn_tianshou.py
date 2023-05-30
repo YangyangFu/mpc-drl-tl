@@ -281,24 +281,27 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # Define Ray tuning experiments
-    tune.register_trainable("ddqn", trainable_function)
-    ray.init()
+    # For test, only run one experiment
+    test_dqn(args)
 
-    # Run tuning
-    tune.run_experiments({
-        'ddqn_tuning': {
-            "run": "ddqn",
-            "stop": {"timesteps_total": args.step_per_epoch},
-            "config": {
-                "epoch": tune.grid_search([500]),
-                "weight_action": tune.grid_search([10]),
-                "lr": tune.grid_search([1e-04]),
-                "batch_size": tune.grid_search([256]),
-                "n_hidden_layers": tune.grid_search([3]),
-                "buffer_size": tune.grid_search([4096*3]),
-                "seed":tune.grid_search([0, 1, 2, 3, 4, 5])
-            },
-            "local_dir": "/mnt/shared",
-        }
-    })
+    # # Define Ray tuning experiments
+    # tune.register_trainable("ddqn", trainable_function)
+    # ray.init()
+
+    # # Run tuning
+    # tune.run_experiments({
+    #     'ddqn_tuning': {
+    #         "run": "ddqn",
+    #         "stop": {"timesteps_total": args.step_per_epoch},
+    #         "config": {
+    #             "epoch": tune.grid_search([500]),
+    #             "weight_action": tune.grid_search([10]),
+    #             "lr": tune.grid_search([1e-04]),
+    #             "batch_size": tune.grid_search([256]),
+    #             "n_hidden_layers": tune.grid_search([3]),
+    #             "buffer_size": tune.grid_search([4096*3]),
+    #             "seed":tune.grid_search([0, 1, 2, 3, 4, 5])
+    #         },
+    #         "local_dir": "/mnt/shared",
+    #     }
+    # })

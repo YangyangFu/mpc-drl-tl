@@ -163,6 +163,8 @@ class ANNSingleZoneEnv(gym.Env):
         """
         Reset environment using history data and initial action
         """
+        # reset time
+        self.t = self.simulation_start_time
 
         # load historical data
         # time, zone_tem_mk (history and current zone temperature), out_wea_sol_mk (history and current outdoor temperature),
@@ -223,6 +225,9 @@ class ANNSingleZoneEnv(gym.Env):
         # action = np.array(action)
         # action = [action/float(self.nActions-1)]
         frequency = action/float(self.nActions-1) # can only be single now TODO change to vector
+
+        # update clock
+        self.t += self.tau
         # predict future Tz and P with ROM
         Tz, P = self._rom_model(frequency)
         # update state
@@ -231,8 +236,9 @@ class ANNSingleZoneEnv(gym.Env):
         # print("State after update \n{}".format(self.state))
         # reward policy
         rewards = self._reward_policy()
-        terminated = bool(self.simulation_end_time <= self.state[0] + self.tau) 
-        return np.array(self.state,dtype=np.float32), rewards, terminated, {}
+
+        self._is_done()
+        return np.array(self.state,dtype=np.float32), rewards, self.done, {}
 
     def render(self, mode='human', close=False):
         """
@@ -384,6 +390,12 @@ class ANNSingleZoneEnv(gym.Env):
         # update previous action for next step
         self.action_prev = self.action_curr
         return rewards
+        
+    def _is_done(self): 
+        self.done = bool(
+            self.t >= self.simulation_end_time
+        ) 
+
 
     def _rom_model(self, frequency):
         x = self._get_model_state(frequency)
