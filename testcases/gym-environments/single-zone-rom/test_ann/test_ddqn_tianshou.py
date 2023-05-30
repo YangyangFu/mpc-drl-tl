@@ -139,7 +139,7 @@ def test_dqn(args):
     log_path = os.path.join(args.logdir, args.task)
     writer = SummaryWriter(log_path)
     writer.add_text("args", str(args))
-    logger = TensorboardLogger(writer)
+    logger = TensorboardLogger(writer, train_interval =1)
     
     def save_fn(policy):
         torch.save(policy.state_dict(), os.path.join(log_path, 'policy.pth'))
