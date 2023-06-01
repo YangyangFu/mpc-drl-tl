@@ -14,7 +14,7 @@ import torch.nn as nn
 import gym
 import time
 
-def make_building_env(args):
+def make_rom_env(args):
     import gym_singlezone_rom
 
     weather_file_path = "USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
@@ -62,6 +62,55 @@ def make_building_env(args):
                    n_prev_steps = n_prev_steps)
     return env
 
+# TODO combine make env function
+def make_modelica_env(args):
+    import gym_singlezone_jmodelica
+
+    weather_file_path = "USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw"
+    mass_flow_nor = 0.55 #[0.55]
+    n_next_steps = 4
+    n_prev_steps = 4
+    simulation_start_time = 201*24*3600.0
+    simulation_end_time = simulation_start_time + args.step_per_epoch*args.time_step
+    log_level = 7
+    alpha = 1
+    nActions = 51
+    weight_energy = args.weight_energy #5.e4
+    weight_temp = args.weight_temp #500.
+    weight_action = args.weight_action
+
+    def rw_func(cost, penalty, delta_action):
+        if ( not hasattr(rw_func,'x')  ):
+            rw_func.x = 0
+            rw_func.y = 0
+
+        cost = cost[0]
+        penalty = penalty[0]
+        delta_action = delta_action[0]
+        if rw_func.x > cost:
+            rw_func.x = cost
+        if rw_func.y > penalty:
+            rw_func.y = penalty
+
+        print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
+        res = -penalty*penalty * weight_temp + cost*weight_energy - delta_action*delta_action*weight_action
+        
+        return res
+
+    env = gym.make(args.test_task,
+                   mass_flow_nor = mass_flow_nor,
+                   weather_file = weather_file_path,
+                   n_next_steps = n_next_steps,
+                   simulation_start_time = simulation_start_time,
+                   simulation_end_time = simulation_end_time,
+                   time_step = args.time_step,
+                   log_level = log_level,
+                   alpha = alpha,
+                   nActions = nActions,
+                   rf = rw_func,
+                   n_prev_steps = n_prev_steps)
+    return env
+
 class Net(nn.Module):
     def __init__(self, state_shape, action_shape, nlayers,device):
         super().__init__()
@@ -86,20 +135,24 @@ class Net(nn.Module):
 
 def test_dqn(args):
 
-    env = make_building_env(args)
+    env_rom = make_rom_env(args)
+    args.state_shape = env_rom.observation_space.shape or env_rom.observation_space.n
+    args.action_shape = env_rom.action_space.shape or env_rom.action_space.n
+    print("ROM Observations shape:", args.state_shape)
+    print("ROM Actions shape:", args.action_shape)
 
-    args.state_shape = env.observation_space.shape or env.observation_space.n
-    args.action_shape = env.action_space.shape or env.action_space.n
-    
-    print("Observations shape:", args.state_shape)
-    print("Actions shape:", args.action_shape)
+    env_modelica = make_modelica_env(args)
+    args.state_shape = env_modelica.observation_space.shape or env_modelica.observation_space.n
+    args.action_shape = env_modelica.action_space.shape or env_modelica.action_space.n
+    print("Modelica Observations shape:", args.state_shape)
+    print("Modelica Actions shape:", args.action_shape)
 
     # make environments: normalize the obs space
     train_envs = SubprocVectorEnv(
-            [lambda: make_building_env(args) for _ in range(args.training_num)], 
+            [lambda: make_rom_env(args) for _ in range(args.training_num)], 
             norm_obs=True)
     test_envs = SubprocVectorEnv(
-            [lambda: make_building_env(args) for _ in range(args.test_num)],
+            [lambda: make_modelica_env(args) for _ in range(args.test_num)],
             norm_obs=True, 
             obs_rms=train_envs.obs_rms, 
             update_obs_rms=False)
@@ -140,8 +193,9 @@ def test_dqn(args):
     log_path = os.path.join(args.logdir, args.task)
     writer = SummaryWriter(log_path)
     writer.add_text("args", str(args))
-    logger = TensorboardLogger(writer, train_interval =1)
-    
+    logger = TensorboardLogger(writer, train_interval =100)
+    # print('debug logger: ', logger.train_interval)
+
     def save_fn(policy):
         torch.save(policy.state_dict(), os.path.join(log_path, 'policy.pth'))
     
@@ -157,15 +211,20 @@ def test_dqn(args):
         policy.set_eps(eps)
         print('train/eps', env_step, eps)
         print("=========================")
-        #logger.write('train/eps', env_step, eps)
+        # logger.write('train/eps', env_step, eps)
+
+        # get reward of each env_step
+        rew_rec.append(train_collector.data['rew'][0])
+
     
     def test_fn(epoch, env_step):
         policy.set_eps(args.eps_test)
 
     if not args.test_only:
+        rew_rec = []
         # start filling replay buffer by collecting data at the beginning
         train_collector.collect(n_step=args.batch_size * args.training_num, random=False)
-        # trainer
+        # trainer#
         print("*********start training*********")
         result = offpolicy_trainer(
             policy = policy, 
@@ -183,7 +242,15 @@ def test_dqn(args):
             logger = logger,
             update_per_step = args.update_per_step, 
             test_in_train = False)
+        print("Print result:\n")
+        print(result)
         pprint.pprint(result)
+        import pandas as pd
+        rew_df = pd.DataFrame(rew_rec, columns = ['Reward'])
+        averages = rew_df.groupby(rew_df.index // 96)["Reward"].mean()
+        tra_aver_rew = pd.DataFrame(averages, columns = ['Reward'])
+        tra_aver_rew.to_csv(os.path.join(args.logdir, args.task, 'tra_aver_rew.csv'))
+
 
     # Lets watch its performance for the final run
     def watch():
@@ -241,11 +308,13 @@ if __name__ == '__main__':
     from ray import tune
 
     time_step = 15*60.0
-    num_of_days = 7#31
-    max_number_of_steps = int(num_of_days*24*60*60.0 / time_step)
+    num_of_days = 1#7, 31
+    max_number_of_steps = int((num_of_days*24*60*60.0) / (time_step))
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--task', type=str, default="SingleZoneEnv-ANN-v1")
+    parser.add_argument('--test-task', type=str, default="JModelicaCSSingleZoneEnv-action-v1")
+
     parser.add_argument('--time-step', type=float, default=time_step)
     parser.add_argument('--seed', type=int, default=0)
 
@@ -275,42 +344,44 @@ if __name__ == '__main__':
     parser.add_argument('--weight-energy', type=float, default= 100.)   
     parser.add_argument('--weight-temp', type=float, default= 1.)   
     parser.add_argument('--weight-action', type=float, default=0.1)
-    parser.add_argument('--lr', type=float, default=0.0003) #0.0003!!!!!!!!!!!!!!!!!!!!!
-    parser.add_argument('--epoch', type=int, default=2)
-    parser.add_argument('--batch-size', type=int, default=128)
+    parser.add_argument('--lr', type=float, default=0.0001) #0.0003!!!!!!!!!!!!!!!!!!!!!
+    parser.add_argument('--epoch', type=int, default=50)
+    parser.add_argument('--batch-size', type=int, default=256)
     parser.add_argument('--n-hidden-layers', type=int, default=3)
-    parser.add_argument('--buffer-size', type=int, default=50000)
-
+    parser.add_argument('--buffer-size', type=int, default=50000) #12288
+ 
     args = parser.parse_args()
     #print(args)
     #Namespace(batch_size=128, buffer_size=50000, device='cpu', epoch=2, eps_test=0.005, eps_train=1.0, eps_train_final=0.05, frames_stack=1, gamma=0.99, logdir='log_ddqn', lr=0.0003, n_hidden_layers=3, n_step=1, resume_path=None, seed=0, step_per_collect=1, step_per_epoch=672, target_update_freq=96, task='SingleZoneEnv-ANN-v1', test_num=1, test_only=False, time_step=900.0, training_num=1, update_per_step=1, weight_action=0.1, weight_energy=100.0, weight_temp=1.0)
-    # args.set_defaults(epoch=200)
+    args.epoch = 2
+    print(args)
 
-    # run one experiment
-    test_dqn(args)
 
-    # # Define Ray tuning experiments
-    # tune.register_trainable("ddqn", trainable_function)
-    # ray.init()
+    # # run one experiment
+    # test_dqn(args)
 
-    # # Run tuning
-    # tune.run_experiments({
-    #     'ddqn_tuning': {
-    #         "run": "ddqn",
-    #         "stop": {"timesteps_total": args.step_per_epoch},
-    #         "config": {
-    #             "epoch": tune.grid_search([50]),
-    #             "weight_action": tune.grid_search([10]),
-    #             "lr": tune.grid_search([1e-3]),
-    #             "batch_size": tune.grid_search([256]),
-    #             "n_hidden_layers": tune.grid_search([3]),
-    #             "buffer_size": tune.grid_search([4096*3]),
-    #             # "seed":tune.grid_search([0, 1, 2, 3, 4, 5])
-    #             "seed":tune.grid_search([0])
+    # Define Ray tuning experiments
+    tune.register_trainable("ddqn", trainable_function)
+    ray.init()
 
-    #         },
-    #         "local_dir": "/mnt/shared",
-    #     }
-    # })
+    # Run tuning
+    tune.run_experiments({
+        'ddqn_tuning': {
+            "run": "ddqn",
+            "stop": {"timesteps_total": args.step_per_epoch},
+            "config": {
+                "epoch": tune.grid_search([100]),
+                "weight_action": tune.grid_search([10]),
+                "lr": tune.grid_search([1e-6, 1e-4, 1e-3, 1e-2]),
+                "batch_size": tune.grid_search([256, 256*2]),
+                "n_hidden_layers": tune.grid_search([3]),
+                "buffer_size": tune.grid_search([4096*3]),
+                "seed":tune.grid_search([0])  # , 1, 2, 3, 4, 5
+                # "seed":tune.grid_search([0])
+
+            },
+            "local_dir": "/mnt/shared",
+        }
+    })
     toc = time.process_time()
     print ('======Finish in:' + str(toc-tic)+" second(s)==========")

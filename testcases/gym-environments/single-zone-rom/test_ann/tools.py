@@ -31,7 +31,6 @@ def find_all_files(root_dir, algor, pattern, task='SingleZoneEnv-ANN-v1'):
                 absolute_path = os.path.join(dirname, f)
                 if re.match(pattern, absolute_path):
                     file_list.append(absolute_path)
-
     return file_list
 
 def convert_tfevents_to_csv(root_dir, algor, task, plot_test=True, refresh=False):
@@ -50,6 +49,8 @@ def convert_tfevents_to_csv(root_dir, algor, task, plot_test=True, refresh=False
     outfile_name = 'test_rew.csv' if plot_test else 'train_rew.csv'
     with tqdm.tqdm(tfevent_files) as t:
         for tfevent_file in t:
+            print('debug tfevent_file')
+            print(tfevent_file)
             t.set_postfix(file=tfevent_file)
             output_file = os.path.join(os.path.split(tfevent_file)[0], outfile_name)
             if os.path.exists(output_file) and not refresh:
@@ -192,6 +193,27 @@ def plot_final_epoch(root_dir, algor, task, generate_action=False):
             with open(os.path.join(sub_dir,'u_opt.json'), 'w') as outfile:
                 json.dump(actions, outfile)
 
+def plot_average_reward(root_dir, algor, task):
+
+    sub_dirs = []
+    for it in os.scandir(root_dir):
+        if it.is_dir():
+            sub_dirs.append(it.path)
+
+    for sub_dir in sub_dirs:
+        data_path = os.path.join(sub_dir, 'log_'+algor, task)
+        averge_rew = pd.read_csv(os.path.join(data_path, 'tra_aver_rew.csv'), index_col=0)
+
+        plt.figure(figsize=(8, 6))
+        plt.plot(averge_rew.index, averge_rew['Reward'])
+        plt.grid()
+        plt.xlabel("Epoch")
+        plt.ylabel("Reward")
+        plt.savefig(os.path.join(sub_dir, "averg_rewards.pdf"))
+        plt.savefig(os.path.join(sub_dir, "averg_rewards.png"))
+        plt.close()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -213,5 +235,7 @@ if __name__ == "__main__":
     plot_test = bool(args.plot_test)
     print(plot_test)
     csv_files = convert_tfevents_to_csv(args.root_dir, args.algor, args.task, plot_test, args.refresh)
+    print(csv_files)
     plot_reward(csv_files, plot_test)
     plot_final_epoch(args.root_dir, args.algor, args.task, generate_action=True)
+    plot_average_reward(args.root_dir, args.algor, args.task)
