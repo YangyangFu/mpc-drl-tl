@@ -44,3 +44,9 @@ register(
     entry_point='gym_singlezone_jmodelica.envs.single_zone_action_env_v2:JModelicaCSSingleZoneEnv',
     kwargs=config
 )
+
+register(
+    id='JModelicaCSSingleZoneEnv-v3',
+    entry_point='gym_singlezone_jmodelica.envs.single_zone_env_v3:JModelicaCSSingleZoneEnv',
+    kwargs = config
+) # single zone environment with NN model for the zone 
