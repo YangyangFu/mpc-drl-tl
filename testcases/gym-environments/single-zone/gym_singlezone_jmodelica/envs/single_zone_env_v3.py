@@ -189,6 +189,26 @@ class SingleZoneEnv(object):
 
         return rewards
 
+    def do_simulation(self):
+        """
+        Executes simulation by FMU in the time interval [start_time; stop_time]
+        currently saved in the environment.
+
+        :return: resulting state of the environment.
+        """
+        # part of the step() method extracted for convenience
+        # need to re-write this part to add neural network-modelica co-simulation
+        logger.debug("Simulation started for time interval {}-{}".format(self.start, self.stop))
+
+        # PyFMI modelling options
+        opts = self.model.simulate_options()
+        opts['ncp'] = 50
+        opts['initialize'] = False
+
+        result = self.model.simulate(start_time=self.start, final_time=self.stop, options=opts)
+
+        return self.get_state(result)
+    
     def get_state(self, result):
         """
         Extracts the values of model outputs at the end of modeling time interval from simulation result 
@@ -211,7 +231,10 @@ class SingleZoneEnv(object):
         #   model_outputs
         # 2. get states that should be predicted from external predictor
         #   predictor_outputs
-
+        # 3. get states that comes from neural network TO BE IMPLEMENTED
+        #   nn_outputs
+        # 4. combine all states TO BE IMPLEMENTED
+        #   state = model_outputs + predictor_outputs + nn_outputs
         model_outputs = self.model_output_names
         state_list = [result.final(k) for k in model_outputs]
 
