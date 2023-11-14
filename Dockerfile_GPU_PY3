@@ -18,7 +18,7 @@ RUN conda update conda && \
     conda install pip \
     scikit-learn \
     seaborn \
-    tianshou=0.4.5 \
+    tianshou=0.5.1 \
     matplotlib=3.3.2 \
     pvlib-python=0.9.1 \
     setuptools=59.1.1 \
