@@ -256,10 +256,10 @@ class SingleZoneEnv(object):
             history_list = TRoo_his[:-1] + pow_his[:-1]
             self.history['TRoo'] = TRoo_his[1:]
             self.history['PTot'] = pow_his[1:]
+            state_array = np.array(state_list + predictor_list + history_list)
+        return state_array
 
-        return tuple(state_list+predictor_list+history_list) 
-
-    def reset(self):
+    def reset(self, seed=None):
         """
         Inherit the existing internal reset method and customize for this environment
         """
@@ -483,7 +483,7 @@ def interp(df, new_index):
     df_out = pd.DataFrame(index=new_index)
     df_out.index.name = df.index.name
 
-    for colname, col in df.iteritems():
+    for colname, col in df.items():  # Updated this line
         df_out[colname] = np.interp(new_index, df.index, col)
 
     return df_out

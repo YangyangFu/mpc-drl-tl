@@ -223,7 +223,8 @@ class SingleZoneEnv(object):
         predictor_list = self.predictor(self.n_next_steps)
 
         state_list[0] = int(state_list[0]) % 86400
-        return tuple(state_list+predictor_list) 
+        state_array = np.array(state_list+predictor_list) 
+        return state_array
 
     def predictor(self,n):
         """
@@ -423,7 +424,7 @@ def interp(df, new_index):
     df_out = pd.DataFrame(index=new_index)
     df_out.index.name = df.index.name
 
-    for colname, col in df.iteritems():
+    for colname, col in df.items():  # Updated this line
         df_out[colname] = np.interp(new_index, df.index, col)
 
     return df_out
