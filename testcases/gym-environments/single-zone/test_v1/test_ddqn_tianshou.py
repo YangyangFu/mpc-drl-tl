@@ -7,7 +7,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from tianshou.policy import DQNPolicy
 from tianshou.utils import TensorboardLogger
-from tianshou.env import SubprocVectorEnv
+from tianshou.env import SubprocVectorEnv, VectorEnvNormObs
 from tianshou.trainer import offpolicy_trainer
 from tianshou.data import Collector, VectorReplayBuffer
 import torch.nn as nn
@@ -92,19 +92,18 @@ def test_dqn(args):
 
     # make environments
     train_envs = SubprocVectorEnv(
-            [lambda: make_building_env(args) for _ in range(args.training_num)], 
-            norm_obs=True)
+            [lambda: make_building_env(args) for _ in range(args.training_num)])
+    train_envs = VectorEnvNormObs(train_envs)
     test_envs = SubprocVectorEnv(
-            [lambda: make_building_env(args) for _ in range(args.test_num)], 
-            norm_obs=True, 
-            obs_rms=train_envs.obs_rms, 
-            update_obs_rms=False)
+            [lambda: make_building_env(args) for _ in range(args.test_num)])
+    test_envs = VectorEnvNormObs(test_envs, update_obs_rms=False)
+    test_envs.set_obs_rms(train_envs.get_obs_rms())
 
     # seed
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
-    train_envs.seed(args.seed)
-    test_envs.seed(args.seed)
+    # train_envs.seed(args.seed)
+    # test_envs.seed(args.seed)
 
 
     # define model
@@ -275,27 +274,29 @@ if __name__ == '__main__':
     parser.add_argument('--buffer-size', type=int, default=50000)
 
     args = parser.parse_args()
+    
+    test_dqn(args)
 
-    # Define Ray tuning experiments
-    tune.register_trainable("ddqn", trainable_function)
-    ray.init()
+    # # Define Ray tuning experiments
+    # tune.register_trainable("ddqn", trainable_function)
+    # ray.init()
 
-    # Run tuning
-    tune.run_experiments({
-            'ddqn_tuning':{
-                "run": "ddqn",
-                "stop": {"timesteps_total":args.step_per_epoch},
-                "config":{
-                    "epoch": tune.grid_search([1]),
-                    "weight_energy": tune.grid_search([10]),
-                    "lr": tune.grid_search([1e-04, 1e-03]),
-                    "batch_size": tune.grid_search([32]),
-                    "n_hidden_layer": tune.grid_search([3]),
-                    "buffer_size":tune.grid_search([10000,20000,40000])
-                    },
-                "local_dir":"/mnt/shared",
-            }
-    })
+    # # Run tuning
+    # tune.run_experiments({
+    #         'ddqn_tuning':{
+    #             "run": "ddqn",
+    #             "stop": {"timesteps_total":args.step_per_epoch},
+    #             "config":{
+    #                 "epoch": tune.grid_search([1]),
+    #                 "weight_energy": tune.grid_search([10]),
+    #                 "lr": tune.grid_search([1e-04, 1e-03]),
+    #                 "batch_size": tune.grid_search([32]),
+    #                 "n_hidden_layer": tune.grid_search([3]),
+    #                 "buffer_size":tune.grid_search([10000,20000,40000])
+    #                 },
+    #             "local_dir":"/mnt/shared",
+    #         }
+    # })
 """
     tune.run_experiments({
             'ddqn_tuning':{
