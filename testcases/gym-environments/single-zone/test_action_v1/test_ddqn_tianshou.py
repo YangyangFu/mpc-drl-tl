@@ -7,7 +7,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from tianshou.policy import DQNPolicy
 from tianshou.utils import TensorboardLogger
-from tianshou.env import SubprocVectorEnv
+from tianshou.env import SubprocVectorEnv, VectorEnvNormObs
 from tianshou.trainer import offpolicy_trainer
 from tianshou.data import Collector, VectorReplayBuffer
 import torch.nn as nn
@@ -95,13 +95,13 @@ def test_dqn(args):
 
     # make environments: normalize the obs space
     train_envs = SubprocVectorEnv(
-            [lambda: make_building_env(args) for _ in range(args.training_num)], 
-            norm_obs=True)
+            [lambda: make_building_env(args) for _ in range(args.training_num)])
+    train_envs = VectorEnvNormObs(train_envs)
+
     test_envs = SubprocVectorEnv(
-            [lambda: make_building_env(args) for _ in range(args.test_num)],
-            norm_obs=True, 
-            obs_rms=train_envs.obs_rms, 
-            update_obs_rms=False)
+            [lambda: make_building_env(args) for _ in range(args.test_num)])
+    test_envs = VectorEnvNormObs(test_envs, update_obs_rms=False)
+    test_envs.set_obs_rms(train_envs.get_obs_rms())
     
     # seed
     np.random.seed(args.seed)
@@ -280,25 +280,27 @@ if __name__ == '__main__':
     parser.add_argument('--buffer-size', type=int, default=50000)
 
     args = parser.parse_args()
+    
+    test_dqn(args)
+    
+    # # Define Ray tuning experiments
+    # tune.register_trainable("ddqn", trainable_function)
+    # ray.init()
 
-    # Define Ray tuning experiments
-    tune.register_trainable("ddqn", trainable_function)
-    ray.init()
-
-    # Run tuning
-    tune.run_experiments({
-        'ddqn_tuning': {
-            "run": "ddqn",
-            "stop": {"timesteps_total": args.step_per_epoch},
-            "config": {
-                "epoch": tune.grid_search([500]),
-                "weight_action": tune.grid_search([10]),
-                "lr": tune.grid_search([1e-04]),
-                "batch_size": tune.grid_search([256]),
-                "n_hidden_layers": tune.grid_search([3]),
-                "buffer_size": tune.grid_search([4096*3]),
-                "seed":tune.grid_search([0, 1, 2, 3, 4, 5])
-            },
-            "local_dir": "/mnt/shared",
-        }
-    })
+    # # Run tuning
+    # tune.run_experiments({
+    #     'ddqn_tuning': {
+    #         "run": "ddqn",
+    #         "stop": {"timesteps_total": args.step_per_epoch},
+    #         "config": {
+    #             "epoch": tune.grid_search([500]),
+    #             "weight_action": tune.grid_search([10]),
+    #             "lr": tune.grid_search([1e-04]),
+    #             "batch_size": tune.grid_search([256]),
+    #             "n_hidden_layers": tune.grid_search([3]),
+    #             "buffer_size": tune.grid_search([4096*3]),
+    #             "seed":tune.grid_search([0, 1, 2, 3, 4, 5])
+    #         },
+    #         "local_dir": "/mnt/shared",
+    #     }
+    # })
