@@ -41,7 +41,7 @@ def get_args():
     parser.add_argument('--hidden-sizes', type=int, nargs='*', default=[64, 64])
     parser.add_argument('--training-num', type=int, default=16)
     parser.add_argument('--test-num', type=int, default=100)
-    parser.add_argument('--logdir', type=str, default='log')
+    parser.add_argument('--logdir', type=str, default='log_gail')
     parser.add_argument('--render', type=float, default=0.)
     parser.add_argument(
         '--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu'
@@ -72,7 +72,7 @@ def test_gail(args=get_args()):
             buffer = pickle.load(open(args.load_buffer_name, "rb"))
     else:
         buffer = gather_data()
-    env = gym.make(args.task)
+    env = gym.make(args.task) # make the environment for the task (Pendulum-v1)
     if args.reward_threshold is None:
         default_reward_threshold = {"Pendulum-v0": -1100, "Pendulum-v1": -200}
         args.reward_threshold = default_reward_threshold.get(
@@ -159,8 +159,7 @@ def test_gail(args=get_args()):
     )
     # collector
     train_collector = Collector(
-        policy, train_envs, VectorReplayBuffer(args.buffer_size, len(train_envs))
-    )
+        policy, train_envs, VectorReplayBuffer(args.buffer_size, len(train_envs)), exploration_noise=True)
     test_collector = Collector(policy, test_envs)
     # log
     log_path = os.path.join(args.logdir, args.task, "gail")

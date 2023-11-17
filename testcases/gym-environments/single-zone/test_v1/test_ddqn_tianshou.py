@@ -59,7 +59,7 @@ def make_building_env(args):
     return env
 
 class Net(nn.Module):
-    def __init__(self, state_shape, action_shape, nlayers,device):
+    def __init__(self, state_shape, action_shape, nlayers, device):
         super().__init__()
         # define ann
         sequences = [nn.Linear(np.prod(state_shape), 256), nn.ReLU(inplace=True)]
@@ -106,8 +106,9 @@ def test_dqn(args):
     # test_envs.seed(args.seed)
 
 
-    # define model
+    # define model, print state and action shape for neural network
     print(args.state_shape)
+    print(args.action_shape)
     net = Net(args.state_shape, args.action_shape, args.n_hidden_layers, args.device).to(args.device)
     optim = torch.optim.Adam(net.parameters(), lr=args.lr)
     
@@ -134,12 +135,12 @@ def test_dqn(args):
     test_collector = Collector(policy, test_envs)
 
     # log
-    log_path = os.path.join(args.logdir, args.task)
+    log_path = os.path.join(args.logdir, args.task, 'ddqn')
     writer = SummaryWriter(log_path)
     writer.add_text("args", str(args))
     logger = TensorboardLogger(writer)
 
-    def save_fn(policy):
+    def save_best_fn(policy):
         torch.save(policy.state_dict(), os.path.join(log_path, 'policy.pth'))
 
     def train_fn(epoch, env_step):
@@ -177,7 +178,7 @@ def test_dqn(args):
             train_fn=train_fn, 
             test_fn=test_fn,
             #stop_fn=stop_fn, 
-            save_fn=save_fn, 
+            save_best_fn=save_best_fn, 
             logger=logger,
             update_per_step=args.update_per_step, 
             test_in_train=False)
@@ -215,6 +216,7 @@ def test_dqn(args):
     watch()
 
 # added hyperparameter tuning scripting using Ray.tune
+# should add the epsilon decay rate as a tunable parameter as well???
 def trainable_function(config, reporter):
     while True:
         args.epoch = config['epoch']
@@ -225,7 +227,7 @@ def trainable_function(config, reporter):
         args.buffer_size = config['buffer_size']
         test_dqn(args)
 
-        # a fake traing score to stop current simulation based on searched parameters
+        # a fake training score to stop current simulation based on searched parameters
         reporter(timesteps_total=args.step_per_epoch)
 
 if __name__ == '__main__':
@@ -252,8 +254,8 @@ if __name__ == '__main__':
     parser.add_argument('--target-update-freq', type=int, default=100)
 
     parser.add_argument('--step-per-epoch', type=int, default=max_number_of_steps)
-    parser.add_argument('--step-per-collect', type=int, default=1)
-    parser.add_argument('--update-per-step', type=float, default=1)
+    parser.add_argument('--step-per-collect', type=int, default=1) # can this be a tunable parameter?
+    parser.add_argument('--update-per-step', type=float, default=1) # can this be a tunable parameter?
 
     parser.add_argument('--training-num', type=int, default=1)
     parser.add_argument('--test-num', type=int, default=1)
