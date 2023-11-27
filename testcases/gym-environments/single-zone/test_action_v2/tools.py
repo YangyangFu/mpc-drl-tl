@@ -83,8 +83,13 @@ def plot_reward(csv_files, plot_test=True):
         print(dir_name)
         data = pd.read_csv(key)
 
+        # Convert to numpy array before plotting
+        env_steps = data['env_step'].to_numpy()
+        rewards = data['rew'].to_numpy()
+
         plt.figure(figsize=(8, 6))
-        plt.plot(data['env_step'], data['rew'])
+        # plt.plot(data['env_step'], data['rew'])
+        plt.plot(env_steps, rewards)
         plt.grid()
         plt.xlabel("step")
         plt.ylabel("reward")
