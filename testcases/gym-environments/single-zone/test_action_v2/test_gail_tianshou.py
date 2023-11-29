@@ -49,7 +49,7 @@ def make_building_env(args):
     weight_temp = args.weight_temp #500.
     weight_action = args.weight_action
 
-    def rw_func(cost, penalty, delta_action):
+    def rw_func(cost, penalty, delta_action): # try making 0 reward for gail training by setting rw_func = 0 - NO NEED TO DO THIS
         if ( not hasattr(rw_func,'x')  ):
             rw_func.x = 0
             rw_func.y = 0
@@ -65,7 +65,8 @@ def make_building_env(args):
         #print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
         #res = (penalty * 500.0 + cost*5e4)/1000.0#!!!!!!!!!!!!!!!!!!
         res = -penalty*penalty * weight_temp + cost*weight_energy - delta_action*delta_action*weight_action
-        
+        # set the reward to 0 for gail training - NO NEED TO DO THIS
+        # res = 0.0*res
         return res
 
     env = gym.make(args.task,
@@ -105,7 +106,7 @@ def test_gail(args):
 
     # make environments
     train_envs = SubprocVectorEnv(
-            [lambda: NoRewardEnv(make_building_env(args)) for _ in range(args.training_num)])
+            [lambda: make_building_env(args) for _ in range(args.training_num)])
     train_envs = VectorEnvNormObs(train_envs)
     test_envs = SubprocVectorEnv(
             [lambda: make_building_env(args) for _ in range(args.test_num)])
@@ -348,7 +349,7 @@ if __name__ == '__main__':
     # GAIL special
     parser.add_argument('--disc-lr', type=float, default=2.5e-5)
     parser.add_argument("--disc-update-num", type=int, default=2)
-    parser.add_argument("--expert-data-task", type=str, default=r'test\offline\test_expert_dataset_Pendulum-v1.pkl') # Change to your own path
+    parser.add_argument("--expert-data-task", type=str, default=r'/mnt/shared/expert_SAC_JModelicaCSSingleZoneEnv-action-v2.pkl') # Change to your own path
 
     parser.add_argument("--save-interval", type=int, default=1)
 
@@ -374,7 +375,7 @@ if __name__ == '__main__':
             "run": "gail",
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
-                "epoch": tune.grid_search([500]), # try default 500 for the first run
+                "epoch": tune.grid_search([100]), # try default 500 for the first run
                 "weight_energy": tune.grid_search([100.]),
                 "lr": tune.grid_search([3e-04]), #[1e-03]
                 "disc_lr": tune.grid_search([2.5e-05]),

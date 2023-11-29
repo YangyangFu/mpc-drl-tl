@@ -1,6 +1,6 @@
 docker run^
       --user=root^
-	  --shm-size=4.03gb^
+	  --shm-size=12gb^
 	  --detach=false^
 	  -e DISPLAY=${DISPLAY}^
 	  -v /tmp/.X11-unix:/tmp/.X11-unix:rw^
