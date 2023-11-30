@@ -301,6 +301,7 @@ def trainable_function(config, reporter):
         args.step_per_collect = config['step_per_collect']
         args.seed = config['seed']
         args.disc_lr = config['disc_lr']
+        args.disc_update_num = config['disc_update_num']
         test_gail(args)
 
         # a fake traing score to stop current simulation based on searched parameters
@@ -349,7 +350,7 @@ if __name__ == '__main__':
     # GAIL special
     parser.add_argument('--disc-lr', type=float, default=2.5e-5)
     parser.add_argument("--disc-update-num", type=int, default=2)
-    parser.add_argument("--expert-data-task", type=str, default=r'/mnt/shared/expert_SAC_JModelicaCSSingleZoneEnv-action-v2.pkl') # Change to your own path
+    parser.add_argument("--expert-data-task", type=str, default=r'/mnt/shared/expert_PPO_JModelicaCSSingleZoneEnv-action-v2.pkl') # Change to your own path
 
     parser.add_argument("--save-interval", type=int, default=1)
 
@@ -377,8 +378,9 @@ if __name__ == '__main__':
             "config": {
                 "epoch": tune.grid_search([100]), # try default 500 for the first run
                 "weight_energy": tune.grid_search([100.]),
-                "lr": tune.grid_search([3e-04]), #[1e-03]
-                "disc_lr": tune.grid_search([2.5e-05]),
+                "lr": tune.grid_search([3e-03]), #[1e-03]
+                "disc_lr": tune.grid_search([3e-03]),
+                "disc_update_num": tune.grid_search([4]),
                 "batch_size": tune.grid_search([256]),
                 "n_hidden_layers": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([4096]),

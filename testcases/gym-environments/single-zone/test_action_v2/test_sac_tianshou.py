@@ -12,12 +12,14 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.distributions import Independent, Normal
 
 from tianshou.data import Collector, ReplayBuffer, VectorReplayBuffer
-from tianshou.env import SubprocVectorEnv
+from tianshou.env import SubprocVectorEnv, VectorEnvNormObs
 from tianshou.policy import SACPolicy
 from tianshou.trainer import offpolicy_trainer
 from tianshou.utils import TensorboardLogger
 from tianshou.utils.net.common import Net
 from tianshou.utils.net.continuous import ActorProb, Critic
+
+import pickle
 
 class Wrapper(gym.Wrapper):
     """Env wrapper for reward scale when using sac"""
@@ -45,8 +47,9 @@ def make_building_env(args):
     weight_energy = args.weight_energy #5.e4
     weight_temp = args.weight_temp #500.
     weight_action = args.weight_action
+    reward_scale = args.reward_scale
 
-    def rw_func(cost, penalty, delta_action):
+    def rw_func(cost, penalty, delta_action, reward_scale=reward_scale):
         if ( not hasattr(rw_func,'x')  ):
             rw_func.x = 0
             rw_func.y = 0
@@ -62,7 +65,7 @@ def make_building_env(args):
         #print("rw_func-cost-min=", rw_func.x, ". penalty-min=", rw_func.y)
         #res = (penalty * 500.0 + cost*5e4)/1000.0#!!!!!!!!!!!!!!!!!!
         res = -penalty*penalty * weight_temp + cost*weight_energy - delta_action*delta_action*weight_action
-        
+        res *= reward_scale
         return res
 
     env = gym.make(args.task,
@@ -79,7 +82,7 @@ def make_building_env(args):
     return env
 
 def test_sac(args):
-    env = Wrapper(make_building_env(args), reward_scale=args.reward_scale)
+    env = make_building_env(args)
     args.state_shape = env.observation_space.shape or env.observation_space.n
     args.action_shape = env.action_space.shape or env.action_space.n
     args.max_action = env.action_space.high[0]
@@ -88,14 +91,14 @@ def test_sac(args):
     print("Action range:", np.min(env.action_space.low),
           np.max(env.action_space.high))
 
+    # make environments
     train_envs = SubprocVectorEnv(
-            [lambda: Wrapper(make_building_env(args),reward_scale=args.reward_scale) for _ in range(args.training_num)],
-            norm_obs=True)
+            [lambda: make_building_env(args) for _ in range(args.training_num)])
+    train_envs = VectorEnvNormObs(train_envs)
     test_envs = SubprocVectorEnv(
-            [lambda: Wrapper(make_building_env(args), reward_scale=1) for _ in range(args.test_num)], 
-            norm_obs=True, 
-            obs_rms=train_envs.obs_rms, 
-            update_obs_rms=False)
+            [lambda: make_building_env(args) for _ in range(args.test_num)])
+    test_envs = VectorEnvNormObs(test_envs, update_obs_rms=False)
+    test_envs.set_obs_rms(train_envs.get_obs_rms())
 
     # seed
     np.random.seed(args.seed)
@@ -175,7 +178,7 @@ def test_sac(args):
     writer.add_text("args", str(args))
     logger = TensorboardLogger(writer)
 
-    def save_fn(policy):
+    def save_best_fn(policy):
         torch.save(policy.state_dict(), os.path.join(log_path, 'policy.pth'))
 
     if not args.test_only:
@@ -189,7 +192,7 @@ def test_sac(args):
             args.step_per_collect,
             args.test_num,
             args.batch_size,
-            save_fn=save_fn,
+            save_best_fn=save_best_fn,
             logger=logger,
             update_per_step=args.update_per_step,
             test_in_train=False)
@@ -206,6 +209,26 @@ def test_sac(args):
         collector = Collector(policy, test_envs, buffer, exploration_noise=False)
         result = collector.collect(n_step=args.step_per_epoch)
 
+        # Process and save the data in the buffer
+        # transition_data = []
+        # for i in range(len(buffer)):
+        #     transition = buffer[i]
+        #     transition_data.append(
+        #         Batch(
+        #             obs=transition.obs,
+        #             act=transition.act,
+        #             rew=transition.rew,
+        #             done=transition.done,
+        #             obs_next=transition.obs_next
+        #         )
+        #     )
+
+        # Save the buffer data as a pickle file
+        with open(args.save_buffer_name, "wb") as f:
+            # pickle.dump(transition_data, f)
+            pickle.dump(buffer, f)
+        print(f"Data collected and saved to {args.save_buffer_name}")
+        
         # get obs mean and var
         obs_mean = test_envs.obs_rms.mean
         obs_var = test_envs.obs_rms.var
@@ -257,7 +280,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--step-per-collect', type=int, default=1)#!!!!!!!!!!!!!
-    parser.add_argument('--training-num', type=int, default=1)
+    parser.add_argument('--training-num', type=int, default=10)
     parser.add_argument('--test-num', type=int, default=1)
     parser.add_argument('--update-per-step', type=int, default=1)
     parser.add_argument('--n-step', type=int, default=1)
@@ -286,7 +309,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--n-hidden-layers', type=int, default=3)
     parser.add_argument('--buffer-size', type=int, default=200000)
-
+    parser.add_argument('--save-buffer-name', type=str, default="expert_SAC_JModelicaCSSingleZoneEnv-action-v2.pkl")
     args = parser.parse_args()
 
     # Define Ray tuning experiments
@@ -299,14 +322,14 @@ if __name__ == '__main__':
             "run": "sac",
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
-                "epoch": tune.grid_search([500]),
+                "epoch": tune.grid_search([100]),
                 "weight_energy": tune.grid_search([100.]),
                 "lr": tune.grid_search([3e-03]),
                 "batch_size": tune.grid_search([64]),
                 "n_hidden_layers": tune.grid_search([3]),
                 "buffer_size": tune.grid_search([100000]),
                 "reward_scale": tune.grid_search([1]),
-                "seed": tune.grid_search([0,1,2,3,4,5])
+                "seed": tune.grid_search([5])
             },
             "local_dir": "/mnt/shared",
         }
