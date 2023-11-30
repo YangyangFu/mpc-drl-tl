@@ -13,11 +13,13 @@ from torch.distributions import Independent, Normal
 
 from tianshou.policy import PPOPolicy
 from tianshou.utils import TensorboardLogger
-from tianshou.env import SubprocVectorEnv
+from tianshou.env import SubprocVectorEnv, VectorEnvNormObs
 from tianshou.utils.net.common import Net
 from tianshou.trainer import onpolicy_trainer
 from tianshou.utils.net.continuous import ActorProb, Critic
 from tianshou.data import Collector, ReplayBuffer, VectorReplayBuffer
+
+import pickle
 
 def make_building_env(args):
     import gym_singlezone_jmodelica
@@ -75,15 +77,15 @@ def test_ppo(args):
     print("Actions shape:", args.action_shape)
     print("Action range:", np.min(env.action_space.low),
           np.max(env.action_space.high))
-
+    
+    # make environments
     train_envs = SubprocVectorEnv(
-            [lambda: make_building_env(args) for _ in range(args.training_num)],
-            norm_obs=True)
+            [lambda: make_building_env(args) for _ in range(args.training_num)])
+    train_envs = VectorEnvNormObs(train_envs)
     test_envs = SubprocVectorEnv(
-            [lambda: make_building_env(args) for _ in range(args.test_num)], 
-            norm_obs=True, 
-            obs_rms=train_envs.obs_rms, 
-            update_obs_rms=False)
+            [lambda: make_building_env(args) for _ in range(args.test_num)])
+    test_envs = VectorEnvNormObs(test_envs, update_obs_rms=False)
+    test_envs.set_obs_rms(train_envs.get_obs_rms())
 
     # seed
     np.random.seed(args.seed)
@@ -179,7 +181,7 @@ def test_ppo(args):
     writer.add_text("args", str(args))
     logger = TensorboardLogger(writer)
 
-    def save_fn(policy):
+    def save_best_fn(policy):
         torch.save(policy.state_dict(), os.path.join(log_path, 'policy.pth'))
 
     if not args.test_only:
@@ -194,7 +196,7 @@ def test_ppo(args):
             args.test_num, 
             args.batch_size,
             step_per_collect=args.step_per_collect, 
-            save_fn=save_fn, 
+            save_best_fn=save_best_fn, 
             logger=logger,
             test_in_train=False)
         pprint.pprint(result)
@@ -209,6 +211,26 @@ def test_ppo(args):
 
         collector = Collector(policy, test_envs, buffer, exploration_noise=False)
         result = collector.collect(n_step=args.step_per_epoch)
+
+        # Process and save the data in the buffer
+        # transition_data = []
+        # for i in range(len(buffer)):
+        #     transition = buffer[i]
+        #     transition_data.append(
+        #         Batch(
+        #             obs=transition.obs,
+        #             act=transition.act,
+        #             rew=transition.rew,
+        #             done=transition.done,
+        #             obs_next=transition.obs_next
+        #         )
+        #     )
+
+        # Save the buffer data as a pickle file
+        with open(args.save_buffer_name, "wb") as f:
+            # pickle.dump(transition_data, f)
+            pickle.dump(buffer, f)
+        print(f"Data collected and saved to {args.save_buffer_name}")
 
         # get obs mean and var
         obs_mean = test_envs.obs_rms.mean
@@ -281,7 +303,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--device', type=str,
         default='cuda' if torch.cuda.is_available() else 'cpu')
-    parser.add_argument('--resume-path', type=str, default=None)
+    parser.add_argument('--resume-path', type=str, default=r'/mnt/shared/policy.pth') # Read pre-trained policy
     parser.add_argument('--test-only', type=bool, default=False)
 
     # tunable parameters
@@ -293,7 +315,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--n-hidden-layers', type=int, default=3)
     parser.add_argument('--buffer-size', type=int, default=4096)
-
+    parser.add_argument('--save-buffer-name', type=str, default='expert_PPO_JModelicaCSSingleZoneEnv-action-v2.pkl')
     args = parser.parse_args()
  
     # Define Ray tuning experiments
@@ -306,7 +328,7 @@ if __name__ == '__main__':
             "run": "ppo",
             "stop": {"timesteps_total": args.step_per_epoch},
             "config": {
-                "epoch": tune.grid_search([500]),
+                "epoch": tune.grid_search([1]), # try default 500 for the first run
                 "weight_energy": tune.grid_search([100.]),
                 "lr": tune.grid_search([3e-04]), #[1e-03]
                 "batch_size": tune.grid_search([256]),
@@ -314,7 +336,7 @@ if __name__ == '__main__':
                 "buffer_size": tune.grid_search([4096]),
                 "step_per_collect": tune.grid_search([672*4]), #[256, 512]
                 "eps_clip": tune.grid_search([0.2]),
-                "seed": tune.grid_search([0, 1, 2, 3, 4, 5])
+                "seed": tune.grid_search([5])
             },
             "local_dir": "/mnt/shared",
         }
