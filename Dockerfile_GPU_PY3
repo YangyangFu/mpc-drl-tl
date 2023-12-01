@@ -18,7 +18,7 @@ RUN conda update conda && \
     conda install pip \
     scikit-learn \
     seaborn \
-    tianshou=0.4.5 \
+    tianshou=0.4.11 \
     matplotlib=3.3.2 \
     pvlib-python=0.9.1 \
     setuptools=59.1.1 \
@@ -29,9 +29,11 @@ RUN conda update conda && \
 RUN pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu117
 
 # Fix a broke link
+# RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && \
+#     cp /opt/conda/lib/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/ && \
+#     ln -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
 RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && \
-    cp /opt/conda/lib/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/ && \
-    ln -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+    ln -s /opt/conda/lib/libstdc++.so.6 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
 
 # Required for nvidia-docker v1
 #RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf \
@@ -61,11 +63,11 @@ COPY ./testcases/gym-environments/single-zone/gym_singlezone_jmodelica $HOME/git
 COPY ./testcases/gym-environments/single-zone/setup.py $HOME/github/testcases/gym-environments/single-zone/setup.py
 RUN cd $HOME/github/testcases/gym-environments/single-zone && pip install -e .
 
-# install single zone temperature control environment
-WORKDIR $HOME
-COPY ./testcases/gym-environments/single-zone-temperature/gym_singlezone_temperature $HOME/github/testcases/gym-environments/single-zone-temperature/gym_singlezone_temperature
-COPY ./testcases/gym-environments/single-zone-temperature/setup.py $HOME/github/testcases/gym-environments/single-zone-temperature/setup.py
-RUN cd $HOME/github/testcases/gym-environments/single-zone-temperature && pip install -e .
+# # install single zone temperature control environment
+# WORKDIR $HOME
+# COPY ./testcases/gym-environments/single-zone-temperature/gym_singlezone_temperature $HOME/github/testcases/gym-environments/single-zone-temperature/gym_singlezone_temperature
+# COPY ./testcases/gym-environments/single-zone-temperature/setup.py $HOME/github/testcases/gym-environments/single-zone-temperature/setup.py
+# RUN cd $HOME/github/testcases/gym-environments/single-zone-temperature && pip install -e .
 
 ### ===========================================================================================
 ### install testcase dependency

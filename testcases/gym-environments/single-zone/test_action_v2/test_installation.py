@@ -9,7 +9,7 @@ import gym
 import gym_singlezone_jmodelica
 import tianshou as ts
 print(ts.__version__)
-
+import torch
 env = gym.make("JModelicaCSSingleZoneEnv-action-v2",
                 mass_flow_nor=0.55,
                 weather_file='USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw',
@@ -75,3 +75,4 @@ print("t=0 after reset, States are: ", states)
 print("t=0 after reset, Action change is "+str(env.get_action_changes()))
 
 print("\nJModelicaCSSingleZoneEnv-action-v2 is successfully installed!!")
+print(torch.cuda.is_available())
