@@ -1,18 +1,22 @@
+# Stage 1: NVIDIA CUDA base image with cuDNN
+FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu18.04 as cuda-base
+
+# Stage 2: Start with the custom yangyangfu/jmodelica_py3 base image
 FROM yangyangfu/jmodelica_py3
-LABEL maintainer yangyangfu(yangyang.fu@tamu.edu)
+LABEL maintainer="yangyangfu(yangyang.fu@tamu.edu)"
 
 # arch
 ENV NVARCH x86_64
 
+# Set CUDA and cuDNN environment variables
+ENV CUDA_HOME /usr/local/cuda
+ENV PATH /usr/local/cuda/bin:${PATH}
+ENV LD_LIBRARY_PATH /usr/local/cuda/lib64:${LD_LIBRARY_PATH}
+
 # root 
 USER root
 
-# install pyhton opengl - not necessary if no render
-#RUN apt-get update && \
-#    apt-get install -y --no-install-recommends \
-#    python-opengl 
-
-# Install pytorch gpu version
+# Install Python libraries and tools
 RUN conda update conda && \
     conda config --add channels conda-forge && \
     conda install pip \
@@ -28,57 +32,37 @@ RUN conda update conda && \
 
 RUN pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu117
 
-# Fix a broke link
-# RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && \
-#     cp /opt/conda/lib/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/ && \
-#     ln -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+# Fix a broken link
 RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && \
     ln -s /opt/conda/lib/libstdc++.so.6 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
-
-# Required for nvidia-docker v1
-#RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf \
-#    && echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
-
-#ENV PATH /usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
-#ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
 
 # nvidia-container-runtime
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 
-## install casadi using pip
+# Install additional Python packages
 WORKDIR $HOME 
 RUN pip install casadi==3.5.5 pymoo==0.6.0
 
-## install fmu-gym
+# Install fmu-gym
 WORKDIR $HOME
 RUN git config --global url."https://github.com/".insteadOf git://github.com/ && \
     pip install git+git://github.com/YangyangFu/modelicagym.git@master 
-### =======================================================================================
-### intall customized gym environment into docker: install a building control environment
-# install single zone damper control environment
+
+# Install customized gym environment
+# Single zone damper control environment
 WORKDIR $HOME
 RUN mkdir github
 COPY ./testcases/gym-environments/single-zone/gym_singlezone_jmodelica $HOME/github/testcases/gym-environments/single-zone/gym_singlezone_jmodelica
 COPY ./testcases/gym-environments/single-zone/setup.py $HOME/github/testcases/gym-environments/single-zone/setup.py
 RUN cd $HOME/github/testcases/gym-environments/single-zone && pip install -e .
 
-# # install single zone temperature control environment
-# WORKDIR $HOME
-# COPY ./testcases/gym-environments/single-zone-temperature/gym_singlezone_temperature $HOME/github/testcases/gym-environments/single-zone-temperature/gym_singlezone_temperature
-# COPY ./testcases/gym-environments/single-zone-temperature/setup.py $HOME/github/testcases/gym-environments/single-zone-temperature/setup.py
-# RUN cd $HOME/github/testcases/gym-environments/single-zone-temperature && pip install -e .
-
-### ===========================================================================================
-### install testcase dependency
-# install Modelica dependency
+# Install Modelica dependency
 COPY ./library /usr/local/JModelica/ThirdParty/MSL
 
-### =============================
+# Switch back to developer user
 USER developer
 WORKDIR $HOME 
 
-# Avoid warning that Matplotlib is building the font cache using fc-list. This may take a moment.
-# This needs to be towards the end of the script as the command writes data to
-# /home/developer/.cache
+# Matplotlib font cache
 RUN python -c "import matplotlib.pyplot"
