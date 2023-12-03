@@ -280,7 +280,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--step-per-collect', type=int, default=1)#!!!!!!!!!!!!!
-    parser.add_argument('--training-num', type=int, default=10)
+    parser.add_argument('--training-num', type=int, default=1)
     parser.add_argument('--test-num', type=int, default=1)
     parser.add_argument('--update-per-step', type=int, default=1)
     parser.add_argument('--n-step', type=int, default=1)
