@@ -160,7 +160,7 @@ def test_gail(args):
     net_d = Net(
             args.state_shape,
             action_shape=args.action_shape,
-            hidden_sizes=args.hidden_sizes,
+            hidden_sizes=args.disc_hidden_sizes,
             activation=torch.nn.Tanh,
             device=args.device,
             concat=True,
@@ -296,8 +296,10 @@ def trainable_function(config, reporter):
         args.lr = config['lr']
         args.batch_size = config['batch_size']
         args.n_hidden_layers = config['n_hidden_layers']
+        args.n_disc_hidden_layers = config['n_disc_hidden_layers']
         args.buffer_size = config['buffer_size']
         args.hidden_sizes=[256]*args.n_hidden_layers  # baselines [32, 32]
+        args.disc_hidden_sizes=[256]*args.n_disc_hidden_layers  # baselines [32, 32]
         args.step_per_collect = config['step_per_collect']
         args.seed = config['seed']
         args.disc_lr = config['disc_lr']
@@ -350,7 +352,7 @@ if __name__ == '__main__':
     # GAIL special
     parser.add_argument('--disc-lr', type=float, default=2.5e-5)
     parser.add_argument("--disc-update-num", type=int, default=2)
-    parser.add_argument("--expert-data-task", type=str, default=r'/mnt/shared/expert_PPO_JModelicaCSSingleZoneEnv-action-v2.pkl') # Change to your own path
+    parser.add_argument("--expert-data-task", type=str, default=r'/mnt/shared/expert_buffer_MPC_JModelicaCSSingleZoneEnv-action-v2-ph96.pkl') # Change to your own path
 
     parser.add_argument("--save-interval", type=int, default=1)
 
@@ -378,13 +380,14 @@ if __name__ == '__main__':
             "config": {
                 "epoch": tune.grid_search([100]), # try default 500 for the first run
                 "weight_energy": tune.grid_search([100.]),
-                "lr": tune.grid_search([3e-03]), #[1e-03]
-                "disc_lr": tune.grid_search([3e-03]),
-                "disc_update_num": tune.grid_search([4]),
-                "batch_size": tune.grid_search([256]),
+                "lr": tune.grid_search([0.005, 0.003, 0.001]), # 0.005, 0.003, 0.001
+                "disc_lr": tune.grid_search([0.0005, 0.0003, 0.0001]), # 0.0005, 0.0003, 0.0001
+                "disc_update_num": tune.grid_search([3, 4]), # 1, 2, 3, 4, 5, 6
+                "batch_size": tune.grid_search([512]), # 256, 512, 768
                 "n_hidden_layers": tune.grid_search([3]),
+                "n_disc_hidden_layers": tune.grid_search([2, 3, 4]), # 2, 3, 4
                 "buffer_size": tune.grid_search([4096]),
-                "step_per_collect": tune.grid_search([672*4]), #[256, 512]
+                "step_per_collect": tune.grid_search([672*5]), #672*5, 672*4
                 "eps_clip": tune.grid_search([0.2]),
                 "seed": tune.grid_search([5])
             },
