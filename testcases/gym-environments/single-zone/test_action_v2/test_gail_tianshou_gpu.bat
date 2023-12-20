@@ -9,4 +9,4 @@ docker run^
 	  -v %CD%:/mnt/shared^
 	  -i^
       -t^
-	  mingzhe37/mpc-drl-gpu:v0 /bin/bash -c "export TUNE_DISABLE_AUTO_CALLBACK_SYNCER=1 && source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/test_gail_tianshou_gpu.py"  
+	  mingzhe37/mpc-drl-gpu:v0 /bin/bash -c "source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/test_gail_tianshou_gpu.py"  
