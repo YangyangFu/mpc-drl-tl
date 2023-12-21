@@ -254,7 +254,6 @@ def test_gail(args):
             test_in_train=False,
         )
         pprint.pprint(result)
-        return result # return the best reward for hyperparameter tuning
 
     def watch():
         print("Setup test envs ...")
@@ -286,12 +285,9 @@ def test_gail(args):
         np.save(os.path.join(args.logdir, args.task, 'obs_var.npy'),obs_var)
         rew = result["rews"].mean()
         print(f'Mean reward (over {result["n/ep"]} episodes): {rew}')  
-
+    print("Begin watching ...")
     watch()
-    
-    # If test_only is True, or for some reason, the result is not available,
-    # return an empty dict or handle it as needed
-    return {}
+    print("End watching ...")
 
 def trainable_function(config):
     # Updating args with the hyperparameters from the config
@@ -312,10 +308,10 @@ def trainable_function(config):
     # Ensure GPU is used if available
     args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    result = test_gail(args)
+    test_gail(args)
 
     # Report the best test reward to Ray Tune
-    tune.report(best_test_reward=result.get('best_reward', 0))
+    tune.report(timesteps_total=args.step_per_epoch)
 
 if __name__ == '__main__':
 
@@ -339,7 +335,7 @@ if __name__ == '__main__':
     parser.add_argument('--rew-norm', type=int, default=True)
     # In theory, `vf-coef` will not make any difference if using Adam optimizer.
     parser.add_argument('--vf-coef', type=float, default=0.25)
-    parser.add_argument('--ent-coef', type=float, default=0.001) # 0.001???
+    parser.add_argument('--ent-coef', type=float, default=0.005) # 0.001???
     parser.add_argument('--gae-lambda', type=float, default=0.95)
     # bound action to [-1,1] using different methods. empty means no bounding
     parser.add_argument('--bound-action-method', type=str, default="clip")
@@ -381,10 +377,10 @@ if __name__ == '__main__':
 
     # Define the search space and other configurations
     config = {
-        "epoch": tune.grid_search([100]), # try default 500 for the first run
+        "epoch": tune.grid_search([1]), # try default 500 for the first run
         "weight_energy": tune.grid_search([100.]),
-        "lr": tune.grid_search([0.001]), # 0.005, 0.003, 0.001
-        "disc_lr": tune.grid_search([0.0001]), # 0.0005, 0.0003, 0.0001
+        "lr": tune.grid_search([0.003]), # 0.005, 0.003, 0.001
+        "disc_lr": tune.grid_search([0.0003]), # 0.0005, 0.0003, 0.0001
         "disc_update_num": tune.grid_search([6]), # 1, 2, 3, 4, 5, 6
         "batch_size": tune.grid_search([512]), # 512, 768
         "n_hidden_layers": tune.grid_search([4]),
@@ -392,7 +388,7 @@ if __name__ == '__main__':
         "buffer_size": tune.grid_search([4096]),
         "step_per_collect": tune.grid_search([672*5]), #672*5, 672*4
         "eps_clip": tune.grid_search([0.2]),
-        "seed": tune.grid_search([5])
+        "seed": tune.grid_search([5]),
     }
 
     # Run the tuning experiment
@@ -402,14 +398,10 @@ if __name__ == '__main__':
         stop={"timesteps_total": args.step_per_epoch},
         config=config,
         resources_per_trial={
-            "cpu": 1,
-            "gpu": 1  # set to 0 if you want to use CPU only
+            "gpu": 0.01  # set to 0.01 to use 1% of a GPU
         },
         local_dir="/mnt/shared"
     )
-
-    # You can analyze the results here using the 'analysis' object
-    print("Best config: ", analysis.get_best_config(metric="best_test_reward", mode="max"))
 
 
     # # Define Ray tuning experiments
