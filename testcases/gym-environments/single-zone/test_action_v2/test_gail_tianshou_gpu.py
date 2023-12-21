@@ -312,10 +312,11 @@ def trainable_function(config):
     # Ensure GPU is used if available
     args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    result = test_gail(args)
+    test_gail(args)
 
     # Report the best test reward to Ray Tune
-    tune.report(best_test_reward=result.get('best_reward', 0))
+    # tune.report(best_test_reward=result.get('best_reward', 0))
+    tune.report(timesteps_total=args.step_per_epoch)
 
 if __name__ == '__main__':
 
@@ -383,14 +384,14 @@ if __name__ == '__main__':
     config = {
         "epoch": tune.grid_search([100]), # try default 500 for the first run
         "weight_energy": tune.grid_search([100.]),
-        "lr": tune.grid_search([0.001]), # 0.005, 0.003, 0.001
-        "disc_lr": tune.grid_search([0.0001]), # 0.0005, 0.0003, 0.0001
-        "disc_update_num": tune.grid_search([6]), # 1, 2, 3, 4, 5, 6
+        "lr": tune.grid_search([0.005]), # 0.005, 0.003, 0.001
+        "disc_lr": tune.grid_search([0.0005]), # 0.0005, 0.0003, 0.0001
+        "disc_update_num": tune.grid_search([5, 6]), # 1, 2, 3, 4, 5, 6
         "batch_size": tune.grid_search([512]), # 512, 768
-        "n_hidden_layers": tune.grid_search([4]),
-        "n_disc_hidden_layers": tune.grid_search([4]), # 2, 3, 4
+        "n_hidden_layers": tune.grid_search([5, 6]),
+        "n_disc_hidden_layers": tune.grid_search([5, 6]), # 2, 3, 4
         "buffer_size": tune.grid_search([4096]),
-        "step_per_collect": tune.grid_search([672*5]), #672*5, 672*4
+        "step_per_collect": tune.grid_search([672*5, 672*4]), #672*5, 672*4
         "eps_clip": tune.grid_search([0.2]),
         "seed": tune.grid_search([5])
     }
@@ -403,7 +404,7 @@ if __name__ == '__main__':
         config=config,
         resources_per_trial={
             "cpu": 1,
-            "gpu": 1  # set to 0 if you want to use CPU only
+            "gpu": 0.01  # set to 0 if you want to use CPU only, 0.001 to use 1% of GPU
         },
         local_dir="/mnt/shared"
     )
