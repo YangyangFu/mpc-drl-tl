@@ -34,7 +34,7 @@ parser.add_argument('--buffer-size', type=int, default=4096) # equal to the step
 parser.add_argument('--save-buffer-name', type=str, default='expert_MPC_JModelicaCSSingleZoneEnv-action-v2.pkl')
 args = parser.parse_args()
 
-def run_mpc_action_v0(args):
+def run_mpc_action_v0(args, json_file_name):
 
     def reverse_normalize_actions(normalized_action, min_action, max_action):
         normalized_action = np.array(normalized_action).reshape(-1,)
@@ -96,8 +96,8 @@ def run_mpc_action_v0(args):
     env = make_building_env(args)
     print("=== Environment is created ===")
 
-    # read optimal control inputs
-    with open('./mpc/R2/PH=48/u_opt.json') as f:
+    # Read optimal control inputs from the provided JSON file
+    with open(json_file_name) as f:
         opt = json.load(f)
 
     t_opt = opt['t_opt']
@@ -167,4 +167,20 @@ def run_mpc_action_v0(args):
     print(f"Data collected and saved to {args.save_buffer_name}")
 
 if __name__ == '__main__':
-    run_mpc_action_v0(args)
+    base_dir = './mpc/R2/PH=672'
+
+    for subdir, dirs, files in os.walk(base_dir):
+        for file in files:
+            if file.endswith('.json'):
+                json_file_path = os.path.join(subdir, file)
+                print(f"Running simulation for {json_file_path}")
+
+                # Extract a unique identifier including subdirectory and filename
+                relative_path = os.path.relpath(json_file_path, base_dir)
+                file_id = relative_path.replace('/', '_').replace('\\', '_').replace('.json', '')
+
+                # Set a unique save_buffer_name
+                args.save_buffer_name = f'expert_MPC_PH672_{file_id}.pkl'
+
+                # Run the simulation for the current json file
+                run_mpc_action_v0(args, json_file_path)

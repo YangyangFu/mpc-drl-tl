@@ -8,4 +8,4 @@ docker run^
 	  -v %CD%:/mnt/shared^
 	  -i^
       -t^
-	  cpu_py3_image /bin/bash -c "source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/run_mpc_drl.py"
+	  mingzhe37/mpc-drl-gpu:v0 /bin/bash -c "source activate base && export PYTHONPATH=$PYFMI_PY3_CONDA_PATH:$PYTHONPATH && cd /mnt/shared && python /mnt/shared/run_mpc_drl.py"
